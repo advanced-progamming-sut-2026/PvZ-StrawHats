@@ -1,7 +1,10 @@
 package model.pitches;
 
+import model.collections.zombie.Zombie;
+
 public class LawnMower {
-    public boolean isUsed;
+    private Obstacle[] row;
+    private boolean isUsed;
 
     public boolean isUsed() {
         return isUsed;
@@ -10,4 +13,6 @@ public class LawnMower {
     public void setUsed(boolean used) {
         isUsed = used;
     }
+
+    public void killZombiesInRow(Zombie[] zombies) {};
 }
