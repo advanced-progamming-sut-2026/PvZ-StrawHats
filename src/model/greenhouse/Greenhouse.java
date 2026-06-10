@@ -1,5 +1,7 @@
 package model.greenhouse;
 
-public class Greenhouse {
+import java.util.ArrayList;
 
+public class Greenhouse {
+    public ArrayList<PlantPot> pots = new ArrayList<>();
 }
