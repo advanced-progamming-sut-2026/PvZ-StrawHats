@@ -5,6 +5,11 @@ import controller.menus.Menu;
 public class SignupMenu implements Menu {
 
     @Override
+    public String getName() {
+        return "";
+    }
+
+    @Override
     public void handleCommand() {
 
     }

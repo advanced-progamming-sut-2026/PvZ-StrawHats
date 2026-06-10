@@ -1,4 +1,4 @@
-package model.greenhouse.Store;
+package model.greenhouse.store;
 
 import model.greenhouse.Pot;
 import model.match_mechanisms.seed_packets.SeedPacket;
