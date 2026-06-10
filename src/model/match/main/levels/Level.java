@@ -1,5 +1,7 @@
 package model.match.main.levels;
 
+import model.match.main.season.Season;
+
 public abstract class Level {
     private Season season;
 
