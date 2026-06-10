@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>D:/College/AP/project/src</OriginalElement>
+  <nodes>
+    <node x="4634.5010443438605" y="675.1616951898318">model.collections.plant.PlantTemplate</node>
+    <node x="3117.725616673295" y="1126.4008900560307">model.match_mechanisms.Pluck</node>
+    <node x="2977.24250078283" y="1399.9903551526886">view.menus.collection_view.ZombiesCollection</node>
+    <node x="4367.4606677114325" y="286.3526135403947">model.collections.Ability</node>
+    <node x="3296.107471921678" y="1576.4743191935977">model.match_mechanisms.sun.NormalSun</node>
+    <node x="4258.376181235156" y="955.847017448304">model.game_exceptions.GameException</node>
+    <node x="47.93088411318071" y="939.1396412909148">model.match.main.levels.special_levels.SaveOurSeeds.Seed</node>
+    <node x="4055.1730303323275" y="262.703258316924">model.greenhouse.PlantPot</node>
+    <node x="3919.0933497750607" y="849.2566761207938">model.pitches.Square</node>
+    <node x="4437.194211143564" y="517.8588840625492">model.match.mini_games.Zombotany</node>
+    <node x="3558.8088104026283" y="137.34118943070064">model.quests.Quest</node>
+    <node x="1563.5586515954647" y="270.93167533317745">model.utils.App</node>
+    <node x="4130.656364749311" y="459.77427628855844">model.match.main.levels.special_levels.DeadLine</node>
+    <node x="525.2011955130332" y="1079.5932763878375">model.match_mechanisms.seed_packets.SelectableSeedPacket</node>
+    <node x="3652.6588534467164" y="1606.955686709085">model.match_mechanisms.sun.RadioactivateSun</node>
+    <node x="1234.8184846457152" y="144.71192860066594">Main</node>
+    <node x="3363.7917061436265" y="402.3356135822844">model.collections.armour.Armour</node>
+    <node x="3866.0641799046416" y="402.40276230984676">model.projectile.Projectile</node>
+    <node x="706.8700325705702" y="-18.311483280477148">model.greenhouse.Pot</node>
+    <node x="3769.3628070070117" y="1336.8432448264878">model.match.main.season.Season</node>
+    <node x="3592.67013663109" y="505.65047734628985">model.singleton.UserState</node>
+    <node x="622.5426115558553" y="1601.7060274261457">controller.menus.authentication.LoginMenu</node>
+    <node x="3349.3266011915894" y="542.2699668516884">view.AppView</node>
+    <node x="4042.9016977571237" y="1714.3553754310512">model.match_mechanisms.sun.SpecialSun</node>
+    <node x="4085.962788625976" y="646.6516598159395">model.match.main.levels.normal_levels.NormalLevel</node>
+    <node x="2438.154356744561" y="1146.708307738597">controller.mini_games.BeghouledController</node>
+    <node x="1416.9998246959851" y="1402.5730920678518">model.match.main.season.travellog.beach.Beach</node>
+    <node x="2172.557192582015" y="1656.4866260371043">model.match.mini_games.vasebreaker.vase.PlantVase</node>
+    <node x="2721.444567202563" y="994.3646835269724">model.match.mini_games.wallnutbowlling.nut.BowlingWallnut</node>
+    <node x="2408.4202913917416" y="1668.5798571401858">model.match.mini_games.vasebreaker.vase.ZombieVase</node>
+    <node x="3106.7548299908426" y="1259.0290422292048">controller.mini_games.WallnutBowlingController</node>
+    <node x="2199.613399741253" y="1319.6723297241294">controller.mini_games.ZombotanyController</node>
+    <node x="264.45627796485024" y="1468.1165071161158">model.match.main.levels.special_levels.IntroductionLevel</node>
+    <node x="996.1582349272958" y="1682.1519441415403">controller.menus.ProfileMenu</node>
+    <node x="2766.555972655792" y="659.9517360226741">model.match.mini_games.Beghouled</node>
+    <node x="1421.3366385803718" y="1689.3778808142283">controller.menus.NetworkMenu</node>
+    <node x="1295.2427338051646" y="1543.6505938680511">model.match.main.levels.special_levels.BossLevelFactory</node>
+    <node x="3087.0617211844965" y="268.44184229652956">model.news.News</node>
+    <node x="876.7815015863215" y="1216.0426588452274">model.match.mini_games.MiniGameMode</node>
+    <node x="3455.128699274009" y="1404.8775586935342">view.menus.SignupMenu</node>
+    <node x="3041.666146223543" y="532.6836864984908">model.utils.Regex</node>
+    <node x="1876.034959774986" y="1149.9579140786032">model.match_mechanisms.vector.MovementDirection</node>
+    <node x="2529.544678680851" y="895.6631933735329">model.match.mini_games.wallnutbowlling.nut.Nut</node>
+    <node x="1746.897336453798" y="1797.6355323014898">controller.menus.authentication.SignupMenu</node>
+    <node x="2190.3593921119727" y="908.8899061484911">model.match.main.levels.special_levels.LoveYourPlants</node>
+    <node x="1803.6756722556518" y="870.9700581199711">model.collections.zombie.ZombieTemplate</node>
+    <node x="1610.2334315463652" y="1345.2627752338617">controller.mini_games.VasebreakerController</node>
+    <node x="2088.3858271531317" y="1810.3421403476934">controller.menus.SettingMenu</node>
+    <node x="950.6920745146061" y="1525.9560927071861">controller.menus.match.Before</node>
+    <node x="4640.067924630487" y="1002.5320521120199">model.collections.Item</node>
+    <node x="1643.0569114174468" y="1492.4814838724324">model.match.mini_games.vasebreaker.vase.Vase</node>
+    <node x="3685.933803885576" y="678.9963659316797">model.match.mini_games.vasebreaker.Vasebreaker</node>
+    <node x="2773.0965233075917" y="408.7977164931175">model.match.main.levels.special_levels.NightOps</node>
+    <node x="2624.280829608522" y="1807.8870843151342">controller.menus.GameMenu</node>
+    <node x="1403.343411699564" y="1132.8579705231732">model.pitches.ObstacleInformation</node>
+    <node x="2662.643420476758" y="1398.5316522191115">model.match_mechanisms.sun.Sun</node>
+    <node x="3417.7799139147387" y="715.1447892027613">model.match.main.season.travellog.egypt.SandStorm</node>
+    <node x="2721.320418688607" y="808.1021227398604">model.greenhouse.Greenhouse</node>
+    <node x="1965.5425489239503" y="1326.9297799823958">model.match.main.MainMode</node>
+    <node x="1904.4128201241915" y="1484.5563661821243">model.match.main.season.travellog.darkage.DarkAge</node>
+    <node x="-37.22721229347985" y="1340.2179149602803">model.match.main.levels.special_levels.ConveyorBelt</node>
+    <node x="1060.6050604016916" y="868.5740154461998">model.match.main.levels.special_levels.PlantWhatYouGet</node>
+    <node x="1795.875667794601" y="1657.6406517557728">model.match.main.levels.normal_levels.NormalLevelFactory</node>
+    <node x="3351.997556857808" y="1059.1696405384957">model.match_mechanisms.seed_packets.SeedPacket</node>
+    <node x="3617.4323793457284" y="900.1753577246059">model.match.main.levels.special_levels.LockedPlants</node>
+    <node x="2179.0747453748863" y="1485.655389454305">model.match.main.season.travellog.egypt.Egypt</node>
+    <node x="2703.188728945685" y="174.7370701954309">model.collections.plant.PlantTag</node>
+    <node x="4114.239038640424" y="1153.804838148033">model.match_mechanisms.seed_packets.RandomSeedPacket</node>
+    <node x="4444.461290289602" y="1250.171676717608">model.collections.zombie.Zombie</node>
+    <node x="769.9320111477164" y="941.1664727042137">view.menus.NewsMenuView</node>
+    <node x="2243.078805437961" y="37.35220096792101">model.match_mechanisms.Cheat</node>
+    <node x="2369.6170513154834" y="299.7009852214319">model.collections.plant.PlantType</node>
+    <node x="1818.8640512533436" y="561.3218374670771">controller.menus.match.Meanwhile</node>
+    <node x="2948.5194211649114" y="1732.0715067266754">controller.greenhouse.GreenhouseController</node>
+    <node x="338.7187751904408" y="206.6664819950568">model.match_mechanisms.Rule</node>
+    <node x="2413.766994357293" y="533.7600850469521">model.collections.armour.ArmourType</node>
+    <node x="1958.4085377247343" y="329.18204139994265">model.match.main.season.travellog.beach.Flood</node>
+    <node x="3000.996661006873" y="734.9702736477645">model.match_mechanisms.ZombieWave</node>
+    <node x="4041.927539741137" y="1538.182829010021">view.menus.LoginMenu</node>
+    <node x="2054.869269325295" y="545.0509396359732">view.LeaderBoard</node>
+    <node x="226.07025525802845" y="1221.9533837542797">controller.menus.match.ZombieWaveController</node>
+    <node x="1610.415272154938" y="463.84831987997455">model.match.mini_games.wallnutbowlling.izombie.IZombie</node>
+    <node x="2784.0684022618307" y="1132.9404253556722">model.collections.plant.Plant</node>
+    <node x="-96.65213790452259" y="1082.5568520091438">controller.mini_games.ImZombieController</node>
+    <node x="2244.3373173473724" y="767.7467229050616">model.collections.armour.ArmourFactory</node>
+    <node x="1733.3372191969909" y="702.1878790354226">model.pitches.Obstacle</node>
+    <node x="129.29413373027637" y="273.6979551695479">model.resoures.Coin</node>
+    <node x="4304.65843400068" y="1534.9617571108713">view.menus.collection_view.PlantsCollection</node>
+    <node x="612.9030490550902" y="1355.1060999118106">model.collections.plant.PlantFactory</node>
+    <node x="1310.859058048926" y="375.9268075587166">model.match_mechanisms.Time</node>
+    <node x="1493.563543382234" y="840.3064281152896">model.collections.zombie.ZombieFactory</node>
+    <node x="2232.366415988646" y="1166.950868826099">model.match.Match</node>
+    <node x="790.5753584308278" y="725.1641685109947">view.GeneralPrinter</node>
+    <node x="986.567271562192" y="197.36841511780227">model.resoures.Diamond</node>
+    <node x="3488.85006276276" y="1198.1279540852813">model.match_mechanisms.Attack</node>
+    <node x="512.676547779716" y="242.76076477857302">model.match.mini_games.wallnutbowlling.izombie.Brain</node>
+    <node x="1105.1664547676753" y="630.9237641947858">model.pitches.LawnMower</node>
+    <node x="1950.6153572765988" y="722.5388645201039">model.pitches.ObstacleFactory</node>
+    <node x="308.61815773183037" y="366.4298333146252">model.greenhouse.store.Product</node>
+    <node x="4113.586557970362" y="1323.1972308296074">view.menus.MenuView</node>
+    <node x="100.67212286896078" y="452.8555801159874">model.match_mechanisms.vector.Position</node>
+    <node x="383.49019014476477" y="754.9227550476085">model.projectile.ProjectileType</node>
+    <node x="231.27006178247498" y="1017.6369415920539">model.match.mini_games.wallnutbowlling.WallnutBowling</node>
+    <node x="1502.570937507079" y="638.7756794331749">model.match.main.season.travellog.TravelLog</node>
+    <node x="925.8408659739829" y="339.1426839959807">model.greenhouse.store.Store</node>
+    <node x="-157.85827816519208" y="340.3924659595345">model.singleton.User</node>
+    <node x="539.1167152861696" y="615.2979448870763">model.pitches.Environment</node>
+    <node x="1160.959683442061" y="1339.4401754156997">model.match.main.levels.Level</node>
+    <node x="3306.8098368825067" y="1779.9980343920624">controller.store.StoreController</node>
+    <node x="3704.600787847562" y="1863.1782656803684">controller.menus.NewsMenu</node>
+    <node x="4283.546712073309" y="1772.1414599764817">controller.menus.match.After</node>
+    <node x="2367.7385454777864" y="1458.1877272373958">model.match.main.season.travellog.cave.Cave</node>
+    <node x="588.8195322511783" y="382.55695133180933">model.match.main.levels.special_levels.BossLevel</node>
+    <node x="107.65540702365757" y="800.8511641882304">model.match.main.levels.special_levels.SaveOurSeeds</node>
+    <node x="3799.1797103404647" y="1148.2285876156805">model.pitches.SquareFactory</node>
+    <node x="276.4097279836153" y="606.6842123815583">model.match.mini_games.wallnutbowlling.nut.ExplodeONut</node>
+    <node x="340.10525104276195" y="464.7432841740587">model.pitches.Obstacles</node>
+    <node x="-60.599802041790156" y="1530.5362891633965">controller.menus.Menu</node>
+    <node x="2934.6040333898704" y="1588.9165912463855">model.match.mini_games.vasebreaker.vase.RandomVase</node>
+    <node x="7.402160013360259" y="614.9023343721004">model.match.main.levels.special_levels.TimedWar</node>
+    <node x="278.624498372983" y="1701.7342479983292">controller.menus.CollectionMenu</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="model.match.main.season.travellog.beach.Beach" target="model.match.main.season.Season" relationship="GENERALIZATION">
+      <point x="65.00017530401487" y="-9.20678517104534E-5" />
+      <point x="2337.0" y="1441.573" />
+      <point x="2337.0" y="1440.688" />
+      <point x="2573.239" y="1440.688" />
+      <point x="2573.239" y="1381.032" />
+      <point x="-121.4998070070119" y="-26.311244826487837" />
+    </edge>
+    <edge source="model.collections.zombie.Zombie" target="model.match_mechanisms.Attack" relationship="REALIZATION">
+      <point x="-127.00029028960216" y="3.232823919461225E-4" />
+      <point x="4333.087" y="1353.672" />
+      <point x="4333.087" y="1300.0" />
+      <point x="3613.85" y="1300.0" />
+      <point x="-6.276276008065906E-5" y="39.00004591471861" />
+    </edge>
+    <edge source="model.match_mechanisms.sun.NormalSun" target="model.match_mechanisms.sun.Sun" relationship="GENERALIZATION">
+      <point x="-4.7192167812681873E-4" y="55.49968080640224" />
+      <point x="3385.607" y="1710.0" />
+      <point x="3278.607" y="1710.0" />
+      <point x="3278.607" y="1366.032" />
+      <point x="2758.643" y="1366.032" />
+      <point x="-4.204767578812607E-4" y="-118.49965221911157" />
+    </edge>
+    <edge source="model.match.main.levels.special_levels.BossLevelFactory" target="model.match.main.levels.Level" relationship="GENERALIZATION">
+      <point x="2.661948353761545E-4" y="39.00040613194892" />
+      <point x="1417.243" y="1652.0" />
+      <point x="1253.46" y="1652.0" />
+      <point x="3.165579389587947E-4" y="71.99982458430031" />
+    </edge>
+    <edge source="model.collections.plant.PlantFactory" target="model.collections.plant.Plant" relationship="GENERALIZATION">
+      <point x="125.0" y="0.0" />
+      <point x="1130.7815015863216" y="1410.6060999118106" />
+      <point x="1130.7815015863216" y="1119.8579705231732" />
+      <point x="2909.0684022618307" y="1119.8579705231732" />
+      <point x="0.0" y="-88.5" />
+    </edge>
+    <edge source="model.pitches.SquareFactory" target="model.pitches.Square" relationship="GENERALIZATION">
+      <point x="119.913639434596" y="-55.5" />
+      <point x="0.0" y="118.5" />
+    </edge>
+    <edge source="model.collections.plant.Plant" target="model.match_mechanisms.Attack" relationship="REALIZATION">
+      <point x="124.99959773816954" y="-4.2535567217782955E-4" />
+      <point x="3471.35" y="1221.44" />
+      <point x="3471.35" y="1300.0" />
+      <point x="3613.85" y="1300.0" />
+      <point x="-6.276276008065906E-5" y="39.00004591471861" />
+    </edge>
+    <edge source="view.menus.LoginMenu" target="view.menus.MenuView" relationship="REALIZATION">
+      <point x="-100.99953974113714" y="-4.226829010020992" />
+      <point x="3925.159" y="1589.456" />
+      <point x="3925.159" y="1547.0" />
+      <point x="3776.863" y="1547.0" />
+      <point x="3776.863" y="1495.343" />
+      <point x="4214.587" y="1495.343" />
+      <point x="4.420296381795197E-4" y="55.49976917039248" />
+    </edge>
+    <edge source="controller.menus.match.After" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="2.879266903619282E-4" y="55.49954002351842" />
+      <point x="4409.047" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match.main.levels.special_levels.SaveOurSeeds.Seed" target="model.match.main.levels.special_levels.SaveOurSeeds" relationship="INNER_CLASS">
+      <point x="6.224522910476864" y="-39.0" />
+      <point x="-99.5" y="39.0" />
+    </edge>
+    <edge source="model.match.main.season.travellog.cave.Cave" target="model.match.main.season.Season" relationship="GENERALIZATION">
+      <point x="-86.49954547778634" y="2.727626042542397E-4" />
+      <point x="2337.0" y="1513.688" />
+      <point x="2337.0" y="1440.688" />
+      <point x="2573.239" y="1440.688" />
+      <point x="2573.239" y="1381.032" />
+      <point x="-121.4998070070119" y="-26.311244826487837" />
+    </edge>
+    <edge source="view.menus.collection_view.PlantsCollection" target="view.menus.MenuView" relationship="REALIZATION">
+      <point x="-4.340006798884133E-4" y="55.500242889128685" />
+      <point x="4418.158" y="1666.683" />
+      <point x="3910.159" y="1666.683" />
+      <point x="3910.159" y="1547.0" />
+      <point x="3776.863" y="1547.0" />
+      <point x="3776.863" y="1495.343" />
+      <point x="4214.587" y="1495.343" />
+      <point x="4.420296381795197E-4" y="55.49976917039248" />
+    </edge>
+    <edge source="model.match.main.season.travellog.darkage.DarkAge" target="model.match.main.season.Season" relationship="GENERALIZATION">
+      <point x="107.0001798758085" y="41.09863381787568" />
+      <point x="2337.0" y="1581.155" />
+      <point x="2337.0" y="1440.688" />
+      <point x="2573.239" y="1440.688" />
+      <point x="2573.239" y="1381.032" />
+      <point x="-121.4998070070119" y="-26.311244826487837" />
+    </edge>
+    <edge source="controller.menus.authentication.SignupMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="-3.3645379812696774E-4" y="-86.99953230148981" />
+      <point x="1878.897" y="1773.0" />
+      <point x="1729.397" y="1773.0" />
+      <point x="1729.397" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match_mechanisms.seed_packets.SelectableSeedPacket" target="model.match_mechanisms.seed_packets.SeedPacket" relationship="GENERALIZATION">
+      <point x="145.4998044869668" y="21.76472361216247" />
+      <point x="1092.2820000000002" y="1140.358" />
+      <point x="1092.2820000000002" y="1107.0" />
+      <point x="3008.497" y="1107.0" />
+      <point x="3008.497" y="1064.865" />
+      <point x="-92.99955685780787" y="-33.30464053849573" />
+    </edge>
+    <edge source="controller.menus.SettingMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="1.7284686828134E-4" y="-87.00014034769333" />
+      <point x="2220.386" y="1773.0" />
+      <point x="1729.397" y="1773.0" />
+      <point x="1729.397" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="controller.store.StoreController" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="1.6311749322994729E-4" y="86.99996560793761" />
+      <point x="3438.81" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="controller.menus.NetworkMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="3.6141962823421636E-4" y="87.00011918577161" />
+      <point x="1553.337" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match.main.season.travellog.egypt.Egypt" target="model.match.main.season.Season" relationship="GENERALIZATION">
+      <point x="63.500254625113485" y="-3.89454304922765E-4" />
+      <point x="2337.0" y="1524.655" />
+      <point x="2337.0" y="1440.688" />
+      <point x="2573.239" y="1440.688" />
+      <point x="2573.239" y="1381.032" />
+      <point x="-121.4998070070119" y="-26.311244826487837" />
+    </edge>
+    <edge source="controller.greenhouse.GreenhouseController" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="-4.2116491158594727E-4" y="87.00049327332454" />
+      <point x="3092.019" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="controller.menus.authentication.LoginMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="3.884441447326026E-4" y="86.99997257385417" />
+      <point x="754.543" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match.main.levels.special_levels.IntroductionLevel" target="model.match.main.levels.Level" relationship="GENERALIZATION">
+      <point x="133.49972203514977" y="-15.160507116115923" />
+      <point x="1238.46" y="1508.456" />
+      <point x="1238.46" y="1652.0" />
+      <point x="1253.46" y="1652.0" />
+      <point x="3.165579389587947E-4" y="71.99982458430031" />
+    </edge>
+    <edge source="model.match.mini_games.vasebreaker.vase.PlantVase" target="model.match.mini_games.vasebreaker.vase.Vase" relationship="GENERALIZATION">
+      <point x="-1.9258201518823626E-4" y="-38.999626037104235" />
+      <point x="2255.557" y="1627.0" />
+      <point x="1703.057" y="1627.0" />
+      <point x="8.858255318955344E-5" y="38.99951612756763" />
+    </edge>
+    <edge source="view.menus.SignupMenu" target="view.menus.MenuView" relationship="REALIZATION">
+      <point x="3.007259911100846E-4" y="55.500441306465746" />
+      <point x="3556.129" y="1547.0" />
+      <point x="3776.863" y="1547.0" />
+      <point x="3776.863" y="1495.343" />
+      <point x="4214.587" y="1495.343" />
+      <point x="4.420296381795197E-4" y="55.49976917039248" />
+    </edge>
+    <edge source="model.match.mini_games.vasebreaker.vase.ZombieVase" target="model.match.mini_games.vasebreaker.vase.Vase" relationship="GENERALIZATION">
+      <point x="-2.913917414844036E-4" y="-38.999857140185895" />
+      <point x="2503.42" y="1627.0" />
+      <point x="1703.057" y="1627.0" />
+      <point x="8.858255318955344E-5" y="38.99951612756763" />
+    </edge>
+    <edge source="model.match_mechanisms.sun.RadioactivateSun" target="model.match_mechanisms.sun.Sun" relationship="GENERALIZATION">
+      <point x="-119.99985344671632" y="3.132909148462204E-4" />
+      <point x="3571.129" y="1678.956" />
+      <point x="3571.129" y="1710.0" />
+      <point x="3278.607" y="1710.0" />
+      <point x="3278.607" y="1366.032" />
+      <point x="2758.643" y="1366.032" />
+      <point x="-4.204767578812607E-4" y="-118.49965221911157" />
+    </edge>
+    <edge source="model.collections.plant.Plant" target="model.match_mechanisms.Pluck" relationship="REALIZATION">
+      <point x="125.0" y="-76.53953529964156" />
+      <point x="-59.0" y="0.0" />
+    </edge>
+    <edge source="model.match.mini_games.wallnutbowlling.nut.BowlingWallnut" target="model.match.mini_games.wallnutbowlling.nut.Nut" relationship="GENERALIZATION">
+      <point x="-109.5" y="0.0" />
+      <point x="2584.044678680851" y="1033.3646835269724" />
+      <point x="0.0" y="39.0" />
+    </edge>
+    <edge source="controller.menus.GameMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="1.7039147815012257E-4" y="-87.00008431513425" />
+      <point x="2756.281" y="1773.0" />
+      <point x="1729.397" y="1773.0" />
+      <point x="1729.397" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match.main.levels.normal_levels.NormalLevelFactory" target="model.match.main.levels.Level" relationship="GENERALIZATION">
+      <point x="-133.999667794601" y="0.23734824422717793" />
+      <point x="1754.397" y="1696.878" />
+      <point x="1754.397" y="1652.0" />
+      <point x="1253.46" y="1652.0" />
+      <point x="3.165579389587947E-4" y="71.99982458430031" />
+    </edge>
+    <edge source="controller.menus.CollectionMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="-4.983729829746153E-4" y="178.49975200167069" />
+      <point x="419.624" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match_mechanisms.seed_packets.RandomSeedPacket" target="model.match_mechanisms.seed_packets.SeedPacket" relationship="GENERALIZATION">
+      <point x="-7.363038640423838" y="-38.99983814803295" />
+      <point x="4240.876" y="1129.67" />
+      <point x="3684.932" y="1129.67" />
+      <point x="3684.932" y="1155.729" />
+      <point x="3253.226" y="1155.729" />
+      <point x="3253.226" y="1107.0" />
+      <point x="3008.497" y="1107.0" />
+      <point x="3008.497" y="1064.865" />
+      <point x="-92.99955685780787" y="-33.30464053849573" />
+    </edge>
+    <edge source="model.match_mechanisms.sun.SpecialSun" target="model.match_mechanisms.sun.Sun" relationship="GENERALIZATION">
+      <point x="-89.49969775712361" y="17.642624568948804" />
+      <point x="3588.31" y="1787.498" />
+      <point x="3588.31" y="1710.0" />
+      <point x="3278.607" y="1710.0" />
+      <point x="3278.607" y="1366.032" />
+      <point x="2758.643" y="1366.032" />
+      <point x="-4.204767578812607E-4" y="-118.49965221911157" />
+    </edge>
+    <edge source="controller.menus.ProfileMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="-2.349272958781512E-4" y="87.00005585845975" />
+      <point x="1128.158" y="2031.0" />
+      <point x="2132.5" y="2031.0" />
+      <point x="2132.5" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.pitches.ObstacleFactory" target="model.pitches.Obstacle" relationship="REALIZATION">
+      <point x="-115.5" y="-31.5" />
+      <point x="76.0" y="9.350985484681246" />
+    </edge>
+    <edge source="controller.menus.NewsMenu" target="controller.menus.Menu" relationship="REALIZATION">
+      <point x="2.121524380527262E-4" y="86.99973431963167" />
+      <point x="3836.601" y="2084.0" />
+      <point x="71.4" y="2084.0" />
+      <point x="-1.9795820984569445E-4" y="70.49971083660353" />
+    </edge>
+    <edge source="model.match.mini_games.MiniGameMode" target="model.match.Match" relationship="GENERALIZATION">
+      <point x="111.50049841367854" y="3.411547725136188E-4" />
+      <point x="1333.105" y="1255.043" />
+      <point x="1333.105" y="1297.0" />
+      <point x="2297.366" y="1297.0" />
+      <point x="-4.159886461820861E-4" y="39.00013117390108" />
+    </edge>
+    <edge source="model.collections.zombie.Zombie" target="model.collections.Item" relationship="GENERALIZATION">
+      <point x="119.5" y="-103.5" />
+      <point x="-57.10663434088474" y="88.49999999999989" />
+    </edge>
+    <edge source="model.match.main.MainMode" target="model.match.Match" relationship="GENERALIZATION">
+      <point x="4.510760495577415E-4" y="-38.999779982395694" />
+      <point x="2051.0429999999997" y="1297.0" />
+      <point x="2297.366" y="1297.0" />
+      <point x="-4.159886461820861E-4" y="39.00013117390108" />
+    </edge>
+    <edge source="model.match.mini_games.vasebreaker.vase.RandomVase" target="model.match.mini_games.vasebreaker.vase.Vase" relationship="GENERALIZATION">
+      <point x="-3.338987062306842E-5" y="39.000408753614465" />
+      <point x="3033.104" y="1704.974" />
+      <point x="2631.781" y="1704.974" />
+      <point x="2631.781" y="1627.0" />
+      <point x="1703.057" y="1627.0" />
+      <point x="8.858255318955344E-5" y="38.99951612756763" />
+    </edge>
+    <edge source="view.menus.collection_view.ZombiesCollection" target="view.menus.MenuView" relationship="REALIZATION">
+      <point x="4.992171698177117E-4" y="55.4996448473114" />
+      <point x="3102.743" y="1547.0" />
+      <point x="3776.863" y="1547.0" />
+      <point x="3776.863" y="1495.343" />
+      <point x="4214.587" y="1495.343" />
+      <point x="4.420296381795197E-4" y="55.49976917039248" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Compact" zoom="0.20546875" showDependencies="false" x="2392.0" y="1032.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Constructors</Category>
+    <Category>Fields</Category>
+    <Category>Inner Classes</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
