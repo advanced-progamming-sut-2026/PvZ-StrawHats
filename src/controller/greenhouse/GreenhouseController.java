@@ -16,7 +16,9 @@ public class GreenhouseController implements Menu {
     }
 
     @Override
-    public void handleCommand() {
+    public void handleCommand(String text) {
 
     }
+
+
 }

@@ -1,4 +1,4 @@
-package model.match.mini_games.wallnutbowlling.izombie;
+package model.match.mini_games.izombie;
 
 import model.collections.zombie.Zombie;
 

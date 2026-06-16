@@ -2,10 +2,7 @@ package controller.menus.match;
 
 import controller.menus.Menu;
 
-public class After implements Menu {
+public abstract class After implements Menu {
 
-    @Override
-    public void handleCommand() {
 
-    }
 }

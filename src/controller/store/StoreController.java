@@ -15,7 +15,8 @@ public class StoreController implements Menu {
     }
 
     @Override
-    public void handleCommand() {
+    public void handleCommand(String text) {
 
     }
+
 }

@@ -1,6 +1,7 @@
 package controller.menus;
 
 import model.collections.plant.Plant;
+import model.utils.Regex;
 
 import java.util.List;
 
@@ -43,11 +44,34 @@ public class CollectionMenu implements Menu{
 
     @Override
     public String getName() {
-        return "";
+        return "Collection Menu";
     }
 
     @Override
-    public void handleCommand() {
+    public void handleCommand(String text) {
+        if (Regex.MENU_COLLECTION_SHOW_ALL_PLANTS.getMatcherRaw(text).matches()) {
 
+        } else if (Regex.MENU_COLLECTION_SHOW_PLANT.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_UPGRADE_PLANT.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_SHOW_PLANTS.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_SHOW_ALL_ZOMBIES.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_SHOW_ZOMBIE.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_SHOW_ZOMBIES.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_COLLECTION_PURCHASE_PLANT.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+
+        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
+
+        }
     }
+
 }

@@ -9,6 +9,6 @@ public abstract class Season {
     public TravelLog travelLog;
     public static void handleTravellog(){}
     public ArrayList<ObstacleInformation> obstacles = new ArrayList<>();
-    public static void applyeffect(){};
+    public static void applyEffect(){};
 }
 

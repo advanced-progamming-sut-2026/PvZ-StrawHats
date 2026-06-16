@@ -2,8 +2,7 @@ package controller.menus;
 
 import model.utils.Regex;
 
-public class SettingMenu implements Menu{
-
+public class MainMenu implements Menu{
     @Override
     public void changeMenu(Menu targetMenu) {
 
@@ -11,12 +10,12 @@ public class SettingMenu implements Menu{
 
     @Override
     public String getName() {
-        return "Setting Menu";
+        return "Main Menu";
     }
 
     @Override
     public void handleCommand(String text) {
-        if (Regex.MENU_SETTINGS_CHANGE_DIFFICULTY.getMatcherRaw(text).matches()) {
+        if (Regex.MENU_LOGOUT.getMatcherRaw(text).matches()) {
 
         } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
 
@@ -26,6 +25,4 @@ public class SettingMenu implements Menu{
 
         }
     }
-
-
 }

@@ -1,13 +1,16 @@
 package view.menus;
 
-import static model.utils.App.scanner;
+import java.util.Scanner;
 
-public interface MenuView {
-    void showMenu();
-    default public String getInput(){
-        if (scanner.hasNextLine())
-            return scanner.nextLine().trim();
-        else
-            return null;
+
+public abstract class MenuView {
+    public abstract void showMenu(String text);
+    public  void getInput() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("exit")) break; // baraye debug
+            this.showMenu(input);
+        }
     }
 }

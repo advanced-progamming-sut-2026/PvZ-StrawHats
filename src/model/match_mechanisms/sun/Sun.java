@@ -15,4 +15,5 @@ public abstract class Sun {
     public void setFallen(boolean fallen) {
         isFallen = fallen;
     }
+    public void dropPositionEngine(){};
 }

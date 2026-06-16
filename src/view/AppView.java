@@ -1,5 +1,41 @@
 package view;
 
+import model.utils.App;
+import view.menus.*;
+import view.menus.collection_view.CollectionMenuView;
+import view.menus.while_match.BeforeMatchView;
+
 public class AppView {
-    public static void run(){}
+    public static void run() {
+            switch (App.currentMenu.getName()) {
+                case "SignUP Menu":
+                    new SignupMenuView().getInput();
+                    break;
+                case "Login Menu":
+                    new LoginMenuView().getInput();
+                    break;
+                case "Main Menu":
+                    new MainMenuView().getInput();
+                    break;
+                case "Profile Menu":
+                    new ProfileMenuView().getInput();
+                    break;
+                case "Game Menu":
+                    new GameMenuView().getInput();
+                    break;
+                case "News Menu":
+                    new NewsMenuView().getInput();
+                    break;
+                case "Collection Menu":
+                    new CollectionMenuView().getInput();
+                    break;
+                case "Before Menu":
+                    new BeforeMatchView().getInput();
+                    break;
+                case "Setting Menu":
+                    new SettingMenuView().getInput();
+                    break;
+            }
+        }
+
 }

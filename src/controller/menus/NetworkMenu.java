@@ -13,7 +13,9 @@ public class NetworkMenu implements Menu{
     }
 
     @Override
-    public void handleCommand() {
+    public void handleCommand(String text) {
 
     }
+
+
 }
