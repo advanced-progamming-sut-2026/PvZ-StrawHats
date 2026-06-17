@@ -9,6 +9,10 @@ public class ZombieWave {
     private int delay;
     private int waveTurn;
 
+    public void startWave() {
+
+    }
+
     public List<Zombie> getWaveZombies() {
         return waveZombies;
     }

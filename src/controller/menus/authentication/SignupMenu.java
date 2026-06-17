@@ -3,14 +3,9 @@ package controller.menus.authentication;
 import controller.menus.Menu;
 import model.utils.Regex;
 
-public class SignupMenu implements Menu {
+public class SignupMenu extends Menu {
 
     boolean isAlreadyRegisterd = false;
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
 
     @Override
     public String getName() {

@@ -3,13 +3,7 @@ package controller.menus.match;
 import controller.menus.Menu;
 import model.utils.Regex;
 
-public class Before implements Menu {
-
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
+public class Before extends Menu {
 
     @Override
     public String getName() {

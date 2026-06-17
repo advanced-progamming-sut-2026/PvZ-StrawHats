@@ -1,11 +1,6 @@
 package controller.menus;
 
-public class NetworkMenu implements Menu{
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
+public class NetworkMenu extends Menu{
 
     @Override
     public String getName() {

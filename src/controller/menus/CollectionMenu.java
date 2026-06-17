@@ -5,7 +5,7 @@ import model.utils.Regex;
 
 import java.util.List;
 
-public class CollectionMenu implements Menu{
+public class CollectionMenu extends Menu{
     private List<Plant> unlockedPlants;
     private List<Plant> lockedPlants;
 
@@ -37,11 +37,6 @@ public class CollectionMenu implements Menu{
     }
 
     public void sortPlants(){};
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
 
     @Override
     public String getName() {

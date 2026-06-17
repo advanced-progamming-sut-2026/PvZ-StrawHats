@@ -7,9 +7,10 @@ import model.match_mechanisms.vector.MovementDirection;
 
 public abstract class Zombie extends Item implements Attack {
     public MovementDirection move;
-    public void handleMovement(){};
-
     public Armour armour;
+    private int speed;
+
+    public void handleMovement(){};
 
     public int getSpeed() {
         return speed;
@@ -18,8 +19,6 @@ public abstract class Zombie extends Item implements Attack {
     public void setSpeed(int speed) {
         this.speed = speed;
     }
-
-    private int speed;
 
     public void handleAbility(){};
 }

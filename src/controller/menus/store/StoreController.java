@@ -1,8 +1,8 @@
-package controller.menus.match;
+package controller.menus.store;
 
 import controller.menus.Menu;
 
-public class Meanwhile extends Menu {
+public class StoreController extends Menu {
 
     @Override
     public String getName() {
@@ -23,4 +23,5 @@ public class Meanwhile extends Menu {
     public String showMenu() {
         return "";
     }
+
 }

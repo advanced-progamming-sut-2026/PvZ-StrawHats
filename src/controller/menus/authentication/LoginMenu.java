@@ -3,12 +3,7 @@ package controller.menus.authentication;
 import controller.menus.Menu;
 import model.utils.Regex;
 
-public class LoginMenu implements Menu {
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
+public class LoginMenu extends Menu {
 
     @Override
     public String getName() {

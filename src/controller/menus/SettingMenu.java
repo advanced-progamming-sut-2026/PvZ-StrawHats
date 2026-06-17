@@ -2,12 +2,7 @@ package controller.menus;
 
 import model.utils.Regex;
 
-public class SettingMenu implements Menu{
-
-    @Override
-    public void changeMenu(String text) {
-
-    }
+public class SettingMenu extends Menu{
 
     @Override
     public String getName() {

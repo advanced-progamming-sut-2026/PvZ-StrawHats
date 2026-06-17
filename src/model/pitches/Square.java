@@ -1,7 +1,8 @@
 package model.pitches;
 
-public abstract class Square {
+public class Square {
     private int x , y;
+
     public Obstacle obstacle;
 
     public int getX() {
@@ -20,5 +21,11 @@ public abstract class Square {
         this.y = y;
     }
 
-    public abstract boolean haveObstacle();
+    public Obstacle getObstacle() {
+        return obstacle;
+    }
+
+    public void setObstacle(Obstacle obstacle) {
+        this.obstacle = obstacle;
+    }
 }
