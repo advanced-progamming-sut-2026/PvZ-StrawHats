@@ -3,7 +3,7 @@ package controller.menus;
 public class NetworkMenu implements Menu{
 
     @Override
-    public void changeMenu(Menu targetMenu) {
+    public void changeMenu(String text) {
 
     }
 
@@ -15,6 +15,16 @@ public class NetworkMenu implements Menu{
     @Override
     public void handleCommand(String text) {
 
+    }
+
+    @Override
+    public void exitMenu() {
+
+    }
+
+    @Override
+    public String showMenu() {
+        return "";
     }
 
 

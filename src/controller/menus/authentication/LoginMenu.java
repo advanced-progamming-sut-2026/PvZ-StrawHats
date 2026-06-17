@@ -6,7 +6,7 @@ import model.utils.Regex;
 public class LoginMenu implements Menu {
 
     @Override
-    public void changeMenu(Menu targetMenu) {
+    public void changeMenu(String text) {
 
     }
 
@@ -30,6 +30,16 @@ public class LoginMenu implements Menu {
         } else if (Regex.ANSWER.getMatcherRaw(text).matches()) {
 
         }
+    }
+
+    @Override
+    public void exitMenu() {
+
+    }
+
+    @Override
+    public String showMenu() {
+        return "";
     }
 
 }

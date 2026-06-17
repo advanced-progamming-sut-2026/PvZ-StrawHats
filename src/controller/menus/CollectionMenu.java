@@ -37,8 +37,9 @@ public class CollectionMenu implements Menu{
     }
 
     public void sortPlants(){};
+
     @Override
-    public void changeMenu(Menu targetMenu) {
+    public void changeMenu(String text) {
 
     }
 
@@ -72,6 +73,16 @@ public class CollectionMenu implements Menu{
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
 
         }
+    }
+
+    @Override
+    public void exitMenu() {
+
+    }
+
+    @Override
+    public String showMenu() {
+        return "";
     }
 
 }

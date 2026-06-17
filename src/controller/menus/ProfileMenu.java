@@ -3,9 +3,8 @@ package controller.menus;
 import model.utils.Regex;
 
 public class ProfileMenu implements Menu{
-
     @Override
-    public void changeMenu(Menu targetMenu) {
+    public void changeMenu(String text) {
 
     }
 
@@ -33,6 +32,16 @@ public class ProfileMenu implements Menu{
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
 
         }
+    }
+
+    @Override
+    public void exitMenu() {
+
+    }
+
+    @Override
+    public String showMenu() {
+        return "";
     }
 
 

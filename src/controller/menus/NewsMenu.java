@@ -4,8 +4,8 @@ import model.utils.Regex;
 
 public class NewsMenu implements Menu{
 
-    @Override
-    public void changeMenu(Menu targetMenu) {
+ @Override
+    public void changeMenu(String text) {
 
     }
 
@@ -27,6 +27,16 @@ public class NewsMenu implements Menu{
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
 
         }
+    }
+
+    @Override
+    public void exitMenu() {
+
+    }
+
+    @Override
+    public String showMenu() {
+        return "";
     }
 
 
