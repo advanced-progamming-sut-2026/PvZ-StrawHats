@@ -5,9 +5,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum Regex {
-
+    // authentication
     REGISTER(
-            "^\\s*register\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)\\s+(?<passwordconfirm>\\S+)\\s+-n\\s+(?<nickname>\\S+)\\s+-e\\s+(?<email>\\S+)\\s+-g\\s+(?<gender>\\S+)\\s*$"
+            "^\\s*register\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)\\s+(?<passwordConfirm>\\S+)\\s+-n\\s+(?<nickname>\\S+)\\s+-e\\s+(?<email>\\S+)\\s+-g\\s+(?<gender>\\S+)\\s*$"
     ),
     PICK_QUESTION(
             "^\\s*pick\\s+question\\s+-q\\s+(?<questionnumber>\\S+)\\s+-a\\s+(?<answer>\\S+)\\s+-c\\s+(?<answerconfirm>\\S+)\\s*$"
@@ -21,10 +21,11 @@ public enum Regex {
     ANSWER(
             "^\\s*answer\\s+-a\\s+(?<answer>\\S+)\\s*$"
     ),
-
     MENU_LOGOUT(
             "^\\s*menu\\s+logout\\s*$"
     ),
+
+    // main menu
     MENU_ENTER_CHAPTER(
             "^\\s*menu\\s+enter\\s+chapter\\s+-c\\s+(?<chaptername>\\S+)\\s*$"
     ),
@@ -46,12 +47,15 @@ public enum Regex {
     MENU_SETTINGS_CHANGE_DIFFICULTY(
             "^\\s*menu\\s+settings\\s+change-difficulty\\s+-l\\s+(?<difficultylevel>\\S+)\\s*$"
     ),
+
     MENU_NEWS_SHOW_UNREAD(
             "^\\s*menu\\s+news\\s+showunread\\s*$"
     ),
     MENU_NEWS_SHOW_ALL(
             "^\\s*menu\\s+news\\s+showall\\s*$"
     ),
+
+    // profile menu
     MENU_PROFILE_CHANGE_USERNAME(
             "^\\s*menu\\s+profile\\s+change-username\\s+-u\\s+(?<username>\\S+)\\s*$"
     ),
@@ -67,6 +71,8 @@ public enum Regex {
     MENU_PROFILE_SHOW_INFO(
             "^\\s*menu\\s+profile\\s+showinfo\\s*$"
     ),
+
+    // collection
     MENU_COLLECTION_SHOW_PLANTS(
             "^\\s*menu\\s+collection\\s+showplants\\s*$"
     ),
@@ -92,6 +98,7 @@ public enum Regex {
             "^\\s*menu\\s+collection\\s+purchaseplant\\s+-p\\s+(?<plantname>\\S+)\\s*$"
     ),
 
+    // green house
     SHOW_ALL_PLANTS(
             "^\\s*show\\s+all\\s+plants\\s*$"
     ),

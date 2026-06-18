@@ -3,9 +3,7 @@ package model.utils;
 import controller.menus.Menu;
 import controller.menus.authentication.SignupMenu;
 import model.match.main.MainMode;
-import model.singleton.User;
-
-import java.util.Scanner;
+import model.user_data.User;
 
 public class App {
     public static User currentUser = null;
