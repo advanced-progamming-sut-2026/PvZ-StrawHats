@@ -3,6 +3,7 @@ package controller.menus;
 import controller.menus.authentication.SignupMenu;
 import model.utils.App;
 import model.utils.Regex;
+import view.menus.MenuView;
 
 import java.util.regex.Matcher;
 
@@ -19,6 +20,10 @@ public abstract class Menu {
             case "SignUp Menu" -> App.currentMenu = new SignupMenu();
             case "Main Menu" -> App.currentMenu = new MainMenu();
         }
+    }
+
+    public void getInput() {
+
     }
     public abstract String getName();
     public abstract void handleCommand(String text);

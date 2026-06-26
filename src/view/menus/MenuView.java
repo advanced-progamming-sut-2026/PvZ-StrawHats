@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public abstract class MenuView {
     public abstract void showMenu(String text);
-    public  void getInput() {
+    public void getInput() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String input = scanner.nextLine();

@@ -98,8 +98,7 @@ public class SignupMenu extends Menu {
             return;
         }
 
-        String answer = matcher.group("answer");
-        String answerConfirm = matcher.group("answerConfirm");
+        String answer = matcher.group("answer"),  answerConfirm = matcher.group("answerConfirm");
 
         if (!answer.equals(answerConfirm)) {
             System.out.println("Answers do not match. Please try again.");
