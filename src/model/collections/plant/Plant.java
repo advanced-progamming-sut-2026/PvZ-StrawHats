@@ -3,9 +3,14 @@ package model.collections.plant;
 import model.collections.Item;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.Pluck;
+import model.match_mechanisms.vector.Position;
 
 public abstract class Plant extends Item implements Pluck, Attack  {
     private String name;
+
+    public Plant(Position position, int HP) {
+        super(position, HP);
+    }
 
     public String getName() {
         return name;

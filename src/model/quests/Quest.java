@@ -1,6 +1,9 @@
 package model.quests;
 
 public abstract class Quest {
+    private String questDescription;
+    private int progress;
+
     public String getQuestDescription() {
         return questDescription;
     }
@@ -16,8 +19,5 @@ public abstract class Quest {
     public void setProgress(int progress) {
         this.progress = progress;
     }
-
-    private String questDescription;
-    private int progress;
 
 }

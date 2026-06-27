@@ -2,10 +2,14 @@ package model.collections;
 
 import model.match_mechanisms.vector.Position;
 
-public  abstract class Item {
+public abstract class Item {
     public Position position;
-
     private int HP;
+
+    protected Item(Position position, int HP) {
+        this.position = position;
+        this.HP = HP;
+    }
 
     public void takeDamage(int damage){
         HP -= damage;

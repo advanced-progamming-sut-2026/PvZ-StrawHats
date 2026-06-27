@@ -3,10 +3,6 @@ package model.collections.plant;
 import model.collections.Item;
 import model.collections.zombie.Zombie;
 
-public class PlantFactory extends Plant{
+public class PlantFactory{
 
-    @Override
-    public void dealDamage(Item target) {
-
-    }
 }
