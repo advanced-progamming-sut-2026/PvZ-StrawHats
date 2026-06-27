@@ -8,9 +8,14 @@ import model.match_mechanisms.vector.Position;
 public abstract class Plant extends Item implements Pluck, Attack  {
     private String name;
 
-    public Plant(Position position, int HP) {
+    public Plant(String name, Position position, int HP) {
         super(position, HP);
+        this.name = name;
     }
+
+    //calls when player use plant food for this plant
+    public abstract void activatePlant();
+
 
     public String getName() {
         return name;
@@ -30,5 +35,10 @@ public abstract class Plant extends Item implements Pluck, Attack  {
             return false;
 
         return this.getName().equals(plant.getName());
+    }
+
+    @Override
+    public void dealDamage(Item target) {
+
     }
 }

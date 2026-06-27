@@ -77,4 +77,9 @@ public abstract class Zombie extends Item implements Attack {
     public void setFacingRight(boolean facingRight) {
         isFacingRight = facingRight;
     }
+
+    @Override
+    public void dealDamage(Item target) {
+
+    }
 }

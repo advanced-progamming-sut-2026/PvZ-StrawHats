@@ -4,7 +4,7 @@ import model.match_mechanisms.vector.Position;
 
 public abstract class Item {
     public Position position;
-    private int HP;
+    protected int HP;
 
     protected Item(Position position, int HP) {
         this.position = position;
