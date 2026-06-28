@@ -1,19 +1,22 @@
 package model.user_data;
 
-import model.game_exceptions.GameException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import model.news.News;
+
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-// authentication and holding a reference to userState
+/// authentication and holds a reference to userState
 public class User {
 
-    private static final String SAVE_FILE = "users.txt";
+    private static final String SAVE_FILE = "data.json";
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static ArrayList<User> users = new ArrayList<>();
     public static User currentUser = null;
@@ -21,7 +24,6 @@ public class User {
     public String username, passwordHash, nickname, email, gender, securityQuestion, securityAnswerHash;
     public boolean stayLoggedIn;
     public UserState userState;
-
 
     public User(String username, String password, String nickname, String email, String gender) {
         this.username = username;
@@ -32,7 +34,6 @@ public class User {
         this.stayLoggedIn = false;
         this.userState = new UserState(new News[0], 0, 0, 0);
     }
-    private User(){}; // template
 
     public static String hashPassword(String password) {
         try {
@@ -40,11 +41,11 @@ public class User {
             byte[] encoded = digest.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder hex = new StringBuilder();
             for (byte b : encoded)
-                hex.append(String.format("%02x", b)); // fill left with 0, min width 2 and in hex
-            return hex.toString();
+                hex.append(String.format("%02x", b));
 
+            return hex.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new GameException("SHA-256 not available");
+            throw new RuntimeException("SHA-256 not available", e);
         }
     }
 
@@ -71,62 +72,32 @@ public class User {
         return null;
     }
 
-    public static User findByEmail(String email) {
-        for (User user : users)
-            if (user.email.equals(email)) return user;
-        return null;
-    }
+
 
     public static boolean usernameExists(String username) {
         return findByUsername(username) != null;
     }
 
-
-    // username|passwordHash|nickname|email|gender|securityQuestion|securityAnswerHash|stayLoggedIn|lastLevel|diamonds|coins
     public static void load() {
         File file = new File(SAVE_FILE);
         if (!file.exists()) return;
-        try {
-            for (String line : Files.readAllLines(Paths.get(SAVE_FILE))) {
-                if (line.isBlank()) continue;
-                String[] parts = line.split("\\|", -1); // because none of them has "|"
-                if (parts.length < 11) continue;
-                User user = new User();
-                user.username = parts[0];
-                user.passwordHash = parts[1];
-                user.nickname = parts[2];
-                user.email = parts[3];
-                user.gender = parts[4];
-                user.securityQuestion = parts[5];
-                user.securityAnswerHash = parts[6];
-                user.stayLoggedIn = Boolean.parseBoolean(parts[7]);
-                int lastLevel = Integer.parseInt(parts[8]), diamonds = Integer.parseInt(parts[9]),
-                        coins = Integer.parseInt(parts[10]);
-                user.userState = new UserState(new News[0], lastLevel, diamonds, coins);
-                users.add(user);
+        try (Reader reader = new FileReader(file)) {
+            Type listType = new TypeToken<ArrayList<User>>() {}.getType(); // to define the format we're getting from json
+            ArrayList<User> loaded = GSON.fromJson(reader, listType);
+            if (loaded != null) users = loaded;
+            for (User user : users)
                 if (user.stayLoggedIn) currentUser = user;
-            }
+
         } catch (IOException e) {
-            throw new GameException("Could not load users: " + e.getMessage());
+            System.out.println("Could not load users: " + e.getMessage());
         }
     }
 
     public static void save() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
-            for (User user : users)
-                writer.println(
-                        user.username + "|" + user.passwordHash + "|" + user.nickname + "|" + user.email + "|" +
-                                user.gender + "|" +
-                                (user.securityQuestion != null ? user.securityQuestion : "") + "|" +
-                                (user.securityAnswerHash != null ? user.securityAnswerHash : "") + "|" +
-                                user.stayLoggedIn + "|" +
-                                user.userState.lastLevel() + "|" +
-                                user.userState.diamonds() + "|" +
-                                user.userState.coins()
-                );
-
+        try (Writer writer = new FileWriter(SAVE_FILE)) {
+            GSON.toJson(users, writer);
         } catch (IOException e) {
-            throw new GameException("Could not save users: " + e.getMessage());
+            System.out.println("Could not save users: " + e.getMessage());
         }
     }
 
