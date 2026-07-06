@@ -1,0 +1,102 @@
+package model.collections.plant.actstrategy;
+
+import model.collections.plant.Plant;
+import model.collections.plant.PlantTag;
+import model.collections.zombie.Zombie;
+import model.match_mechanisms.vector.Position;
+import model.projectile.Projectile;
+import util.GameSession;
+
+import java.util.List;
+
+public class ShootStrategy implements ActStrategy {
+
+    @Override
+    public void act(Plant user, GameSession session) {
+        if (user.getIntervalTimer() > 0) return;
+
+        List<Position> vectors = user.getShootingVectors();
+
+        if (vectors == null || vectors.isEmpty()) return;
+
+        boolean anyTarget = vectors.stream()
+                .anyMatch(v -> findTargetAlongVector(user, v, session) != null);
+        if (!anyTarget) return;
+
+        HitEffectStrategy hitEffect = buildHitEffect(user);
+
+        for (Position direction : vectors) {
+            Zombie target = findTargetAlongVector(user, direction, session);
+            if (target == null) continue;
+
+            Position velocity = direction.normalize().scale(20.0);
+
+            session.getProjectiles().add(new Projectile(
+                    user.getPosition(),
+                    velocity,
+                    target,
+                    user.getDamage(),
+                    new StraightMove(),
+                    hitEffect
+            ));
+        }
+
+        user.setInternalTimer(user.getActionInterval());
+    }
+
+
+    private HitEffectStrategy buildHitEffect(Plant user) {
+        if (user.getTags().contains(PlantTag.FIRE)) return new FireHit(1);
+        if (user.getTags().contains(PlantTag.ICE)) return new IceHit(1);
+        if (user.getTags().contains(PlantTag.POISON)) return new PoisonHit(1);
+        return new NormalHit(1);
+    }
+
+
+    private Zombie findTargetAlongVector(Plant user, Vec2 direction, GameSession session) {
+        Position origin = user.getPosition();
+        double dx = direction.x();
+        double dy = direction.y();
+        Zombie nearest = null;
+        double bestDist = Double.MAX_VALUE;
+
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive()) continue;
+            Position zp = zombie.getPosition();
+
+            double relX = zp.x() - origin.x();
+            double relY = zp.y() - origin.y();
+            if (!isInCone(relX, relY, dx, dy)) continue;
+
+            double dist = Math.sqrt(relX * relX + relY * relY);
+            if (dist < bestDist) {
+                bestDist = dist;
+                nearest = zombie;
+            }
+        }
+        return nearest;
+    }
+
+
+    private boolean isInCone(double relX, double relY, double dx, double dy) {
+        double dirLen = Math.sqrt(dx * dx + dy * dy);
+        if (dirLen == 0) return false;
+
+        if (dy == 0) {
+            return Math.abs(relY) < 0.75 && Math.signum(relX) == Math.signum(dx);
+        }
+
+        if (dx != 0 && Math.abs(dy) <= 1.5) {
+            boolean correctXDir = Math.signum(relX) == Math.signum(dx) && Math.abs(relX) > 0;
+            boolean correctRow = Math.abs(relY - dy) < 0.75;
+            return correctXDir && correctRow;
+        }
+
+        double relLen = Math.sqrt(relX * relX + relY * relY);
+        if (relLen == 0) return false;
+        double ndx = dx / dirLen;
+        double ndy = dy / dirLen;
+        double dot = (relX / relLen) * ndx + (relY / relLen) * ndy;
+        return dot > 0.6;
+    }
+}

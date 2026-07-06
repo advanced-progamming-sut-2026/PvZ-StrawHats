@@ -1,0 +1,52 @@
+package model.collections.plant.actstrategy;
+
+import model.collections.plant.Plant;
+import model.collections.zombie.Zombie;
+import model.match_mechanisms.vector.Position;
+import model.projectile.Projectile;
+import util.GameSession;
+
+public class StrikeStrategy implements ActStrategy {
+
+    @Override
+    public void act(Plant user, GameSession session) {
+        if (user.getIntervalTimer() > 0) return;
+
+        user.setInternalTimer(user.getActionInterval());
+
+        Zombie target = findNearestInLane(user, session);
+        if (target == null) return;
+
+        int pierceCount = (int) user.getAbilityValue();
+        session.getProjectiles().add(new Projectile(
+                user.getPosition(),
+                new Vec2(20, 0), target,
+                user.getDamage(),
+                new StraightMove(),
+                new PierceHit(pierceCount)
+        ));
+    }
+
+
+    private Zombie findNearestInLane(Plant user, GameSession session) {
+        double plantRow = user.getPosition().y();
+        double plantCol = user.getPosition().x();
+
+        Zombie nearest = null;
+        double minDist = Double.MAX_VALUE;
+
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive()) continue;
+            Position zp = zombie.getPosition();
+
+            if (Math.abs(zp.y() - plantRow) < 0.5 && zp.x() > plantCol) {
+                double dist = zp.x() - plantCol;
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = zombie;
+                }
+            }
+        }
+        return nearest;
+    }
+}

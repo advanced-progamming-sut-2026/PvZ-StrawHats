@@ -1,9 +1,12 @@
 package model.collections.armour;
 
 public class ArmourFactory {
-    public Armour createArmour(ArmourType type) {
-        //if (type.equals(ArmourType.IRON_BUCKET)) {return new IronBucket}
-        //else
+    public static Armour createArmour(ArmourType type, int hp, int reflectiveDamage, boolean explodeOnBreak) {
+        if (type == ArmourType.PLANT_SHIELD) {
+            return new PlantArmour(hp, reflectiveDamage, explodeOnBreak);
+        } else if (type == ArmourType.IRON_BUCKET || type == ArmourType.CONEHEAD) {
+            return new ZombieArmour(hp);
+        }
         return null;
     }
 }
