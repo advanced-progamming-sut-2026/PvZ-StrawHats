@@ -7,11 +7,6 @@ import model.match_mechanisms.Pluck;
 import model.match_mechanisms.vector.Position;
 import model.collections.zombie.Zombie;
 import model.collections.armour.PlantArmour;
-import com.ussr.pvz.model.entities.plants.actstrategy.ActStrategy;
-import com.ussr.pvz.model.entities.plants.PlantFoodType;
-import com.ussr.pvz.model.engine.GameSession;
-import com.ussr.pvz.model.util.Vec2;
-import util.GameSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +113,6 @@ public abstract class Plant extends Item implements Pluck, Attack {
     @Override public void dealDamage(Item target) { if (target != null) target.setHP(target.getHP() - getDamage()); }
     public void activatePlant() { if (this.plantFoodEffect != null) this.plantFoodTimer = 5.0; }
 
-    // گترها و سترها
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public int getLevel() { return level; }

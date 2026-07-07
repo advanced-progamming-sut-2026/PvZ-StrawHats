@@ -1,5 +1,8 @@
 package model.collections.plant;
 
+import model.collections.plant.actstrategy.ExplodeStrategy;
+import model.collections.plant.actstrategy.HomingStrategy;
+import model.collections.plant.actstrategy.SunProduceStrategy;
 import model.match_mechanisms.vector.Position;
 import model.collections.armour.ArmourFactory;
 import model.collections.armour.ArmourType;
