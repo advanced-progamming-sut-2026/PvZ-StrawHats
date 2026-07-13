@@ -5,7 +5,7 @@ public class ArmourFactory {
         if (type == ArmourType.PLANT_SHIELD) {
             return new PlantArmour(hp, reflectiveDamage, explodeOnBreak);
         } else if (type == ArmourType.IRON_BUCKET || type == ArmourType.CONEHEAD) {
-            return new ZombieArmour(hp);
+            return new ZombieArmour(type, hp);
         }
         return null;
     }
