@@ -3,7 +3,6 @@ package model.collections.zombie;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ussr.pvz.model.App;
-import com.ussr.pvz.model.board.Cell;
 import com.ussr.pvz.model.board.structures.PushableStructure;
 import com.ussr.pvz.model.board.structures.PushableType;
 import com.ussr.pvz.model.entities.zombies.factory.AttackBehaviorRegistry;
@@ -14,6 +13,7 @@ import model.collections.armour.Armour;
 import model.collections.armour.ArmourType;
 import model.collections.armour.ZombieArmour;
 import model.match_mechanisms.vector.Position;
+import model.pitches.Square;
 
 import java.io.File;
 import java.io.FileReader;
@@ -95,7 +95,6 @@ public class ZombieFactory {
         return ((Number) data.getOrDefault("WavePointCost", 100)).intValue();
     }
 
-    @SuppressWarnings("unchecked")
     public static Zombie create(String alias, int row, int col) {
         init();
         Map<String, Object> data = blueprints.get(alias);
@@ -133,7 +132,7 @@ public class ZombieFactory {
         };
 
         boolean canSpawnPlantFood = data.containsKey("CanSpawnPlantFood") ? (Boolean) data.get("CanSpawnPlantFood") : true;
-        Armour armor = resolveArmor(data);
+        ZombieArmour armor = resolveArmor(data);
 
         Zombie zombie = new Zombie(alias, armor, canSpawnPlantFood);
         zombie.setMaxHp(hp);
@@ -174,7 +173,7 @@ public class ZombieFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private static Armour resolveArmor(Map<String, Object> data) {
+    private static ZombieArmour resolveArmor(Map<String, Object> data) {
         List<String> armorProps = (List<String>) data.get("ZombieArmorProps");
         if (armorProps == null || armorProps.isEmpty()) return null;
 
@@ -221,7 +220,7 @@ public class ZombieFactory {
 
         int row = (int) zombie.getposition().y();
         int lastCol = session.getLawn().getCols() - 1;
-        Cell cell = session.getLawn().getCell(row, lastCol);
+        Square cell = session.getLawn().getCell(row, lastCol);
 
         if (cell != null && cell.getInteractableStructure() == null) {
             cell.setStructure(structure);

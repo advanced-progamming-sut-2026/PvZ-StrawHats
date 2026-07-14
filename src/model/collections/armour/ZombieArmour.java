@@ -53,6 +53,17 @@ public class ZombieArmour extends Armour {
         if (ratio > LAYER_2_THRESHOLD) return 1;
         return 2;
     }
+    public int takeDamage(int damage) {
+        if (isDestroyed()) return damage;
+        this.setHP(this.getHP() - damage);
+        if (this.getHP() <= 0) {
+            int leftover = -this.getHP();
+            this.setHP(0);
+            return leftover;
+        }
+        return 0;
+    }
+
 
     public ArmourType getArmorType() {
         return armorType;

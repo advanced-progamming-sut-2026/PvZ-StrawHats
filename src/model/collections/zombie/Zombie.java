@@ -1,29 +1,22 @@
 package model.collections.zombie;
 
-// ایمپورت‌های کد اول شما
 import model.collections.Faction;
 import model.collections.Item;
 import model.collections.armour.Armour;
+import model.collections.armour.ZombieArmour;
+import model.collections.zombie.zombie_move.MoveBehavior;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.vector.Position;
 
 import com.ussr.pvz.model.App;
-import com.ussr.pvz.model.board.Cell;
 import com.ussr.pvz.model.board.structures.PushableStructure;
-import com.ussr.pvz.model.engine.Damageable;
-import com.ussr.pvz.model.engine.GameEntity;
-import com.ussr.pvz.model.engine.GameSession;
 import com.ussr.pvz.model.entities.items.PlantFoodDrop;
-import com.ussr.pvz.model.entities.projectiles.Projectile;
 import com.ussr.pvz.model.entities.zombies.attack.AttackBehavior;
 import com.ussr.pvz.model.entities.zombies.defense.DefenseBehavior;
 import com.ussr.pvz.model.entities.zombies.effect.EffectStatus;
 import com.ussr.pvz.model.entities.zombies.move.HypnotizedMoveBehavior;
-import com.ussr.pvz.model.entities.zombies.move.MoveBehavior;
-import com.ussr.pvz.model.entities.projectiles.move.MoveStrategy;
 import com.ussr.pvz.model.entities.projectiles.move.ArcMove;
-import model.projectile.Projectile;
-import util.GameSession;
+import model.pitches.Square;
 
 import java.util.Random;
 
@@ -31,7 +24,7 @@ public class Zombie extends Item implements Attack {
     private static final Random RAND = new Random();
 
     private String name;
-    private Armour armour;
+    private ZombieArmour armour;
     private boolean isFacingRight;
     private int speed;
     private boolean hasPlantFood;
@@ -40,7 +33,6 @@ public class Zombie extends Item implements Attack {
     private EffectStatus effectStatus;
     private DefenseBehavior defenseBehavior;
     private AttackBehavior attackBehavior;
-    private Armour armor;
     private PushableStructure pushedStructure;
     private int hp;
     private int maxHp;
@@ -54,10 +46,10 @@ public class Zombie extends Item implements Attack {
     private VulnerabilityType vulnerabilityState = VulnerabilityType.FULLY_VULNERABLE;
     private Faction faction = Faction.ZOMBIES;
 
-    public Zombie(String name, Position position, int HP, boolean isFacingRight, Armour armor, int speed) {
+    public Zombie(String name, Position position, int HP, boolean isFacingRight, ZombieArmour armor, int speed) {
         super(position, HP);
         this.name = name;
-        this.armor = armor;
+        this.armour = armor;
         this.isFacingRight = isFacingRight;
         this.speed = speed;
         this.hp = HP;
@@ -66,15 +58,15 @@ public class Zombie extends Item implements Attack {
         this.isGlowing = this.hasPlantFood;
     }
 
-    public Zombie(String name, Armour armor, boolean canSpawnPlantFood) {
+    public Zombie(String name, ZombieArmour armor, boolean canSpawnPlantFood) {
         super(null, 0);
         this.name = name;
-        this.armor = armor;
+        this.armour = armor;
         this.isGlowing = canSpawnPlantFood && RAND.nextInt(100) < 5;
     }
 
-    public Zombie(String name, Armour armor) {
-        this(name, armor, true);
+    public Zombie(String name, ZombieArmour armour) {
+        this(name, armour, true);
     }
 
     public void handleMovement() {}
@@ -164,7 +156,7 @@ public class Zombie extends Item implements Attack {
         return faction == Faction.PLANTS;
     }
 
-    public Cell getCurrentCell(util.GameSession session) {
+    public Square getCurrentCell(util.GameSession session) {
         if (getPosition() == null || session.getLawn() == null) return null;
         int col = (int) getPosition().x();
         int row = (int) getPosition().y();
@@ -189,8 +181,8 @@ public class Zombie extends Item implements Attack {
 
     private void applyDamageCalculations(int damage) {
         int remaining = damage;
-        if (armor != null && !armor.isDestroyed()) {
-            remaining = armor.takeDamage(damage);
+        if (armour != null && !armour.isDestroyed()) {
+            remaining = armour.takeDamage(damage);
         }
         if (remaining > 0) {
             hp -= remaining;
@@ -234,13 +226,13 @@ public class Zombie extends Item implements Attack {
     public ZombieRace getRace() { return race; }
     public void setRace(ZombieRace race) { this.race = race; }
 
-    public ZombieState getState() { return state; }
+    public ZombieState getZombieState() { return state; }
 
-    public Armour getArmor() { return armor; }
-    public void setArmor(Armour armor) { this.armor = armor; }
+    public Armour getArmor() { return armour; }
+    public void setArmor(ZombieArmour armor) { this.armour = armor; }
 
-    public Armour getArmour() { return armour; }
-    public void setArmour(Armour armour) { this.armour = armour; }
+    public ZombieArmour getArmour() { return armour; }
+    public void setArmour(ZombieArmour armour) { this.armour = armour; }
 
     public MoveBehavior getMoveBehavior() { return moveBehavior; }
     public void setMoveBehavior(MoveBehavior moveBehavior) { this.moveBehavior = moveBehavior; }
