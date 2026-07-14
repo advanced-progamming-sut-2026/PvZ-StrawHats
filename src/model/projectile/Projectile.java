@@ -4,6 +4,7 @@ import model.collections.Item;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
+import model.projectile.hit.HitEffectStrategy;
 
 public class Projectile extends Item {
     private int damage;
@@ -18,6 +19,7 @@ public class Projectile extends Item {
     }
 
     public Projectile(Item target, Position position, Position velocity, int damage, MoveStrategy moveStrategy, HitEffectStrategy hitEffectStrategy) {
+        super(position, 1);
         this.setPosition(position);
         this.setSpeed(velocity);
         this.target = target;

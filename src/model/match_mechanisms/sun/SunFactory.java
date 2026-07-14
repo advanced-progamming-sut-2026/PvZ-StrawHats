@@ -12,7 +12,6 @@ public class SunFactory {
     int skySunFallDuration = 5;
 
     public void startFactory() {
-        creationDelay = 12d;
         creationDelay = Math.max(6 + 0.05 * Time.getTick(), 12d);
     }
 
@@ -27,25 +26,23 @@ public class SunFactory {
         else
             sun = new RadioactivateSun();
 
-        // marz random ha fellan random hastan (bar asas map bazi badan fix mikonim)
-
         double colOfCreation = random.nextInt(0, 10);
-        sun.position.x = colOfCreation;
-        sun.position.y = 0d;
+        sun.position = new Position(colOfCreation, 0d);
 
-        Position fallingPosition = new Position(random.nextDouble(0,5), colOfCreation);
+        Position fallingPosition = new Position(random.nextDouble(0, 5), colOfCreation);
         sun.setFallPosition(fallingPosition);
 
-        sun.setFallSpeed((sun.getFallPosition().y - sun.position.y) / skySunFallDuration);
+        sun.setFallSpeed((sun.getFallPosition().y() - sun.position.y()) / skySunFallDuration);
 
         return sun;
     }
 
     public Sun createPlantSun(int plantX, int plantY) {
         Sun sun = new NormalSun();
+        sun.position = new Position(plantX, plantY);
 
-        double fallingPositionRow = random.nextInt(getOrigin(plantX), plantX+1);
-        double fallingPositionCol = random.nextDouble((plantY >= 1) ? plantY-1 : 0,(plantY < 9) ? plantY+2 : 10);
+        double fallingPositionRow = random.nextInt(getOrigin(plantX), plantX + 1);
+        double fallingPositionCol = random.nextDouble((plantY >= 1) ? plantY - 1 : 0, (plantY < 9) ? plantY + 2 : 10);
         Position fallingPosition = new Position(fallingPositionCol, fallingPositionRow);
         sun.setFallPosition(fallingPosition);
 

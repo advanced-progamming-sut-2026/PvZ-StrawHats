@@ -28,7 +28,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private ModifiableStat hpStat;
     private ModifiableStat actionIntervalStat;
     private ActStrategy actStrategy;
-    private com.ussr.pvz.model.entities.plants.PlantFoodEffect plantFoodEffect;
+    private PlantFoodEffect plantFoodEffect;
     private PlantFoodType plantFoodType;
 
     private double internalTimer = 0.0;
@@ -59,6 +59,10 @@ public abstract class Plant extends Item implements Pluck, Attack {
 
     public Position getLocation() {
         return (Position) super.getPosition();
+    }
+
+    @Override
+    public void tick() {
     }
 
     public void tick(double deltaTimeSeconds, util.GameSession session) {
@@ -115,6 +119,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
     public int getRecharge() { return recharge; }
@@ -140,7 +146,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public ArrayList<PlantTag> getTags() { return tags; }
     public List<String> getRawUpgrades() { return rawUpgrades; }
     public void setActStrategy(ActStrategy actStrategy) { this.actStrategy = actStrategy; }
-    public void setPlantFoodEffect(com.ussr.pvz.model.entities.plants.PlantFoodEffect plantFoodEffect) { this.plantFoodEffect = plantFoodEffect; }
+    public PlantFoodEffect getPlantFoodEffect() { return plantFoodEffect; }
+    public void setPlantFoodEffect(PlantFoodEffect plantFoodEffect) { this.plantFoodEffect = plantFoodEffect; }
     public void setPlantFoodType(PlantFoodType plantFoodType) { this.plantFoodType = plantFoodType; }
     public void setAbilityValue(double value) { this.abilityValue = value; }
     public double getAbilityValue() { return this.abilityValue; }

@@ -12,13 +12,6 @@ public class IceHit implements HitEffectStrategy {
     @Override
     public void apply(Zombie zombie) {
         if (zombie == null || !zombie.isAlive()) return;
-
-        if (zombie.getEffectStatus() instanceof FireEffect fireEffect) {
-            fireEffect.setLit(false);
-        }
-
         zombie.setStatus(Zombie.Status.FREEZE);
-
-        // TODO: If areaLength > 0, apply splash freeze to surrounding zombies
     }
 }

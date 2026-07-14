@@ -4,6 +4,8 @@ import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
+import model.projectile.StraightMove;
+import model.projectile.hit.PierceHit;
 import util.GameSession;
 
 public class StrikeStrategy implements ActStrategy {
@@ -12,15 +14,15 @@ public class StrikeStrategy implements ActStrategy {
     public void act(Plant user, GameSession session) {
         if (user.getIntervalTimer() > 0) return;
 
-        user.setInternalTimer(user.getActionInterval());
-
         Zombie target = findNearestInLane(user, session);
         if (target == null) return;
+
+        user.setInternalTimer(user.getActionInterval());
 
         int pierceCount = (int) user.getAbilityValue();
         session.getProjectiles().add(new Projectile(
                 user.getPosition(),
-                new Vec2(20, 0), target,
+                new Position(20, 0), target,
                 user.getDamage(),
                 new StraightMove(),
                 new PierceHit(pierceCount)

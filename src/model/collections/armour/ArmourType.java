@@ -7,7 +7,8 @@ public enum ArmourType {
     BRICK("brick", 2200, false),
     NEWSPAPER("newspaper", 800, false),
     CROWN("crown", 1600, true),
-    SHOULDER_ARMOR("shoulderArmor", 1600, false);
+    SHOULDER_ARMOR("shoulderArmor", 1600, false),
+    PLANT_SHIELD("plantShield", 0, false);
 
     private final String name;
     private final int armorHp;

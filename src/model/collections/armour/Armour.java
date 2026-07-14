@@ -23,7 +23,6 @@ public abstract class Armour {
         changeState();
     }
 
-
     public ArmourStage getStage() { return stage; }
     public void setStage(ArmourStage stage) { this.stage = stage; }
 }

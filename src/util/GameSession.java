@@ -1,129 +1,122 @@
 package util;
 
+import model.collections.Item;
+import model.collections.item.GroundPlantFood;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
+import model.collections.zombie.ZombieFactory;
 import model.match.main.levels.Level;
-import model.pitches.LawnMower;
+import model.match_mechanisms.ZombieWave;
+import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
+import service.GameClock;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class GameSession {
 
+    private final GameClock clock = new GameClock();
 
-    private final GameEventBus eventBus = new GameEventBus();
-
-
-    private GameClock clock = new GameClock();
-    private final WaveScheduler waveScheduler = new WaveScheduler();
-
+    private List<Plant> plants = new ArrayList<>();
+    private List<Zombie> zombies = new ArrayList<>();
+    private List<Item> items = new ArrayList<>();
+    private final List<Projectile> projectiles = new ArrayList<>();
 
     private Level level;
-    private ResourceState resourceState;
-    private List<Zombie> zombies;
-    private List<GroundItem> items;
-    private List<Plant> plants;
+    private List<ZombieWave> waves = new ArrayList<>();
+    private int nextWaveIndex = 0;
+    private double waveTimer = 0;
+    private boolean wavesStarted = false;
+
     private int sunCount;
     private int plantFoodCount;
-    private boolean wavesStarted;
-    private LawnMower lawn;
+
+    private int rows = 5;
+    private int cols = 9;
+    private boolean[] lawnMowerAvailable = new boolean[rows];
+
     private boolean gameOver = false;
+    private boolean gameWon = false;
 
-    private static final int LAWN_COLS = 9;
-    private List<LawnMower> lawnMowers = new ArrayList<>();
-    private final List<Projectile> projectiles = new ArrayList<>();
-    private final List<ZombieProjectile> zombieProjectiles = new ArrayList<>();
-
-
-    public void initClock() {
-        clock.reset();
-        plants.forEach(clock::addEntity);
-        zombies.forEach(clock::addEntity);
-        items.forEach(clock::addEntity);
-        projectiles.forEach(clock::addEntity);
-        initLawnMowers();
+    public GameSession() {
+        Arrays.fill(lawnMowerAvailable, true);
     }
-
-    private void initLawnMowers() {
-        if (lawn == null) return;
-        lawnMowers.clear();
-
-        int rows = lawn.getRows();
-        for (int r = 0; r < rows; r++) {
-            LawnMower mower = new LawnMower(r, new Vec2(-0.5, r));
-            lawnMowers.add(mower);
-            clock.addEntity(mower);
-        }
-    }
-
 
     public void tick() {
         clock.tick();
-        if (wavesStarted) {
-            waveScheduler.tick(this, clock.getElapsedSeconds());
+        double deltaTimeSeconds = GameClock.SECONDS_PER_TICK;
+
+        for (Plant plant : plants) {
+            if (plant.isAlive()) plant.tick(deltaTimeSeconds, this);
+        }
+        for (Zombie zombie : zombies) {
+            if (zombie.isAlive()) zombie.tick(deltaTimeSeconds, this);
+        }
+        for (Projectile projectile : projectiles) {
+            if (projectile.isAlive()) projectile.tick();
+        }
+        for (Item item : items) {
+            if (item.isAlive()) item.tick();
+        }
+
+        if (wavesStarted) tickWaveScheduler(deltaTimeSeconds);
+
+        for (Zombie zombie : zombies) {
+            if (!zombie.isAlive() && zombie.isPlantFoodPending()) {
+                items.add(new GroundPlantFood(zombie.getPosition()));
+                zombie.clearPlantFoodPending();
+            }
         }
 
         plants.removeIf(p -> !p.isAlive());
         zombies.removeIf(z -> !z.isAlive());
         items.removeIf(i -> !i.isAlive());
         projectiles.removeIf(p -> !p.isAlive());
-        lawnMowers.removeIf(m -> !m.isAlive());
-        zombieProjectiles.removeIf(p -> !p.isAlive());
-        cleanupDeadGridStructures();
+
         checkZombieBreaches();
 
-        if (wavesStarted && waveScheduler.isDone() && zombies.isEmpty() && !gameOver) {
-            eventBus.publish(new GameEvent.WavesCompleted());
-            eventBus.publish(new GameEvent.GameWon());
+        if (wavesStarted && allWavesSpawned() && zombies.isEmpty() && !gameOver) {
+            gameWon = true;
         }
     }
 
+    private void tickWaveScheduler(double deltaTimeSeconds) {
+        if (nextWaveIndex >= waves.size()) return;
 
-    private void cleanupDeadGridStructures() {
-        if (lawn == null) return;
+        waveTimer += deltaTimeSeconds;
+        ZombieWave nextWave = waves.get(nextWaveIndex);
 
-        int rows = lawn.getRows();
-        int cols = lawn.getCols();
-
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                var cell = lawn.getCell(r, c);
-                if (cell == null || cell.getInteractableStructure() == null) continue;
-
-                var structure = cell.getInteractableStructure();
-                if (!structure.isAlive()) {
-                    structure.onDestroy(this);
-                    cell.setStructure(null);
-                }
-            }
+        if (waveTimer >= nextWave.getDelay()) {
+            spawnWave(nextWave);
+            nextWaveIndex++;
+            waveTimer = 0;
         }
     }
 
-    public void addZombieProjectile(com.ussr.pvz.model.entities.zombies.projectiles.ZombieProjectile zp) {
-        zombieProjectiles.add(zp);
-        clock.addEntity(zp);
+    private void spawnWave(ZombieWave wave) {
+        if (wave.getWaveZombies() == null) return;
+        for (Zombie zombie : wave.getWaveZombies()) {
+            spawnZombie(zombie);
+        }
     }
 
-    public void registerStructure(InteractableStructure structure) {
-        if (structure == null) return;
-        clock.addEntity(structure);
+    public boolean allWavesSpawned() {
+        return nextWaveIndex >= waves.size();
     }
 
     private void checkZombieBreaches() {
         for (Zombie zombie : zombies) {
-            if (!zombie.isAlive()) continue;
+            if (!zombie.isAlive() || zombie.getPosition() == null) continue;
 
             if (zombie.getPosition().x() < 0.0) {
                 int row = (int) zombie.getPosition().y();
-                LawnMower mower = getMowerForLane(row);
 
-                if (mower != null && !mower.isActivated()) {
-                    mower.activate();
-                    eventBus.publish(new GameEvent.LawnMowerTriggered(row));
-                    eventBus.publish(new GameEvent.ZombieBreachedLane(row));
-                } else if (mower == null) {
+                if (row >= 0 && row < lawnMowerAvailable.length && lawnMowerAvailable[row]) {
+                    lawnMowerAvailable[row] = false;
+                    triggerLawnMower(row);
+                } else {
                     onZombieReachedEnd();
                     break;
                 }
@@ -131,78 +124,36 @@ public class GameSession {
         }
     }
 
-    private LawnMower getMowerForLane(int lane) {
-        return lawnMowers.stream()
-                .filter(m -> m.getLane() == lane)
-                .findFirst()
-                .orElse(null);
-    }
-
-
-    public void spawnZombie(Zombie zombie) {
-        zombies.add(zombie);
-        clock.addEntity(zombie);
-        eventBus.publish(new GameEvent.ZombieSpawned(
-                zombie.getAlias(),
-                (int) zombie.getPosition().y(),
-                (int) zombie.getPosition().x()
-        ));
-    }
-
-
-    public void onZombieReachedEnd() {
-        gameOver = true;
-        eventBus.publish(new GameEvent.ZombieReachedHouse(-1));
-        eventBus.publish(new GameEvent.GameOver());
-    }
-
-    public void notifyPlantDamaged(Plant plant, int damageDealt) {
-        eventBus.publish(new GameEvent.PlantDamaged(
-                plant.getName(),
-                plant.getLocation().y(),
-                plant.getLocation().x(),
-                damageDealt,
-                plant.getHp()
-        ));
-        if (!plant.isAlive()) {
-            eventBus.publish(new GameEvent.PlantDied(
-                    plant.getName(),
-                    plant.getLocation().y(),
-                    plant.getLocation().x()
-            ));
+    private void triggerLawnMower(int row) {
+        for (Zombie zombie : zombies) {
+            if (zombie.isAlive() && zombie.getPosition() != null && (int) zombie.getPosition().y() == row) {
+                zombie.setHp(0);
+            }
         }
     }
 
-    public void notifyPlantPlanted(Plant plant) {
-        eventBus.publish(new GameEvent.PlantPlanted(
-                plant.getName(),
-                plant.getLocation().y(),
-                plant.getLocation().x()
-        ));
+    public void spawnZombie(Zombie zombie) {
+        if (zombie == null) return;
+        zombies.add(zombie);
     }
 
-    public void notifyPlantPlucked(Plant plant) {
-        eventBus.publish(new GameEvent.PlantPlucked(
-                plant.getName(),
-                plant.getLocation().y(),
-                plant.getLocation().x()
-        ));
+    public void onZombieReachedEnd() {
+        gameOver = true;
     }
 
-    public void notifyZombieDied(Zombie zombie) {
-        eventBus.publish(new GameEvent.ZombieDied(
-                zombie.getAlias(),
-                zombie.getPosition().x(),
-                zombie.getPosition().y()
-        ));
+    public void startWaves() {
+        ZombieFactory.init();
+        nextWaveIndex = 0;
+        waveTimer = 0;
+        wavesStarted = true;
     }
 
-    public void notifyGraveDestroyed(int row, int col) {
-        eventBus.publish(new GameEvent.GraveDestroyed(row, col));
+    public boolean isWavesStarted() {
+        return wavesStarted;
     }
 
-    public void notifyStructureDestroyed(String structureType, int row, int col) {
-        eventBus.publish(new GameEvent.StructureDestroyed(structureType, row, col));
+    public boolean areWavesDone() {
+        return wavesStarted && allWavesSpawned() && zombies.isEmpty();
     }
 
     public int getSunCount() {
@@ -219,6 +170,10 @@ public class GameSession {
         return true;
     }
 
+    public int getPlantFoodCount() {
+        return plantFoodCount;
+    }
+
     public void addPlantFood() {
         plantFoodCount++;
     }
@@ -229,57 +184,39 @@ public class GameSession {
         return true;
     }
 
-
     public void killAllZombies() {
-        if (zombies != null) {
-            zombies.forEach(z -> z.isAlive = false);
-            zombies.clear();
-        }
+        zombies.forEach(z -> z.setHp(0));
+        zombies.clear();
     }
 
     public void removeAllCooldowns() {
-        // TODO: implement after plants are handled
+        plants.forEach(p -> p.setInternalTimer(0));
     }
 
-
-    public void startWaves() {
-        ZombieFactory.init();
-
-        if (level == null || level.getWaves() == null) {
-            wavesStarted = true;
-            return;
+    private Plant findPlantAt(double x, double y) {
+        for (Plant plant : plants) {
+            Position loc = plant.getLocation();
+            if (plant.isAlive() && loc != null && loc.x() == x && loc.y() == y) {
+                return plant;
+            }
         }
-        waveScheduler.load(level.getWaves(), lawn != null ? lawn.getCols() : 9);
-        wavesStarted = true;
-        // TODO: implement after zombies are handled
+        return null;
     }
 
-    public boolean isWavesStarted() {
-        return wavesStarted;
-    }
+    public boolean removePlantAt(int x, int y) {
+        Plant plant = findPlantAt(x, y);
+        if (plant == null) return false;
 
-    public boolean areWavesDone() {
-        return wavesStarted && waveScheduler.isDone() && zombies.isEmpty();
+        plant.setAlive(false);
+        plants.remove(plant);
+        return true;
     }
-
 
     public String renderMap() {
-        if (lawn == null) return "map not initialized";
         StringBuilder sb = new StringBuilder();
-        int rows = lawn.getRows();
-        int cols = lawn.getCols();
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
-                var cell = lawn.getCell(r, c);
-                if (cell == null) {
-                    sb.append(".");
-                } else if (cell.getPlant() != null) {
-                    sb.append("P");
-                } else if (cell.getInteractableStructure() instanceof com.ussr.pvz.model.board.structures.Grave) {
-                    sb.append("G");
-                } else {
-                    sb.append(".");
-                }
+                sb.append(findPlantAt(c, r) != null ? "P" : ".");
             }
             sb.append("\n");
         }
@@ -287,11 +224,11 @@ public class GameSession {
     }
 
     public String renderPlantsStatus() {
-        if (plants == null || plants.isEmpty()) return "no plants on the field";
+        if (plants.isEmpty()) return "no plants on the field";
         StringBuilder sb = new StringBuilder();
         for (Plant plant : plants) {
             sb.append(plant.getName())
-                    .append(" | hp: ").append(plant.getHp())
+                    .append(" | hp: ").append(plant.getHP())
                     .append(" | level: ").append(plant.getLevel())
                     .append("\n");
         }
@@ -299,18 +236,12 @@ public class GameSession {
     }
 
     public String renderTileStatus(int row, int col) {
-        if (lawn == null) return "map not initialized";
-        var cell = lawn.getCell(row, col);
-        if (cell == null) return "invalid tile (" + row + ", " + col + ")";
+        Plant plant = findPlantAt(col, row);
         StringBuilder sb = new StringBuilder();
         sb.append("tile (").append(row).append(", ").append(col).append("): ");
 
-        if (cell.getPlant() != null) {
-            sb.append("plant=").append(cell.getPlant().getName())
-                    .append(" hp=").append(cell.getPlant().getHp());
-        } else if (cell.getInteractableStructure() instanceof com.ussr.pvz.model.board.structures.Grave) {
-            var grave = (com.ussr.pvz.model.board.structures.Grave) cell.getInteractableStructure();
-            sb.append("structure=Grave hp=").append(grave.getHp());
+        if (plant != null) {
+            sb.append("plant=").append(plant.getName()).append(" hp=").append(plant.getHP());
         } else {
             sb.append("empty");
         }
@@ -318,54 +249,33 @@ public class GameSession {
     }
 
     public String renderZombiesInfo() {
-        if (zombies == null || zombies.isEmpty()) return "no zombies on the field";
+        if (zombies.isEmpty()) return "no zombies on the field";
         StringBuilder sb = new StringBuilder();
         for (Zombie zombie : zombies) {
-            sb.append(zombie.toString()).append("\n");
+            sb.append(zombie.getName())
+                    .append(" | hp: ").append(zombie.getHp())
+                    .append(" | row: ").append((int) zombie.getPosition().y())
+                    .append("\n");
         }
         return sb.toString().trim();
-    }
-
-
-    public boolean removePlantAt(int x, int y) {
-        Plant.Location targetLoc = new Plant.Location(x, y);
-
-        Optional<Plant> plantOpt = plants.stream()
-                .filter(p -> p.isAlive() && targetLoc.equals(p.getLocation()))
-                .findFirst();
-
-        if (plantOpt.isEmpty()) return false;
-
-        Plant plant = plantOpt.get();
-        plant.setAlive(false);
-        plants.remove(plant);
-        notifyPlantPlucked(plant);
-
-        if (lawn != null) {
-            var cell = lawn.getCell(y, x);
-            if (cell != null && cell.getPlant() == plant) {
-                cell.setPlant(null);
-            }
-        }
-
-        return true;
-    }
-
-
-    public GameEventBus getEventBus() {
-        return eventBus;
     }
 
     public boolean isGameOver() {
         return gameOver;
     }
 
-    public LawnMower getLawn() {
-        return lawn;
+    public boolean isGameWon() {
+        return gameWon;
     }
 
-    public void setLawn(Lawn lawn) {
-        this.lawn = lawn;
+    public int getRows() { return rows; }
+    public int getCols() { return cols; }
+
+    public void setGridSize(int rows, int cols) {
+        this.rows = rows;
+        this.cols = cols;
+        this.lawnMowerAvailable = new boolean[rows];
+        Arrays.fill(lawnMowerAvailable, true);
     }
 
     public List<Plant> getPlants() {
@@ -392,11 +302,17 @@ public class GameSession {
         this.level = level;
     }
 
-    public List<GroundItem> getItems() {
+    public void setWaves(List<ZombieWave> waves) {
+        this.waves = waves != null ? waves : new ArrayList<>();
+        this.nextWaveIndex = 0;
+        this.waveTimer = 0;
+    }
+
+    public List<Item> getItems() {
         return items;
     }
 
-    public void setItems(List<GroundItem> items) {
+    public void setItems(List<Item> items) {
         this.items = items;
     }
 

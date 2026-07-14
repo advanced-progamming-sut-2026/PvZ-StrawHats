@@ -98,10 +98,5 @@ public class PlantFactory {
 
     private static class GenericPlant extends Plant {
         public GenericPlant(String name, Position position, int HP) { super(name, position, HP); }
-
-        @Override
-        public void tick() {
-
-        }
     }
 }

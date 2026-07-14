@@ -1,7 +1,5 @@
 package model.collections.plant;
 
-package model.collections.plant;
-
 public class ModifiableStat {
     private float baseValue;
     private float currentValue;

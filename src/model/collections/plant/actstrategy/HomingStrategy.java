@@ -1,11 +1,13 @@
 package model.collections.plant.actstrategy;
 
-
 import model.collections.plant.Plant;
 import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
+import model.projectile.StraightMove;
+import model.projectile.hit.NormalHit;
+import model.projectile.hit.PierceHit;
 import util.GameSession;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public class HomingStrategy implements ActStrategy {
     }
 
     private Projectile buildProjectile(Plant user, Zombie target, boolean isMagic) {
-        Position velocity = new Vec2(20, 0);
+        Position velocity = new Position(20, 0);
 
         if (isMagic) {
             int pierceCount = (int) user.getAbilityValue();

@@ -5,6 +5,13 @@ import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
+import model.projectile.StraightMove;
+import model.projectile.hit.FireHit;
+import model.projectile.hit.HitEffectStrategy;
+import model.projectile.hit.IceHit;
+import model.projectile.hit.NormalHit;
+import model.projectile.hit.PierceHit;
+import model.projectile.hit.PoisonHit;
 import util.GameSession;
 
 import java.util.List;
@@ -16,7 +23,6 @@ public class ShootStrategy implements ActStrategy {
         if (user.getIntervalTimer() > 0) return;
 
         List<Position> vectors = user.getShootingVectors();
-
         if (vectors == null || vectors.isEmpty()) return;
 
         boolean anyTarget = vectors.stream()
@@ -44,16 +50,16 @@ public class ShootStrategy implements ActStrategy {
         user.setInternalTimer(user.getActionInterval());
     }
 
-
     private HitEffectStrategy buildHitEffect(Plant user) {
-        if (user.getTags().contains(PlantTag.FIRE)) return new FireHit(1);
-        if (user.getTags().contains(PlantTag.ICE)) return new IceHit(1);
-        if (user.getTags().contains(PlantTag.POISON)) return new PoisonHit(1);
-        return new NormalHit(1);
+        int areaLength = user.getTags().contains(PlantTag.AOE) ? 3 : 1;
+        if (user.getTags().contains(PlantTag.FIRE)) return new FireHit(areaLength);
+        if (user.getTags().contains(PlantTag.ICE)) return new IceHit(areaLength);
+        if (user.getTags().contains(PlantTag.POISON)) return new PoisonHit(areaLength);
+        if (user.getTags().contains(PlantTag.PIERCE)) return new PierceHit(-1);
+        return new NormalHit(areaLength);
     }
 
-
-    private Zombie findTargetAlongVector(Plant user, Vec2 direction, GameSession session) {
+    private Zombie findTargetAlongVector(Plant user, Position direction, GameSession session) {
         Position origin = user.getPosition();
         double dx = direction.x();
         double dy = direction.y();
@@ -63,6 +69,7 @@ public class ShootStrategy implements ActStrategy {
         for (Zombie zombie : session.getZombies()) {
             if (zombie == null || !zombie.isAlive()) continue;
             Position zp = zombie.getPosition();
+            if (zp == null) continue;
 
             double relX = zp.x() - origin.x();
             double relY = zp.y() - origin.y();
@@ -76,7 +83,6 @@ public class ShootStrategy implements ActStrategy {
         }
         return nearest;
     }
-
 
     private boolean isInCone(double relX, double relY, double dx, double dy) {
         double dirLen = Math.sqrt(dx * dx + dy * dy);
