@@ -7,7 +7,7 @@ import model.projectile.Projectile;
 import model.projectile.hit.FireHit;
 import model.projectile.hit.IceHit;
 import model.projectile.hit.PoisonHit;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 

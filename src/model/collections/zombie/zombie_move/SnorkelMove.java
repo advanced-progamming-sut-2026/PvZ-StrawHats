@@ -4,7 +4,7 @@ import model.collections.zombie.VulnerabilityType;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieState;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class SnorkelMove implements MoveBehavior {
 

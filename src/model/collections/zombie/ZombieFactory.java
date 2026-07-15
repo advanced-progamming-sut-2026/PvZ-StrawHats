@@ -11,7 +11,7 @@ import model.collections.zombie.zombie_effect.EffectStatusRegistry;
 import model.collections.zombie.zombie_move.MoveBehaviorRegistry;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

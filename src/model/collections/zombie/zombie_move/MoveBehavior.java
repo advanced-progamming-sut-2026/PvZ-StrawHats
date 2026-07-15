@@ -3,11 +3,11 @@ package model.collections.zombie.zombie_move;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
 import model.pitches.LawnMower;
-import util.GameSession;
+import model.utils.GameSession;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 public interface MoveBehavior {
     void move(Zombie zombie, double deltaTime, GameSession session);

@@ -1,6 +1,6 @@
 package model.collections.plant;
 
-import util.GameSession;
+import model.utils.GameSession;
 
 public interface PlantFoodEffect {
     void triggerSuperpower(Plant plant, GameSession session);

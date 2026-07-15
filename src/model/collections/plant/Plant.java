@@ -7,6 +7,7 @@ import model.match_mechanisms.Pluck;
 import model.match_mechanisms.vector.Position;
 import model.collections.zombie.Zombie;
 import model.collections.armour.PlantArmour;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void tick() {
     }
 
-    public void tick(double deltaTimeSeconds, util.GameSession session) {
+    public void tick(double deltaTimeSeconds, GameSession session) {
         if (state == PlantState.INCAPACITATED) return;
 
         if (hpStat != null) hpStat.update((float) deltaTimeSeconds);

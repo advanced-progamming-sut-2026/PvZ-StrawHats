@@ -4,7 +4,7 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 public class ExplodeStrategy implements ActStrategy{

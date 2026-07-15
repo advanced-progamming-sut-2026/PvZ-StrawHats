@@ -8,7 +8,7 @@ import model.projectile.Projectile;
 import model.projectile.StraightMove;
 import model.projectile.hit.NormalHit;
 import model.projectile.hit.PierceHit;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;

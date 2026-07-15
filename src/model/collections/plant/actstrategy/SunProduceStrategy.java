@@ -3,7 +3,7 @@ package model.collections.plant.actstrategy;
 import model.collections.item.GroundSun;
 import model.collections.plant.Plant;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class SunProduceStrategy implements ActStrategy {
     @Override

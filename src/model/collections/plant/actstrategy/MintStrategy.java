@@ -1,7 +1,7 @@
 package model.collections.plant.actstrategy;
 
 import model.collections.plant.Plant;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class MintStrategy implements ActStrategy {
     @Override

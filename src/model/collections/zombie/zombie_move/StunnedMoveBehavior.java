@@ -1,7 +1,7 @@
 package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class StunnedMoveBehavior implements MoveBehavior {
     private final MoveBehavior restoredBehavior;

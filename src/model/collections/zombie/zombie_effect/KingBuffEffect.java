@@ -4,7 +4,7 @@ import model.collections.armour.Armour;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class KingBuffEffect implements ZombieEffectStatus {
     private final double coronationCooldown;

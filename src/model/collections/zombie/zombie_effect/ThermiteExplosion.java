@@ -4,7 +4,7 @@ import model.collections.Faction;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class ThermiteExplosion implements ZombieEffectStatus {
     private double fuseElapsed = 0.0;

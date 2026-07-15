@@ -2,7 +2,7 @@ package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class SprintMove implements MoveBehavior {
     private final double sprintMultiplier;

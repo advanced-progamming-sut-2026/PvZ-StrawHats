@@ -11,7 +11,7 @@ import model.collections.zombie.zombie_move.MoveBehavior;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 import model.projectile.Projectile;
 import model.projectile.ArcMove;
 import model.collections.zombie.zombie_move.*;

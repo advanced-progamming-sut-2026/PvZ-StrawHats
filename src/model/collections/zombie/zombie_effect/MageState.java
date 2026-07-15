@@ -5,7 +5,7 @@ import model.collections.Item;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 import java.util.List;

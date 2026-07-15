@@ -6,7 +6,7 @@ import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
 import model.pitches.LawnMower;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,8 @@ import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
-import util.GameSession;
+import model.utils.GameSession;
+
 
 public class JesterDeflection implements DefenseBehavior {
     public static final double SPIN_PERIOD = 1.0;
