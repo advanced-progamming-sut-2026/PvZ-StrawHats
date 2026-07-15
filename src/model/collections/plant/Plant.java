@@ -39,7 +39,12 @@ public abstract class Plant extends Item implements Pluck, Attack {
 
     private PlantArmour armor;
 
-    public enum PlantState { ACTIVE, INCAPACITATED, PREPPING, DYING }
+    public enum PlantState {
+        ACTIVE,
+        INCAPACITATED,
+        PREPPING,
+        DYING
+    }
     private PlantState state = PlantState.ACTIVE;
     private final List<String> rawUpgrades = new ArrayList<>();
     private List<Position> shootingVectors = new ArrayList<>();
@@ -156,4 +161,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setShootingVectors(List<Position> shootingVectors) { this.shootingVectors = shootingVectors; }
     public PlantArmour getArmor() { return armor; }
     public void setArmor(PlantArmour armor) { this.armor = armor; }
+    public void setState(PlantState state) {
+        this.state = state;
+    }
 }
