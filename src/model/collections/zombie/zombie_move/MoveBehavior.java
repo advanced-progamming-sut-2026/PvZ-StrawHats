@@ -5,7 +5,9 @@ import model.pitches.Cell;
 import model.pitches.LawnMower;
 import model.utils.GameSession;
 
+import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
+import model.utils.GameSession;
 
 public interface MoveBehavior {
     void move(Zombie zombie, double deltaTime, GameSession session);

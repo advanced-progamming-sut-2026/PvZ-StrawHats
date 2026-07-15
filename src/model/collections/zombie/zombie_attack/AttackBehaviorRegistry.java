@@ -1,6 +1,7 @@
 package model.collections.zombie.zombie_attack;
 
 import java.util.Map;
+import model.utils.GameSession;
 
 public class AttackBehaviorRegistry {
     public static AttackBehavior create(Object spec, Map<String, Object> data) {

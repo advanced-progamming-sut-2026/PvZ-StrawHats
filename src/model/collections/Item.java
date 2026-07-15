@@ -1,7 +1,6 @@
 package model.collections;
 
 import model.match_mechanisms.vector.Position;
-
 import model.utils.state.ItemState;
 
 

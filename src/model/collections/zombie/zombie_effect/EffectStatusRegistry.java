@@ -6,7 +6,6 @@ public class EffectStatusRegistry {
     public static ZombieEffectStatus createOrNull(Object spec, Map<String, Object> data) {
         if (spec == null) return null;
         return (zombie, session) -> {
-            // افکت‌های خاص زامبی در هر تیک
         };
     }
 }
