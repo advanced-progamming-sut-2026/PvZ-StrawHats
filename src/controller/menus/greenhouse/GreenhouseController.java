@@ -13,8 +13,8 @@ import model.greenhouse.Pot;
 import model.greenhouse.PotPlant;
 import model.user_data.User;
 import model.user_data.UserState;
-import model.utils.App;
-import model.utils.Regex;
+import model.App;
+import model.Regex;
 
 import java.util.ArrayList;
 import java.util.List;

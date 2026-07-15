@@ -1,16 +1,34 @@
 package model.match_mechanisms;
 
 import model.collections.zombie.Zombie;
+import model.utils.GameSession;
 
 import java.util.List;
 
+/** Represents a single wave of zombies in a level.and a list of zombies that spawn together. */
 public class ZombieWave {
+    private double delay;          // seconds after previous wave
     private List<Zombie> waveZombies;
-    private int delay;
-    private int waveTurn;
+    private boolean isFinalWave;   // optional flag for the last wave
 
-    public void startWave() {
+    public ZombieWave(double delay, List<Zombie> waveZombies) {
+        this.delay = delay;
+        this.waveZombies = waveZombies;
+        this.isFinalWave = false;
+    }
 
+    public ZombieWave(double delay, List<Zombie> waveZombies, boolean isFinalWave) {
+        this.delay = delay;
+        this.waveZombies = waveZombies;
+        this.isFinalWave = isFinalWave;
+    }
+
+    public double getDelay() {
+        return delay;
+    }
+
+    public void setDelay(double delay) {
+        this.delay = delay;
     }
 
     public List<Zombie> getWaveZombies() {
@@ -21,19 +39,29 @@ public class ZombieWave {
         this.waveZombies = waveZombies;
     }
 
-    public int getDelay() {
-        return delay;
+    public boolean isFinalWave() {
+        return isFinalWave;
     }
 
-    public void setDelay(int delay) {
-        this.delay = delay;
+    public void setFinalWave(boolean isFinalWave) {
+        this.isFinalWave = isFinalWave;
     }
 
-    public int getWaveTurn() {
-        return waveTurn;
+    /**
+     * Returns the total "cost" or difficulty of this wave.
+     * Can be used for wave difficulty calculations.
+     */
+    public int getWaveCost() {
+        if (waveZombies == null) return 0;
+        return waveZombies.stream().mapToInt(GameSession.difficulty).sum();
     }
 
-    public void setWaveTurn(int waveTurn) {
-        this.waveTurn = waveTurn;
+    @Override
+    public String toString() {
+        return "ZombieWave{" +
+                "delay=" + delay +
+                ", zombieCount=" + (waveZombies != null ? waveZombies.size() : 0) +
+                ", final=" + isFinalWave +
+                '}';
     }
 }

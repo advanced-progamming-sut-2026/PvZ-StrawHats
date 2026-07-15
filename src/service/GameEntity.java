@@ -9,6 +9,10 @@ public class GameEntity extends Time {
 
     protected boolean isAlive = true;
 
+    public GameEntity(double seconds) {
+        super(seconds);
+    }
+
     public void tick() {
 
     }

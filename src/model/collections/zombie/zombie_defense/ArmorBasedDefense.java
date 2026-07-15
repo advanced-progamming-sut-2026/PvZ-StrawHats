@@ -2,7 +2,7 @@ package model.collections.zombie.zombie_defense;
 
 import model.collections.armour.Armour;
 import model.collections.zombie.Zombie;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class ArmorBasedDefense implements DefenseBehavior {
 

@@ -4,7 +4,7 @@ import model.collections.Faction;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class SunThief implements ZombieEffectStatus {
     private static final double GRAB_PERIOD = 5.0;

@@ -1,7 +1,7 @@
 package controller.menus.match;
 
 import controller.menus.Menu;
-import model.utils.Regex;
+import model.Regex;
 
 public class Before extends Menu {
 

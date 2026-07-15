@@ -2,7 +2,7 @@ package model.collections;
 
 import model.match_mechanisms.vector.Position;
 
-import util.state.ItemState;
+import model.utils.state.ItemState;
 
 
 public abstract class Item {

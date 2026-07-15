@@ -1,8 +1,7 @@
 package view.menus.while_match;
 
-import controller.menus.authentication.SignupMenu;
 import controller.menus.match.Before;
-import model.utils.Regex;
+import model.Regex;
 import view.menus.MenuView;
 
 public class BeforeMatchView extends MenuView {

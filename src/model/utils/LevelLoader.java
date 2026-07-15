@@ -118,7 +118,7 @@ public class LevelLoader {
             if (raw.has("conveyorPlants")) {
                 raw.get("conveyorPlants").getAsJsonArray().forEach(e -> {
                     String plantType = e.getAsString();
-                    Plant p = PlantFactory.createPlant(, level.getId(), 0); //TODO: fix this
+                    Plant p = PlantFactory.createPlant(0, level.getId(), new Position(9, 0)); //TODO: fix this
                     conveyorPlants.add(p);
                 });
             }

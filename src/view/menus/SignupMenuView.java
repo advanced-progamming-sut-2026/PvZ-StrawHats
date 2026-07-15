@@ -1,7 +1,7 @@
 package view.menus;
 
 import controller.menus.authentication.SignupMenu;
-import model.utils.Regex;
+import model.Regex;
 
 public class SignupMenuView extends MenuView {
 

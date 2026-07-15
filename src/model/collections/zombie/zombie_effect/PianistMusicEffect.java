@@ -3,7 +3,7 @@ package model.collections.zombie.zombie_effect;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class PianistMusicEffect implements ZombieEffectStatus {
     private final double tempoDelay;

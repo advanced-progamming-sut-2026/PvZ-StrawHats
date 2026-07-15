@@ -1,6 +1,6 @@
 package view;
 
-import model.utils.App;
+import model.App;
 import view.menus.*;
 import view.menus.collection_view.CollectionMenuView;
 import view.menus.while_match.BeforeMatchView;

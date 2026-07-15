@@ -1,7 +1,7 @@
 package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class StationaryMove implements MoveBehavior {
     @Override

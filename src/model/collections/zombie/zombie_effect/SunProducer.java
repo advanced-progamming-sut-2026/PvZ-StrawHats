@@ -4,7 +4,7 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.sun.Sun;
 import model.match_mechanisms.sun.SunFactory;
 import service.GameClock;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class SunProducer implements ZombieEffectStatus {
     private double activeGenerationRate = 10.0;

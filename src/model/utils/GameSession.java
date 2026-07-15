@@ -5,6 +5,7 @@ import model.collections.item.GroundPlantFood;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
+import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match.main.levels.Level;
 import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
@@ -16,9 +17,11 @@ import service.GameClock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 public class GameSession {
 
+    public static ToIntFunction<? super Zombie> difficulty;
     private final GameClock clock = new GameClock();
 
     private List<Plant> plants = new ArrayList<>();
@@ -47,6 +50,9 @@ public class GameSession {
 
     public GameSession(int rows, int cols) {
         setGridSize(rows, cols);
+    }
+
+    public static GameSession getInstance() {
     }
 
     public void setGridSize(int rows, int cols) {
@@ -357,5 +363,18 @@ public class GameSession {
 
     public double getElapsedSeconds() {
         return clock.getElapsedSeconds();
+    }
+
+    public LawnMower getLawn() {
+        
+    }
+
+    public int getDifficultyLevel() {
+    }
+
+    public void registerStructure(PushableStructure structure) {
+    }
+
+    public void notifyZombieDied(Zombie zombie, String poison) {
     }
 }

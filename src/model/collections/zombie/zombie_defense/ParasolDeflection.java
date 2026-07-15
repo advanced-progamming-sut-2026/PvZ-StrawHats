@@ -3,7 +3,7 @@ package model.collections.zombie.zombie_defense;
 import model.collections.zombie.Zombie;
 import model.projectile.ArcMove;
 import model.projectile.Projectile;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class ParasolDeflection implements DefenseBehavior {
 

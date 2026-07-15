@@ -1,9 +1,8 @@
 package controller.menus;
 
 import controller.menus.authentication.SignupMenu;
-import model.utils.App;
-import model.utils.Regex;
-import view.menus.MenuView;
+import model.App;
+import model.Regex;
 
 import java.util.regex.Matcher;
 

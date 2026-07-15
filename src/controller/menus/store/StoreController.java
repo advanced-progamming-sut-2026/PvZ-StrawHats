@@ -7,8 +7,8 @@ import model.collections.plant.PlantJsonParser;
 import model.greenhouse.store.Store;
 import model.user_data.User;
 import model.user_data.UserState;
-import model.utils.App;
-import model.utils.Regex;
+import model.App;
+import model.Regex;
 
 import java.util.Map;
 import java.util.regex.Matcher;

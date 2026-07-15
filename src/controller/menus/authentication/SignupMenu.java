@@ -3,12 +3,12 @@ package controller.menus.authentication;
 import controller.menus.Menu;
 import model.game_exceptions.GameException;
 import model.user_data.User;
-import model.utils.Regex;
+import model.Regex;
 
 import java.util.List;
 import java.util.regex.Matcher;
 
-import static model.utils.App.currentMenu;
+import static model.App.currentMenu;
 
 public class SignupMenu extends Menu {
 

@@ -4,5 +4,4 @@ public enum ZombieState {
     WALKING,
     EATING,
     DEAD
-
 }

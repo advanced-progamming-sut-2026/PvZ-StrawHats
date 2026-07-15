@@ -3,11 +3,11 @@ package controller.menus.authentication;
 import controller.menus.Menu;
 import controller.menus.MainMenu;
 import model.user_data.User;
-import model.utils.Regex;
+import model.Regex;
 
 import java.util.regex.Matcher;
 
-import static model.utils.App.currentMenu;
+import static model.App.currentMenu;
 
 public class LoginMenu extends Menu {
 

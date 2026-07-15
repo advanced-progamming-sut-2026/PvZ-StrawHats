@@ -2,7 +2,7 @@ package model.collections;
 
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
-import util.GameSession;
+import model.utils.GameSession;
 
 public enum Faction {
     ZOMBIES,

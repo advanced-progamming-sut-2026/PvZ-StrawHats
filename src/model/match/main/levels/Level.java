@@ -2,7 +2,7 @@ package model.match.main.levels;
 
 import model.match.main.season.Season;
 import model.match_mechanisms.ZombieWave;
-import util.GameSession;
+import model.utils.GameSession;
 import java.util.List;
 
 public abstract class Level {
@@ -15,6 +15,11 @@ public abstract class Level {
     protected List<ZombieWave> waves;
     protected List<String> availablePlants;
     protected List<String> forcedPlants;
+
+    // Tide support (used for Big Wave Beach)
+    protected int currentTideColumn = 0;      // 0 = no water, >0 = water covers that many columns from right
+    protected double tideTimer = 0;
+    protected int maxTideColumn = 3;          // default, can be overridden per level
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -35,5 +40,26 @@ public abstract class Level {
     public List<String> getForcedPlants() { return forcedPlants; }
     public void setForcedPlants(List<String> forcedPlants) { this.forcedPlants = forcedPlants; }
 
-    public void initSpecial(GameSession session) {}
+    // ---- Tide ----
+    public int getCurrentTideColumn() { return currentTideColumn; }
+    public void setCurrentTideColumn(int currentTideColumn) { this.currentTideColumn = currentTideColumn; }
+    public int getMaxTideColumn() { return maxTideColumn; }
+    public void setMaxTideColumn(int maxTideColumn) { this.maxTideColumn = maxTideColumn; }
+
+    /**
+     * Update tide level based on elapsed time.
+     * Override in Beach levels to implement dynamic tide changes.
+     * Default does nothing (no tide).
+     */
+    public void updateTide(double deltaSeconds, GameSession session) {
+        // Default: no tide
+    }
+
+    /**
+     * Called when the level is loaded into GameSession.
+     * Override to place forced plants, set initial tide, etc.
+     */
+    public void initSpecial(GameSession session) {
+        // default no‑op
+    }
 }

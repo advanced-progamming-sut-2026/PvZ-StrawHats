@@ -2,7 +2,7 @@ package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class ProspectorMove implements MoveBehavior {
     private enum DynamiteState {

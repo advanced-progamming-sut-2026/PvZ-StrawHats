@@ -1,6 +1,7 @@
 package controller.menus;
 
-import model.utils.Regex;
+import model.App;
+import model.Regex;
 
 public class GameMenu extends Menu{
 
@@ -22,7 +23,7 @@ public class GameMenu extends Menu{
         } else if (Regex.MENU_LEADERBOARD.getMatcherRaw(text).matches()) {
 
         } else if (Regex.MENU_GREENHOUSE.getMatcherRaw(text).matches()) {
-            model.utils.App.currentMenu = new controller.menus.greenhouse.GreenhouseController();
+            App.currentMenu = new controller.menus.greenhouse.GreenhouseController();
         } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
 
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {

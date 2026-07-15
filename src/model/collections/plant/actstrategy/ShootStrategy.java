@@ -12,7 +12,7 @@ import model.projectile.hit.IceHit;
 import model.projectile.hit.NormalHit;
 import model.projectile.hit.PierceHit;
 import model.projectile.hit.PoisonHit;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.List;
 

@@ -3,7 +3,7 @@ package model.collections.plant.actstrategy;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import util.GameSession;
+import model.utils.GameSession;
 
 import java.util.ArrayList;
 

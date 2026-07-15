@@ -1,8 +1,7 @@
 package view.menus;
 
 import controller.menus.GameMenu;
-import controller.menus.authentication.SignupMenu;
-import model.utils.Regex;
+import model.Regex;
 
 public class GameMenuView extends MenuView{
     @Override

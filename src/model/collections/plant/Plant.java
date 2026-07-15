@@ -70,7 +70,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void tick() {
     }
 
-    public void tick(double deltaTimeSeconds, util.GameSession session) {
+    public void tick(double deltaTimeSeconds, model.utils.GameSession session) {
         if (state == PlantState.INCAPACITATED) return;
 
         if (hpStat != null) hpStat.update((float) deltaTimeSeconds);

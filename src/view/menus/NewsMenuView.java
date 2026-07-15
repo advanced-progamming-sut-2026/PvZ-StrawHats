@@ -1,7 +1,7 @@
 package view.menus;
 
 import controller.menus.NewsMenu;
-import model.utils.Regex;
+import model.Regex;
 
 public class NewsMenuView extends MenuView{
     @Override

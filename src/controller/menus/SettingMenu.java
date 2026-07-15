@@ -1,6 +1,6 @@
 package controller.menus;
 
-import model.utils.Regex;
+import model.Regex;
 
 public class SettingMenu extends Menu{
 

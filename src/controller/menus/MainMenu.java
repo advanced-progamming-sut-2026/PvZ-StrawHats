@@ -1,11 +1,8 @@
 package controller.menus;
 
 import controller.menus.authentication.LoginMenu;
-import model.utils.App;
-import model.utils.Regex;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import model.App;
+import model.Regex;
 
 public class MainMenu extends Menu{
 

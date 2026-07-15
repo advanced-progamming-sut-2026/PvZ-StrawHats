@@ -6,7 +6,7 @@ import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
 import model.projectile.StraightMove;
 import model.projectile.hit.PierceHit;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class StrikeStrategy implements ActStrategy {
 

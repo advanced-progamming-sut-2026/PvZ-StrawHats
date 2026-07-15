@@ -1,7 +1,7 @@
 package view.menus;
 
 import controller.menus.SettingMenu;
-import model.utils.Regex;
+import model.Regex;
 
 public class SettingMenuView extends MenuView{
     @Override

@@ -1,10 +1,11 @@
 package model.match_mechanisms;
 
 public class Time {
+    // ---- Global game tick (static) ----
     private static int tick;
 
     public static void update(int amount) {
-
+        tick += amount;
     }
 
     public static int getTick() {
@@ -13,5 +14,46 @@ public class Time {
 
     public static void setTick(int tick) {
         Time.tick = tick;
+    }
+
+    // ---- Instance timer (for level timers, e.g., TimedWar) ----
+    private double secondsRemaining;
+    private boolean running = false;
+
+    public Time(double seconds) {
+        this.secondsRemaining = seconds;
+        this.running = true;
+    }
+
+    /**
+     * Decrease the timer by delta seconds.
+     * @param delta seconds elapsed
+     */
+    public void tick(double delta) {
+        if (running && secondsRemaining > 0) {
+            secondsRemaining -= delta;
+            if (secondsRemaining < 0) secondsRemaining = 0;
+        }
+    }
+
+    public double getSecondsRemaining() {
+        return secondsRemaining;
+    }
+
+    public boolean isZero() {
+        return secondsRemaining <= 0;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public void reset(double seconds) {
+        this.secondsRemaining = seconds;
+        this.running = true;
     }
 }

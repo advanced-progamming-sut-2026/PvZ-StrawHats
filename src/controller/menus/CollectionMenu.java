@@ -1,7 +1,7 @@
 package controller.menus;
 
 import model.collections.plant.Plant;
-import model.utils.Regex;
+import model.Regex;
 
 import java.util.List;
 

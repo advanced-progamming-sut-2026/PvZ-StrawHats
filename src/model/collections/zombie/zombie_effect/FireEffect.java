@@ -1,9 +1,10 @@
 package model.collections.zombie.zombie_effect;
 
+import model.collections.Faction;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
-import util.GameSession;
+import model.utils.GameSession;
 
 public class FireEffect implements ZombieEffectStatus {
     private boolean activeFlame = true;
