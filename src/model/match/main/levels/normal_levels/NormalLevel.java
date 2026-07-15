@@ -1,4 +1,7 @@
 package model.match.main.levels.normal_levels;
 
-public enum NormalLevel {
+import model.match.main.levels.Level;
+
+public class NormalLevel extends Level {
+    public NormalLevel() {}
 }
