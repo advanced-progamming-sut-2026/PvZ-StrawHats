@@ -8,11 +8,13 @@ import model.collections.zombie.ZombieFactory;
 import model.match.main.levels.Level;
 import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
+import model.pitches.Cell;
+import model.pitches.Environment;
+import model.pitches.LawnMower;
 import model.projectile.Projectile;
 import service.GameClock;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class GameSession {
@@ -33,15 +35,27 @@ public class GameSession {
     private int sunCount;
     private int plantFoodCount;
 
-    private int rows = 5;
-    private int cols = 9;
-    private boolean[] lawnMowerAvailable = new boolean[rows];
+    private Environment environment;
+    private LawnMower[] lawnMowers;
 
     private boolean gameOver = false;
     private boolean gameWon = false;
 
     public GameSession() {
-        Arrays.fill(lawnMowerAvailable, true);
+        this(5, 9);
+    }
+
+    public GameSession(int rows, int cols) {
+        setGridSize(rows, cols);
+    }
+
+    public void setGridSize(int rows, int cols) {
+        this.environment = new Environment(rows, cols);
+        this.lawnMowers = new LawnMower[rows];
+        for (int r = 0; r < rows; r++) {
+            lawnMowers[r] = new LawnMower(r);
+            lawnMowers[r].setRow(environment.getRowCells(r));
+        }
     }
 
     public void tick() {
@@ -70,6 +84,9 @@ public class GameSession {
             }
         }
 
+        clearDeadPlantsFromGrid();
+        refreshZombieOccupancy();
+
         plants.removeIf(p -> !p.isAlive());
         zombies.removeIf(z -> !z.isAlive());
         items.removeIf(i -> !i.isAlive());
@@ -79,6 +96,32 @@ public class GameSession {
 
         if (wavesStarted && allWavesSpawned() && zombies.isEmpty() && !gameOver) {
             gameWon = true;
+        }
+    }
+
+    private void clearDeadPlantsFromGrid() {
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                Cell cell = environment.getCell(r, c);
+                if (cell.getPlant() != null && !cell.getPlant().isAlive()) {
+                    cell.setPlant(null);
+                }
+            }
+        }
+    }
+
+    private void refreshZombieOccupancy() {
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                environment.getCell(r, c).clearZombies();
+            }
+        }
+        for (Zombie zombie : zombies) {
+            if (!zombie.isAlive() || zombie.getPosition() == null) continue;
+            int col = (int) Math.round(zombie.getPosition().x());
+            int row = (int) Math.round(zombie.getPosition().y());
+            Cell cell = environment.getCell(row, col);
+            if (cell != null) cell.addZombie(zombie);
         }
     }
 
@@ -111,23 +154,14 @@ public class GameSession {
             if (!zombie.isAlive() || zombie.getPosition() == null) continue;
 
             if (zombie.getPosition().x() < 0.0) {
-                int row = (int) zombie.getPosition().y();
+                int row = (int) Math.round(zombie.getPosition().y());
+                if (row < 0 || row >= lawnMowers.length) continue;
 
-                if (row >= 0 && row < lawnMowerAvailable.length && lawnMowerAvailable[row]) {
-                    lawnMowerAvailable[row] = false;
-                    triggerLawnMower(row);
-                } else {
+                boolean survived = lawnMowers[row].killZombiesInRow();
+                if (!survived) {
                     onZombieReachedEnd();
-                    break;
+                    return;
                 }
-            }
-        }
-    }
-
-    private void triggerLawnMower(int row) {
-        for (Zombie zombie : zombies) {
-            if (zombie.isAlive() && zombie.getPosition() != null && (int) zombie.getPosition().y() == row) {
-                zombie.setHp(0);
             }
         }
     }
@@ -193,30 +227,37 @@ public class GameSession {
         plants.forEach(p -> p.setInternalTimer(0));
     }
 
-    private Plant findPlantAt(double x, double y) {
-        for (Plant plant : plants) {
-            Position loc = plant.getLocation();
-            if (plant.isAlive() && loc != null && loc.x() == x && loc.y() == y) {
-                return plant;
-            }
-        }
-        return null;
+    public boolean plantAt(int row, int col, Plant plant) {
+        Cell cell = environment.getCell(row, col);
+        if (cell == null || cell.hasPlant() || plant == null) return false;
+
+        cell.setPlant(plant);
+        plant.setPosition(new Position(col, row));
+        plants.add(plant);
+        return true;
     }
 
-    public boolean removePlantAt(int x, int y) {
-        Plant plant = findPlantAt(x, y);
-        if (plant == null) return false;
+    public boolean removePlantAt(int row, int col) {
+        Cell cell = environment.getCell(row, col);
+        if (cell == null || !cell.hasPlant()) return false;
 
+        Plant plant = cell.getPlant();
         plant.setAlive(false);
+        cell.setPlant(null);
         plants.remove(plant);
         return true;
     }
 
+    private Plant findPlantAt(int row, int col) {
+        Cell cell = environment.getCell(row, col);
+        return (cell != null && cell.hasPlant()) ? cell.getPlant() : null;
+    }
+
     public String renderMap() {
         StringBuilder sb = new StringBuilder();
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                sb.append(findPlantAt(c, r) != null ? "P" : ".");
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                sb.append(findPlantAt(r, c) != null ? "P" : ".");
             }
             sb.append("\n");
         }
@@ -236,7 +277,7 @@ public class GameSession {
     }
 
     public String renderTileStatus(int row, int col) {
-        Plant plant = findPlantAt(col, row);
+        Plant plant = findPlantAt(row, col);
         StringBuilder sb = new StringBuilder();
         sb.append("tile (").append(row).append(", ").append(col).append("): ");
 
@@ -268,15 +309,9 @@ public class GameSession {
         return gameWon;
     }
 
-    public int getRows() { return rows; }
-    public int getCols() { return cols; }
-
-    public void setGridSize(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
-        this.lawnMowerAvailable = new boolean[rows];
-        Arrays.fill(lawnMowerAvailable, true);
-    }
+    public int getRows() { return environment.getRows(); }
+    public int getCols() { return environment.getCols(); }
+    public Environment getEnvironment() { return environment; }
 
     public List<Plant> getPlants() {
         return plants;
