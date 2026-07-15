@@ -1,0 +1,93 @@
+package model.collections.zombie.zombie_effect;
+
+import model.collections.Faction;
+import model.collections.Item;
+import model.collections.plant.Plant;
+import model.collections.zombie.Zombie;
+import service.GameClock;
+import util.GameSession;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MageState implements ZombieEffectStatus {
+    private final double hexCooldown;
+    private double spellTimer = 0.0;
+
+    private final List<Item> hexedTargetsList = new ArrayList<>();
+    private boolean isDispellCompleted = false;
+
+    public MageState(double hexCooldown) {
+        this.hexCooldown = hexCooldown;
+    }
+
+    @Override
+    public void applyTickEffect(Zombie spellcaster, GameSession session) {
+        if (!spellcaster.isAlive()) {
+            if (!isDispellCompleted) {
+                for (Item targetedCursed : hexedTargetsList) {
+                    if (targetedCursed.isAlive()) {
+                        if (targetedCursed instanceof Plant vegetation) {
+                            vegetation.setState(Plant.PlantState.ACTIVE);
+                        } else if (targetedCursed instanceof Zombie zombieServant) {
+                            zombieServant.setStatus(Zombie.Status.NORMAL);
+                        }
+                    }
+                }
+                hexedTargetsList.clear();
+                isDispellCompleted = true;
+            }
+            return;
+        }
+
+        spellTimer += GameClock.SECONDS_PER_TICK;
+        if (spellTimer >= hexCooldown) {
+            spellTimer = 0;
+            castHexOnRandomObjective(spellcaster, session);
+        }
+
+        interceptPhysicalCollisions(spellcaster, session);
+    }
+
+    private void castHexOnRandomObjective(Zombie warlock, GameSession session) {
+        List<Item> prospectiveTargets = new ArrayList<>();
+
+        if (warlock.getFaction() == Faction.ZOMBIES) {
+            for (Plant plant : session.getPlants()) {
+                if (plant.isAlive() && !plant.getState().equals(Plant.PlantState.INCAPACITATED)) {
+                    prospectiveTargets.add(plant);
+                }
+            }
+        } else {
+            for (Zombie deadwalker : session.getZombies()) {
+                if (deadwalker.isAlive() && deadwalker != warlock && deadwalker.getStatus() != Zombie.Status.FREEZE) {
+                    prospectiveTargets.add(deadwalker);
+                }
+            }
+        }
+
+        if (!prospectiveTargets.isEmpty()) {
+            int targetIdx = (int) (Math.random() * prospectiveTargets.size());
+            applyCurseDebuff(prospectiveTargets.get(targetIdx));
+        }
+    }
+
+    private void interceptPhysicalCollisions(Zombie warlock, GameSession session) {
+        Item directTarget = warlock.acquireTarget(session);
+        if (directTarget != null && directTarget.isAlive()) {
+            applyCurseDebuff(directTarget);
+        }
+    }
+
+    private void applyCurseDebuff(Item sacrificialEntity) {
+        if (sacrificialEntity instanceof Plant plant) {
+            plant.setState(Plant.PlantState.INCAPACITATED);
+        } else if (sacrificialEntity instanceof Zombie zombie) {
+            zombie.setStatus(Zombie.Status.FREEZE);
+        }
+
+        if (!hexedTargetsList.contains(sacrificialEntity)) {
+            hexedTargetsList.add(sacrificialEntity);
+        }
+    }
+}

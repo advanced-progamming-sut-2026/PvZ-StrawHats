@@ -6,7 +6,7 @@ import model.collections.armour.Armour;
 import model.collections.plant.Plant;
 import model.collections.zombie.zombie_attack.AttackBehavior;
 import model.collections.zombie.zombie_defense.DefenseBehavior;
-import model.collections.zombie.zombie_effect.EffectStatus;
+import model.collections.zombie.zombie_effect.ZombieEffectStatus;
 import model.collections.zombie.zombie_move.MoveBehavior;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.Attack;
@@ -37,7 +37,7 @@ public class Zombie extends Item implements Attack {
     private MoveBehavior moveBehavior;
     private AttackBehavior attackBehavior;
     private DefenseBehavior defenseBehavior;
-    private EffectStatus effectStatus;
+    private ZombieEffectStatus zombieEffectStatus;
 
     private PushableStructure pushedStructure;
     private int pushableRespawnsRemaining = 0;
@@ -130,9 +130,9 @@ public class Zombie extends Item implements Attack {
                 if (damageWhileSubmerged != null && damageWhileSubmerged.contains(plantName)) {
                     allowDamage = true;
                 }
-            //    else if (plant.getPlantFoodTimer() > 0 && damageWhileSubmergedPlantfoodOnly != null && damageWhileSubmergedPlantfoodOnly.contains(plantName)) {
+                //    else if (plant.getPlantFoodTimer() > 0 && damageWhileSubmergedPlantfoodOnly != null && damageWhileSubmergedPlantfoodOnly.contains(plantName)) {
                 //    allowDamage = true;
-              //  }
+                //  }
             } else if (damageSource instanceof Projectile p) {
                 if (p.getMoveStrategy() instanceof ArcMove) {
                     allowDamage = true;
@@ -182,18 +182,16 @@ public class Zombie extends Item implements Attack {
 
     @Override
     public void tick() {
-        // این متد برای سازگاری با اینترفیس آیتم شماست
+        // سازگاری با اینترفیس آیتم
     }
 
-    // متد تیک اصلی شما مجهز به استراتژی‌های حرکتی و اکشن جدید
     public void tick(double deltaTimeSeconds, GameSession session) {
         if (!isAlive()) return;
 
-        // بازسازی سازه‌های هل دادنی در صورت نابودی زومبی
         ZombieFactory.respawnPushedStructureIfNeeded(this);
 
-        if (effectStatus != null) {
-            effectStatus.effect(this, session);
+        if (zombieEffectStatus != null) {
+            zombieEffectStatus.applyTickEffect(this, session);
         }
 
         Item target = acquireTarget(session);
@@ -244,6 +242,17 @@ public class Zombie extends Item implements Attack {
         }
     }
 
+    public MoveBehavior getMoveBehavior() { return moveBehavior; }
+    public void setMoveBehavior(MoveBehavior moveBehavior) { this.moveBehavior = moveBehavior; }
+
+    public AttackBehavior getAttackBehavior() { return attackBehavior; }
+    public void setAttackBehavior(AttackBehavior attackBehavior) { this.attackBehavior = attackBehavior; }
+
+    public DefenseBehavior getDefenseBehavior() { return defenseBehavior; }
+    public void setDefenseBehavior(DefenseBehavior defenseBehavior) { this.defenseBehavior = defenseBehavior; }
+
+    public ZombieEffectStatus getEffectStatus() { return zombieEffectStatus; }
+    public void setEffectStatus(ZombieEffectStatus zombieEffectStatus) { this.zombieEffectStatus = zombieEffectStatus; }
 
     public Faction getFaction() { return faction; }
     public void setFaction(Faction faction) { this.faction = faction; }
@@ -280,11 +289,6 @@ public class Zombie extends Item implements Attack {
     public void setFacingRight(boolean facingRight) { isFacingRight = facingRight; }
     public boolean hasPlantFood() { return hasPlantFood; }
     public void setHasPlantFood(boolean hasPlantFood) { this.hasPlantFood = hasPlantFood; }
-
-    public void setMoveBehavior(MoveBehavior moveBehavior) { this.moveBehavior = moveBehavior; }
-    public void setAttackBehavior(AttackBehavior attackBehavior) { this.attackBehavior = attackBehavior; }
-    public void setDefenseBehavior(DefenseBehavior defenseBehavior) { this.defenseBehavior = defenseBehavior; }
-    public void setEffectStatus(EffectStatus effectStatus) { this.effectStatus = effectStatus; }
 
     public PushableStructure getPushedStructure() { return pushedStructure; }
     public void setPushedStructure(PushableStructure pushedStructure) { this.pushedStructure = pushedStructure; }

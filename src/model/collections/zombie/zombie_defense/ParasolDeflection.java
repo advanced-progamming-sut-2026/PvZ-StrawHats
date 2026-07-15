@@ -1,0 +1,23 @@
+package model.collections.zombie.zombie_defense;
+
+import model.collections.zombie.Zombie;
+import model.projectile.ArcMove;
+import model.projectile.Projectile;
+import util.GameSession;
+
+public class ParasolDeflection implements DefenseBehavior {
+
+    @Override
+    public int handleDamage(Zombie zombie, int incomingDamage, Object damageSource, GameSession session) {
+        if (damageSource instanceof Projectile projectile) {
+            if (projectile.getMoveStrategy() instanceof ArcMove) {
+                triggerDeflectionEffect(zombie);
+                return 0;
+            }
+        }
+        return incomingDamage;
+    }
+
+    private void triggerDeflectionEffect(Zombie zombie) {
+    }
+}

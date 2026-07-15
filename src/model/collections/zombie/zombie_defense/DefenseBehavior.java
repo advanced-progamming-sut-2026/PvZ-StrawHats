@@ -4,5 +4,5 @@ import model.collections.zombie.Zombie;
 import util.GameSession;
 
 public interface DefenseBehavior {
-    int handleDamage(Zombie zombie, int damage, Object damageSource, GameSession session);
+    int handleDamage(Zombie zombie, int incomingDamage, Object damageSource, GameSession session);
 }
