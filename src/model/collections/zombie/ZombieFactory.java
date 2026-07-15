@@ -5,8 +5,13 @@ import com.google.gson.reflect.TypeToken;
 import model.collections.armour.Armour;
 import model.collections.armour.ArmourType;
 import model.collections.armour.ZombieArmour;
+import model.collections.zombie.zombie_attack.AttackBehaviorRegistry;
+import model.collections.zombie.zombie_defense.DefenseBehaviorRegistry;
+import model.collections.zombie.zombie_effect.EffectStatusRegistry;
+import model.collections.zombie.zombie_move.MoveBehaviorRegistry;
+import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
-
+import util.GameSession;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,8 +53,7 @@ public class ZombieFactory {
                     blueprints.put(alias, objdata);
                 }
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     @SuppressWarnings("unchecked")
@@ -71,8 +75,7 @@ public class ZombieFactory {
                     armorBaseHp.put(alias, baseHp);
                 }
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     public static int getZombieCost(String alias) {
@@ -82,15 +85,34 @@ public class ZombieFactory {
         return ((Number) data.getOrDefault("WavePointCost", 100)).intValue();
     }
 
+    @SuppressWarnings("unchecked")
     public static Zombie create(String alias, int row, int col) {
         init();
-        Map<String, Object> data = blueprints.get(alias);
-        if (data == null) {
+        Map<String, Object> blueprint = blueprints.get(alias);
+        if (blueprint == null) {
             throw new IllegalArgumentException("Unknown zombie alias: " + alias);
         }
-        return buildBaseZombie(alias, data, row, col);
+
+        Map<String, Object> data = new java.util.HashMap<>(blueprint);
+        Zombie zombie = buildBaseZombie(alias, data, row, col);
+
+        // تخصیص رفتارهای پویای زامبی از رجیستری‌ها
+        Object moveSpec = data.getOrDefault("move", "NormalWalk");
+        Object attackSpec = data.getOrDefault("attack", "ChompAttack");
+        Object defenseSpec = data.getOrDefault("defense", "NormalDefense");
+        Object effectSpec = data.get("effect");
+
+        zombie.setMoveBehavior(MoveBehaviorRegistry.create(moveSpec, data));
+        zombie.setAttackBehavior(AttackBehaviorRegistry.create(attackSpec, data));
+        zombie.setDefenseBehavior(DefenseBehaviorRegistry.create(defenseSpec));
+        zombie.setEffectStatus(EffectStatusRegistry.createOrNull(effectSpec, data));
+
+        attachPushedStructureIfNeeded(zombie, data);
+
+        return zombie;
     }
 
+    @SuppressWarnings("unchecked")
     private static Zombie buildBaseZombie(String alias, Map<String, Object> data, int row, int col) {
         int hp = ((Number) data.getOrDefault("Hitpoints", 270)).intValue();
         double speed = ((Number) data.getOrDefault("Speed", 1)).doubleValue();
@@ -112,6 +134,15 @@ public class ZombieFactory {
         zombie.setEatDps(eatDps);
         zombie.setRace(race);
 
+        if (data.containsKey("DamageWhileSubmerged")) {
+            Map<String, Object> map = (Map<String, Object>) data.get("DamageWhileSubmerged");
+            zombie.setDamageWhileSubmerged((List<String>) map.get("List"));
+        }
+        if (data.containsKey("DamageWhileSubmergedPlantfoodOnly")) {
+            Map<String, Object> map = (Map<String, Object>) data.get("DamageWhileSubmergedPlantfoodOnly");
+            zombie.setDamageWhileSubmergedPlantfoodOnly((List<String>) map.get("List"));
+        }
+
         Position spawnPos = Position.of(col, row);
         zombie.setPosition(spawnPos);
         zombie.setSpeed(Position.of(-speed, 0));
@@ -124,6 +155,11 @@ public class ZombieFactory {
     @SuppressWarnings("unchecked")
     private static void applyDifficultyScaling(Zombie zombie, Map<String, Object> data) {
         int diff = 1;
+        GameSession session = GameSession.getInstance();
+        if (session != null && session.getDifficultyLevel() > 0) {
+            diff = session.getDifficultyLevel();
+        }
+
         List<Map<String, Object>> scaledProps = (List<Map<String, Object>>) data.get("ScaledProps");
         if (scaledProps == null) return;
 
@@ -141,6 +177,54 @@ public class ZombieFactory {
                 zombie.setEatDps(zombie.getEatDps() * scale);
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void attachPushedStructureIfNeeded(Zombie zombie, Map<String, Object> data) {
+        PushableType type = switch (zombie.getAlias()) {
+            case "ZombieArcade" -> PushableType.ARCADE_CABINET;
+            case "ZombieIceAgeTroglobite" -> PushableType.ICE_BLOCK;
+            case "ZombieBarrelRoller", "ZombieBarrel" -> PushableType.BARREL;
+            default -> null;
+        };
+
+        if (type == null) return;
+
+        PushableStructure structure = new PushableStructure(type, zombie.getPosition());
+        zombie.setPushedStructure(structure);
+        placeOnLawnIfPossible(zombie, structure);
+
+        if (type == PushableType.ICE_BLOCK) {
+            int totalIceBlocks = ((Number) data.getOrDefault("NumberOfIceblocksToSpawnWith", 1)).intValue();
+            zombie.setPushableRespawnsRemaining(Math.max(0, totalIceBlocks - 1));
+        }
+    }
+
+    public static void respawnPushedStructureIfNeeded(Zombie zombie) {
+        PushableStructure current = zombie.getPushedStructure();
+        if (current == null || current.isAlive() || zombie.getPushableRespawnsRemaining() <= 0) {
+            return;
+        }
+
+        PushableStructure fresh = new PushableStructure(current.getType(), zombie.getPosition());
+        zombie.setPushedStructure(fresh);
+        zombie.setPushableRespawnsRemaining(zombie.getPushableRespawnsRemaining() - 1);
+        placeOnLawnIfPossible(zombie, fresh);
+    }
+
+    private static void placeOnLawnIfPossible(Zombie zombie, PushableStructure structure) {
+        GameSession session = GameSession.getInstance();
+        if (session == null || session.getLawn() == null) return;
+
+        int row = (int) zombie.getPosition().y();
+        int lastCol = session.getLawn().getCols() - 1;
+        var cell = session.getLawn().getCell(row, lastCol);
+
+        if (cell != null && cell.getInteractableStructure() == null) {
+            cell.setStructure(structure);
+        }
+
+        session.registerStructure(structure);
     }
 
     @SuppressWarnings("unchecked")
