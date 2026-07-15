@@ -2,6 +2,7 @@ package model.collections.zombie.zombie_defense;
 
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
+import model.collections.zombie.zombie_effect.RotationalTurbulenceState;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
 import model.utils.GameSession;
@@ -28,8 +29,8 @@ public class JesterDeflection implements DefenseBehavior {
     }
 
     public void activateSpinning(Zombie zombie) {
-        if (zombie.getEffectStatus() instanceof SpinEffect spinEffect) {
-            spinEffect.startSpin(SPIN_PERIOD);
+        if (zombie.getEffectStatus() instanceof RotationalTurbulenceState spinEffect) {
+            spinEffect.triggerGyratingState(SPIN_PERIOD);
         }
     }
 
