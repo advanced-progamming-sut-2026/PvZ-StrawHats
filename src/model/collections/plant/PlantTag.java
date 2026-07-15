@@ -36,7 +36,9 @@ public enum PlantTag {
     SUN("Sun"),
     AOE("Area damage"),
     MOVE_ZOMBIES("Move Zombies"),
-    BUTTER("butter");
+    BUTTER("butter"),
+    EXPLOSIVE("Explosive"),
+    TRAP("Trap");
 
     private final String name;
 

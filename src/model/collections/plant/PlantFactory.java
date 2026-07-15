@@ -17,12 +17,29 @@ import java.util.Map;
 public class PlantFactory {
 
     private static Map<Integer, PlantJsonParser.PlantConfig> blueprints = new HashMap<>();
+    private static boolean loaded = false;
 
     public static void init(InputStream jsonStream) {
         blueprints = PlantJsonParser.loadConfigs(jsonStream);
+        loaded = true;
+    }
+
+    public static void autoInit() {
+        if (loaded) return;
+        try (java.io.FileInputStream fis = new java.io.FileInputStream("resource/Plants.json")) {
+            init(fis);
+        } catch (java.io.IOException e) {
+            System.out.println("Could not load resource/Plants.json: " + e.getMessage());
+        }
+    }
+
+    public static Map<Integer, PlantJsonParser.PlantConfig> getBlueprints() {
+        autoInit();
+        return blueprints;
     }
 
     public static Plant createPlant(int id, int level, Position position) {
+        autoInit();
         PlantJsonParser.PlantConfig config = blueprints.get(id);
         if (config == null) {
             throw new IllegalArgumentException("Plant ID " + id + " does not exist in dataset.");

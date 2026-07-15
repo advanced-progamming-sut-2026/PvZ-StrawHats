@@ -118,6 +118,31 @@ public enum Regex {
             "^\\s*start\\s+game\\s*$"
     ),
 
+    SHOW_GREENHOUSE(
+            "^\\s*show\\s+greenhouse\\s*$"
+    ),
+    PLANT_POT_AT(
+            "^\\s*plant\\s+pot\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    COLLECT_POT(
+            "^\\s*collect\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    GROW_POT(
+            "^\\s*grow\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    ENTER_SHOP(
+            "^\\s*enter\\s+shop\\s*$"
+    ),
+    SHOPPING_LIST(
+            "^\\s*shopping\\s+list\\s*$"
+    ),
+    SHOP_DAILY(
+            "^\\s*shop\\s+daily\\s*$"
+    ),
+    SHOP_BUY(
+            "^\\s*shop\\s+buy\\s+-i\\s+(?<itemid>\\S+)\\s+-n\\s+(?<count>\\d+)(?:\\s+-t\\s+(?<planttype>\\S+))?\\s*$"
+    ),
+
     // in 3 ta hameja hastan vali handeleshoon fargh dare moragheb bashid toye override ha sooti nadid
     MENU_ENTER(
             "^\\s*menu\\s+enter\\s+(?<menuname>\\S+)\\s*$"

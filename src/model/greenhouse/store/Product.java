@@ -1,5 +1,44 @@
 package model.greenhouse.store;
 
-public interface Product {
-    public int get = 0;
+public enum Product {
+    POT("pot", "Vase (Pot)", 2000, 0),
+    PLANT_FOOD("plant-food", "Plant Food", 0, 3),
+    SEED_RANDOM("seed-random", "Random Seed Packet (5 packs)", 1000, 0),
+    SEED_CHOICE("seed-choice", "Selectable Seed Packet (10 packs)", 0, 5),
+    CURRENCY_EXCHANGE("currency-exchange", "Currency Exchange (500 coins)", 0, 5),
+    DAILY_OFFER("daily-offer", "Daily Special Seed Packet (10 packs)", 1600, 0);
+
+    private final String itemId;
+    private final String displayName;
+    private final int coinCost;
+    private final int diamondCost;
+
+    Product(String itemId, String displayName, int coinCost, int diamondCost) {
+        this.itemId = itemId;
+        this.displayName = displayName;
+        this.coinCost = coinCost;
+        this.diamondCost = diamondCost;
+    }
+
+    public String getItemId() {
+        return itemId;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int getCoinCost() {
+        return coinCost;
+    }
+
+    public int getDiamondCost() {
+        return diamondCost;
+    }
+
+    public static Product byItemId(String itemId) {
+        for (Product product : values())
+            if (product.itemId.equalsIgnoreCase(itemId)) return product;
+        return null;
+    }
 }

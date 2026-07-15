@@ -2,51 +2,57 @@ package controller.menus.greenhouse;
 
 import model.greenhouse.Pot;
 import model.greenhouse.PotPlant;
-import model.user_data.User;
+import model.user_data.UserState;
 
-public class PotController{
+public class PotController {
     private final Pot pot;
 
     public PotController(Pot pot) {
         this.pot = pot;
     }
 
-    public void collect() {
-        if (!pot.getPotPlant().isCollectAble())
-            return;
+    public String collect(UserState state) {
+        PotPlant plant = pot.getPotPlant();
+        if (plant == null) return "Error: this pot is empty.";
+        if (!plant.isCollectAble()) return "Error: this plant is not ready to harvest yet.";
 
-        //add pot plant award to user coins
-        removePlant();
-    }
+        String message;
+        if (plant.isMarigold()) {
+            state.coins += plant.getAwardCoins();
+            message = "Collected Marigold; 500 coins awarded. You now have " + state.coins + " coins.";
+        } else {
+            boolean granted = state.grantBoost(plant.getPlantId());
+            message = granted
+                    ? "Collected " + plant.getPlantName() + "; a boost has been reserved for it."
+                    : "Collected " + plant.getPlantName() + "; a boost was already saved, no extra boost granted.";
+        }
 
-    public void sell() {
-        //add pot plant sell price to user coins
         removePlant();
+        return message;
     }
 
     public int calculateGrowCost() {
-        float remainingTime = pot.getPotPlant().getRemainingTime();
+        PotPlant plant = pot.getPotPlant();
+        if (plant == null) return 0;
 
-        if (remainingTime <= 0)
-            return 0;
+        long remainingSeconds = plant.getRemainingSeconds();
+        if (remainingSeconds <= 0) return 0;
 
-        float remainingHours = remainingTime / 36000f;
+        double remainingHours = remainingSeconds / 3600.0;
         return (int) Math.ceil(remainingHours);
     }
 
-    public void grow(User user) {
-        if (pot.getPotPlant().getRemainingTime() <= 0) {
-            System.out.println("Plant is already fully grown.");
-        }
+    public String grow(UserState state) {
+        PotPlant plant = pot.getPotPlant();
+        if (plant == null) return "Error: this pot is empty.";
+        if (plant.isCollectAble()) return "Error: this plant is already fully grown.";
 
         int cost = calculateGrowCost();
+        if (state.diamonds < cost) return "Error: not enough diamonds (need " + cost + ").";
 
-//        if (user.getDiamonds() < cost) {
-//            System.out.println("Not enough diamonds.");
-//        }
-//        user.setDiamonds(user.getDiamonds() - cost);
-
-        pot.getPotPlant().setRemainingTime(0);
+        state.diamonds -= cost;
+        plant.growInstantly();
+        return "Growth accelerated for " + cost + " diamond(s); " + state.diamonds + " diamonds remaining.";
     }
 
     public void removePlant() {

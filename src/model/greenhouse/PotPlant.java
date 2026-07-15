@@ -3,43 +3,55 @@ package model.greenhouse;
 public abstract class PotPlant {
     private Pot pot;
 
-    private float remainingTime;
+    private long plantedAtMillis;
+    private final long growDurationMillis;
 
-    private final int award;
-    private final int sellPrice;
+    private final Integer plantId;
+    private final String plantName;
+    private final int awardCoins;
 
-    public PotPlant(Pot pot, int remainingTime, int award, int sellPrice) {
+    public PotPlant(Pot pot, long growDurationSeconds, Integer plantId, String plantName, int awardCoins) {
         this.pot = pot;
-        this.remainingTime = remainingTime;
-        this.award = award;
-        this.sellPrice = sellPrice;
-    }
-
-    public void reduceRemainingTime(float delta) {
-        remainingTime -= delta;
+        this.plantedAtMillis = System.currentTimeMillis();
+        this.growDurationMillis = growDurationSeconds * 1000L;
+        this.plantId = plantId;
+        this.plantName = plantName;
+        this.awardCoins = awardCoins;
     }
 
     public boolean isCollectAble() {
-        return remainingTime <= 0;
+        return getRemainingSeconds() <= 0;
     }
+
+    public long getRemainingSeconds() {
+        long elapsed = System.currentTimeMillis() - plantedAtMillis;
+        long remainingMillis = growDurationMillis - elapsed;
+        return Math.max(0, (remainingMillis + 999) / 1000L);
+    }
+
+    public void growInstantly() {
+        plantedAtMillis = System.currentTimeMillis() - growDurationMillis;
+    }
+
+    public abstract boolean isMarigold();
 
     public Pot getPot() {
         return pot;
     }
-    public float getRemainingTime() {
-        return remainingTime;
+
+    public Integer getPlantId() {
+        return plantId;
     }
-    public int getAward() {
-        return award;
+
+    public String getPlantName() {
+        return plantName;
     }
-    public int getSellPrice() {
-        return sellPrice;
+
+    public int getAwardCoins() {
+        return awardCoins;
     }
 
     public void setPot(Pot pot) {
         this.pot = pot;
-    }
-    public void setRemainingTime(float remainingTime) {
-        this.remainingTime = remainingTime;
     }
 }

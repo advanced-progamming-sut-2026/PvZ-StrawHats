@@ -35,6 +35,12 @@ public class AppView {
                 case "Setting Menu":
                     new SettingMenuView().getInput();
                     break;
+                case "Greenhouse Menu":
+                    new GreenhouseMenuView().getInput();
+                    break;
+                case "Store Menu":
+                    new StoreMenuView().getInput();
+                    break;
             }
         }
 
