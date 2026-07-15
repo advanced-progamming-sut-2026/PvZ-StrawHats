@@ -1,4 +1,4 @@
-package model.utils;
+package model;
 
 import controller.menus.MainMenu;
 import controller.menus.Menu;

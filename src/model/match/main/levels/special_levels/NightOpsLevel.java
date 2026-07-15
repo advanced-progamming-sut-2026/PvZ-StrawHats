@@ -1,5 +1,7 @@
 package model.match.main.levels.special_levels;
 
-public class NightOps {
+import model.match.main.levels.Level;
+
+public class NightOpsLevel extends Level {
     public void handleSun(){};
 }

@@ -1,6 +1,8 @@
 package model.match.main.levels.special_levels;
 
-public class PlantWhatYouGet {
+import model.match.main.levels.Level;
+
+public class PlantWhatYouGetLevel extends Level {
     private int primarySun;
     public void startWave(){};
     public void handleBanSunflower(){};

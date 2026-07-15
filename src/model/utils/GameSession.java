@@ -1,4 +1,4 @@
-package util;
+package model.utils;
 
 import model.collections.Item;
 import model.collections.item.GroundPlantFood;
