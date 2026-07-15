@@ -4,16 +4,26 @@ import model.collections.zombie.Zombie;
 import util.GameSession;
 
 public class HypnotizedMoveBehavior implements MoveBehavior {
-    private final MoveBehavior original;
+    private final MoveBehavior baseMovement;
 
-    public HypnotizedMoveBehavior(MoveBehavior original) {
-        this.original = original;
+    public HypnotizedMoveBehavior(MoveBehavior baseMovement) {
+        this.baseMovement = baseMovement;
     }
 
     @Override
-    public void move(Zombie zombie, double deltaTimeSeconds, GameSession session) {
-        if (zombie.getSpeed() != null) {
-            zombie.move(deltaTimeSeconds);
+    public void move(Zombie zombie, double deltaTime, GameSession session) {
+        if (baseMovement != null) {
+            baseMovement.move(zombie, deltaTime, session);
         }
+
+        if (hasWalkedOffRightBoundary(zombie, session)) {
+            zombie.setHp(0);
+        }
+    }
+
+    private boolean hasWalkedOffRightBoundary(Zombie zombie, GameSession session) {
+        return zombie.getPosition() != null
+                && session.getLawn() != null
+                && zombie.getPosition().x() >= session.getLawn().getCols();
     }
 }
