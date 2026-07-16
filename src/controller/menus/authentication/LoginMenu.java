@@ -65,7 +65,8 @@ public class LoginMenu extends Menu {
         }
 
         user.stayLoggedIn = stayLoggedIn;
-        User.currentUser = user;
+        User.setUser(user);
+
         User.save();
 
         System.out.println("Welcome back, " + user.nickname + "!");

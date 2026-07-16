@@ -19,6 +19,14 @@ public abstract class PotPlant {
         this.awardCoins = awardCoins;
     }
 
+    public long getPlantedAtMillis() {
+        return plantedAtMillis;
+    }
+
+    public void setPlantedAtMillis(long plantedAtMillis) {
+        this.plantedAtMillis = plantedAtMillis;
+    }
+
     public boolean isCollectAble() {
         return getRemainingSeconds() <= 0;
     }

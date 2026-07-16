@@ -1,5 +1,10 @@
 package model.greenhouse;
 
+import model.collections.plant.PlantFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Greenhouse {
     private static final int ROW_COUNT = 4;
     private static final int COL_COUNT = 5;
@@ -63,6 +68,67 @@ public class Greenhouse {
             }
         }
         return false;
+    }
+
+    public List<List<PotData>> serialize() {
+        List<List<PotData>> result = new ArrayList<>();
+
+        for (int r = 0; r < ROW_COUNT; r++) {
+            List<PotData> row = new ArrayList<>();
+
+            for (int c = 0; c < COL_COUNT; c++) {
+                Pot pot = pots[r][c];
+
+                PotData data = new PotData();
+
+                data.locked = pot.isLocked();
+
+                if (pot.getPotPlant() != null) {
+                    PotPlant plant = pot.getPotPlant();
+
+                    data.plantId = plant.getPlantId();
+                    data.plantedAtMillis = plant.getPlantedAtMillis();
+                }
+
+                row.add(data);
+            }
+
+            result.add(row);
+        }
+
+        return result;
+    }
+
+    public void load(List<List<PotData>> data) {
+
+        if (data == null)
+            return;
+
+        for (int r = 0; r < ROW_COUNT; r++) {
+            for (int c = 0; c < COL_COUNT; c++) {
+
+                Pot pot = pots[r][c];
+                PotData save = data.get(r).get(c);
+
+                pot.setLocked(save.locked);
+
+                if (save.plantId != null) {
+
+                    GreenhousePlant plant =
+                            new GreenhousePlant(
+                                    pot,
+                                    save.plantId,
+                                    PlantFactory.getBlueprints()
+                                            .get(save.plantId).name);
+
+                    plant.setPlantedAtMillis(save.plantedAtMillis);
+
+                    pot.setPotPlant(plant);
+                } else {
+                    pot.setPotPlant(null);
+                }
+            }
+        }
     }
 
     public String renderStatus() {

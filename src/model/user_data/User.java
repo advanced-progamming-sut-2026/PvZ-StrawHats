@@ -3,6 +3,7 @@ package model.user_data;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import model.greenhouse.Greenhouse;
 import model.news.News;
 
 import java.io.*;
@@ -15,7 +16,7 @@ import java.util.ArrayList;
 /// authentication and holds a reference to userState
 public class User {
 
-    private static final String SAVE_FILE = "data.json";
+    private static final String SAVE_FILE = "Data.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static ArrayList<User> users = new ArrayList<>();
@@ -34,6 +35,8 @@ public class User {
         this.stayLoggedIn = false;
         this.userState = new UserState(new News[0], 0, 0, 0);
     }
+
+
 
     public static String hashPassword(String password) {
         try {
@@ -86,14 +89,23 @@ public class User {
             ArrayList<User> loaded = GSON.fromJson(reader, listType);
             if (loaded != null) users = loaded;
             for (User user : users)
-                if (user.stayLoggedIn) currentUser = user;
+                if (user.stayLoggedIn) setUser(user);
 
         } catch (IOException e) {
             System.out.println("Could not load users: " + e.getMessage());
         }
     }
 
+    public static void setUser(User user) {
+        currentUser = user;
+        Greenhouse.getInstance()
+                .load(user.userState.greenhousePots);
+    }
+
     public static void save() {
+        currentUser.userState.greenhousePots =
+                Greenhouse.getInstance().serialize();
+
         try (Writer writer = new FileWriter(SAVE_FILE)) {
             GSON.toJson(users, writer);
         } catch (IOException e) {

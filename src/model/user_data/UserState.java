@@ -2,10 +2,9 @@ package model.user_data;
 
 import model.news.News;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import model.greenhouse.PotData;
 
 public class UserState {
 
@@ -15,6 +14,7 @@ public class UserState {
     public Set<Integer> unlockedPlantIds = new HashSet<>();
     public Map<Integer, Integer> seedPacketInventory = new HashMap<>();
     public Map<Integer, Boolean> plantBoosts = new HashMap<>();
+    public List<List<PotData>> greenhousePots;
     public int plantFoodCount = 0;
 
     public String dailyOfferDate;
