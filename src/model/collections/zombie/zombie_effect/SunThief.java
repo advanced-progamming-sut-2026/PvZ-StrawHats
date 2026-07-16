@@ -85,7 +85,7 @@ public class SunThief implements ZombieEffectStatus {
     }
 
     private GroundItem scanForFallenSun(GameSession session) {
-        for (GroundItem groundLoot : session.getItems()) {
+        for (GroundItem groundLoot : session.getGroundItems()) {
             if (!groundLoot.isAlive() || groundLoot.getItemType() != ItemType.SUN) continue;
             if (groundLoot instanceof SunToken token && token.isFalling()) continue;
             return groundLoot;

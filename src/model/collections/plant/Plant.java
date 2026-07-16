@@ -121,7 +121,12 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private void executeArmorExplosion() {}
 
     @Override public void dealDamage(Item target) { if (target != null) target.setHP(target.getHP() - getDamage()); }
-    public void activatePlant() { if (this.plantFoodEffect != null) this.plantFoodTimer = 5.0; }
+    public void activatePlant(GameSession session) {
+        if (this.plantFoodEffect == null) return;
+        this.plantFoodTimer = 5.0;
+        this.plantFoodEffect.applyStatusModifiers(this);
+        this.plantFoodEffect.triggerSuperpower(this, session);
+    }
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
