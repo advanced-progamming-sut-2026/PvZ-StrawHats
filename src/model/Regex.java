@@ -54,6 +54,12 @@ public enum Regex {
     MENU_NEWS_SHOW_ALL(
             "^\\s*menu\\s+news\\s+showall\\s*$"
     ),
+    MENU_CHEAT_ADD(
+            "^\\s*menu\\s+cheat\\s+add\\s+(?<n>\\S+)\\s+(?<r>\\S+)\\s*$"
+    ),
+    TRAVEL_LOG_PAGE(
+            "^\\s*travel\\s+log\\s+page\\s+(?<pagename>\\S+)\\s*$"
+    ),
 
     // profile menu
     MENU_PROFILE_CHANGE_USERNAME(

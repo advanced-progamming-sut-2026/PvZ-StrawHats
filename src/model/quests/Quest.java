@@ -3,6 +3,7 @@ package model.quests;
 public abstract class Quest {
     private String questDescription;
     private int progress;
+    private boolean isCompleted;
 
     public String getQuestDescription() {
         return questDescription;
@@ -18,6 +19,15 @@ public abstract class Quest {
 
     public void setProgress(int progress) {
         this.progress = progress;
+        // *
     }
 
+    public boolean isCompleted() {
+        return isCompleted;
+    }
+
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
+        // *
+    }
 }
