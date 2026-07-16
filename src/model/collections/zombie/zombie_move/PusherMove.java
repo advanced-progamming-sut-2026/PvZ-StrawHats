@@ -5,7 +5,7 @@ import model.collections.zombie.Zombie;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
-import model.pitches.LawnMower;
+import model.pitches.Environment;
 import model.utils.GameSession;
 
 import java.util.ArrayList;
@@ -17,14 +17,14 @@ public class PusherMove implements MoveBehavior {
     @Override
     public void move(Zombie zombie, double deltaTime, GameSession session) {
         Position pos = zombie.getPosition();
-        LawnMower lawn = session.getLawn();
+        Environment lawn = session.getLawn();
         if (pos == null || lawn == null || zombie.getSpeed() == null) return;
 
         double deltaX = zombie.getSpeed().x() * deltaTime;
         double targetZombieX = pos.x() + deltaX;
         int currentRow = (int) pos.y();
 
-        Row row = lawn.getRow(currentRow);
+        Cell[] row = lawn.getRowCells(currentRow);
         if (row != null) {
             List<GridObstacleMapping> obstaclesToPush = detectPushableStructures(row, pos);
 
@@ -60,14 +60,15 @@ public class PusherMove implements MoveBehavior {
         }
     }
 
-    private List<GridObstacleMapping> detectPushableStructures(Row row, Position pos) {
+    private List<GridObstacleMapping> detectPushableStructures(Cell[] row, Position pos) {
         List<GridObstacleMapping> list = new ArrayList<>();
-        for (Cell cell : row.getCells()) {
-            var structure = cell.getInteractableStructure();
-            if (structure instanceof PushableStructure ps && structure.isAlive()) {
-                double structX = ps.getPosition().x();
+        for (Cell cell : row) {
+            if (cell == null) continue;
+            PushableStructure structure = cell.getInteractableStructure();
+            if (structure != null && structure.isAlive()) {
+                double structX = structure.getPosition().x();
                 if (structX < pos.x() && (pos.x() - structX) <= PUSH_GAP_LIMIT) {
-                    list.add(new GridObstacleMapping(cell, ps));
+                    list.add(new GridObstacleMapping(cell, structure));
                 }
             }
         }

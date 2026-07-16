@@ -1,19 +1,19 @@
 package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
-import model.pitches.Cell;
-import model.pitches.LawnMower;
-import model.utils.GameSession;
-
-import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
+import model.pitches.Cell;
+import model.pitches.Environment;
+import model.pitches.SlipperyDirection;
+import model.pitches.Tile;
+import model.pitches.TileType;
 import model.utils.GameSession;
 
 public interface MoveBehavior {
     void move(Zombie zombie, double deltaTime, GameSession session);
 
     default Position applySlipperyShift(Position pos, GameSession session) {
-        LawnMower lawn = session.getLawn();
+        Environment lawn = session.getLawn();
         if (lawn == null) return pos;
 
         int row = (int) pos.y();
