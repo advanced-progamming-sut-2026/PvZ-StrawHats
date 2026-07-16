@@ -2,6 +2,7 @@ package model.pitches;
 
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
+import model.collections.zombie.zombie_pushing_item.PushableStructure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class Cell {
 
     private Plant plant;
     private Obstacle obstacle;
+    private PushableStructure structure;
     private final List<Zombie> zombies = new ArrayList<>();
 
     public Cell(int row, int col) {
@@ -28,6 +30,9 @@ public class Cell {
 
     public Obstacle getObstacle() { return obstacle; }
     public void setObstacle(Obstacle obstacle) { this.obstacle = obstacle; }
+
+    public PushableStructure getStructure() { return structure; }
+    public void setStructure(PushableStructure structure) { this.structure = structure; }
 
     public List<Zombie> getZombies() { return zombies; }
     public void addZombie(Zombie zombie) { if (zombie != null) zombies.add(zombie); }

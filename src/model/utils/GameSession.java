@@ -21,7 +21,7 @@ import java.util.function.ToIntFunction;
 
 public class GameSession {
 
-    public static ToIntFunction<? super Zombie> difficulty;
+    public static ToIntFunction<? super Zombie> difficulty = Zombie::getMaxHp;
     private static GameSession instance;
     private final GameClock clock = new GameClock();
 
@@ -74,6 +74,10 @@ public class GameSession {
         clock.tick();
         double deltaTimeSeconds = GameClock.SECONDS_PER_TICK;
 
+        if (level != null) {
+            level.updateTide(deltaTimeSeconds, this);
+        }
+
         for (Plant plant : plants) {
             if (plant.isAlive()) plant.tick(deltaTimeSeconds, this);
         }
@@ -99,6 +103,9 @@ public class GameSession {
         clearDeadPlantsFromGrid();
         refreshZombieOccupancy();
 
+        recordLevelSpecificDeaths();
+        tickLevelSpecificLogic(deltaTimeSeconds);
+
         plants.removeIf(p -> !p.isAlive());
         zombies.removeIf(z -> !z.isAlive());
         items.removeIf(i -> !i.isAlive());
@@ -106,8 +113,28 @@ public class GameSession {
 
         checkZombieBreaches();
 
+        if (level != null && level.checkLossCondition(this)) {
+            gameOver = true;
+        }
+
         if (wavesStarted && allWavesSpawned() && zombies.isEmpty() && !gameOver) {
             gameWon = true;
+        }
+    }
+
+    private void recordLevelSpecificDeaths() {
+        if (level instanceof model.match.main.levels.special_levels.LoveYourPlantsLevel loveLevel) {
+            plants.stream().filter(p -> !p.isAlive()).forEach(p -> loveLevel.recordPlantLoss());
+        }
+        if (level instanceof model.match.main.levels.special_levels.TimedWarLevel timedWarLevel) {
+            zombies.stream().filter(z -> !z.isAlive()).forEach(z -> timedWarLevel.recordZombieKill());
+            timedWarLevel.tickTimer(GameClock.SECONDS_PER_TICK);
+        }
+    }
+
+    private void tickLevelSpecificLogic(double deltaTimeSeconds) {
+        if (level instanceof model.match.main.levels.special_levels.ConveyorBeltLevel conveyorLevel) {
+            conveyorLevel.tickConveyor(deltaTimeSeconds);
         }
     }
 
@@ -347,6 +374,9 @@ public class GameSession {
 
     public void setLevel(Level level) {
         this.level = level;
+        if (level != null) {
+            level.initSpecial(this);
+        }
     }
 
     public void setWaves(List<ZombieWave> waves) {
@@ -387,5 +417,9 @@ public class GameSession {
     }
 
     public void notifyZombieDied(Zombie zombie, String poison) {
+    }
+
+    public LawnMower getLawn() {
+        return null; // TODO: هععععی
     }
 }
