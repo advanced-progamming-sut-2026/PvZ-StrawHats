@@ -22,6 +22,7 @@ import java.util.function.ToIntFunction;
 public class GameSession {
 
     public static ToIntFunction<? super Zombie> difficulty;
+    private static GameSession instance;
     private final GameClock clock = new GameClock();
 
     private List<Plant> plants = new ArrayList<>();
@@ -43,6 +44,7 @@ public class GameSession {
 
     private boolean gameOver = false;
     private boolean gameWon = false;
+    private int difficultyLevel;
 
     public GameSession() {
         this(5, 9);
@@ -53,6 +55,10 @@ public class GameSession {
     }
 
     public static GameSession getInstance() {
+        if (instance == null) {
+            instance = new GameSession();
+        }
+        return instance;
     }
 
     public void setGridSize(int rows, int cols) {
@@ -365,14 +371,19 @@ public class GameSession {
         return clock.getElapsedSeconds();
     }
 
-    public LawnMower getLawn() {
-        
+    public int getDifficultyLevel() {
+        return difficultyLevel;
     }
 
-    public int getDifficultyLevel() {
-    }
 
     public void registerStructure(PushableStructure structure) {
+        if (structure == null || environment == null) return;
+        int row = (int) structure.getPosition().y();
+        int col = (int) structure.getPosition().x();
+        Cell cell = environment.getCell(row, col);
+        if (cell != null) {
+            cell.setStructure(structure);
+        }
     }
 
     public void notifyZombieDied(Zombie zombie, String poison) {
