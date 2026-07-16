@@ -227,13 +227,24 @@ public class GameSession {
                 int row = (int) Math.round(zombie.getPosition().y());
                 if (row < 0 || row >= lawnMowers.length) continue;
 
-                boolean survived = lawnMowers[row].killZombiesInRow();
+                boolean survived = lawnMowers[row].killZombiesInRow(zombiesInRow(row));
                 if (!survived) {
                     onZombieReachedEnd();
                     return;
                 }
             }
         }
+    }
+
+    private List<Zombie> zombiesInRow(int row) {
+        List<Zombie> result = new ArrayList<>();
+        for (Zombie zombie : zombies) {
+            if (zombie.isAlive() && zombie.getPosition() != null
+                    && (int) Math.round(zombie.getPosition().y()) == row) {
+                result.add(zombie);
+            }
+        }
+        return result;
     }
 
     public void spawnZombie(Zombie zombie) {
@@ -501,7 +512,7 @@ public class GameSession {
         }
     }
 
-    public LawnMower getLawn() {
-        return null; // TODO: هععععی
+    public Environment getLawn() {
+        return environment;
     }
 }
