@@ -22,7 +22,7 @@ public class PeashooterZombieEffect implements ZombieEffectStatus {
         firingClock += GameClock.SECONDS_PER_TICK;
         if (firingClock >= shotInterval) {
             firingClock = 0;
-            session.addZombieProjectile(new ZombiePeaProjectile(target.getPosition(), projectileDamage));
+            session.addZombieProjectile(new ZombiePeaProjectile(target.getPosition(), projectileDamage, session));
         }
     }
 }

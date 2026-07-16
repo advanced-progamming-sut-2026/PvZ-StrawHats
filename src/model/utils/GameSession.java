@@ -18,6 +18,7 @@ import model.pitches.Cell;
 import model.pitches.Environment;
 import model.pitches.LawnMower;
 import model.projectile.Projectile;
+import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
@@ -41,6 +42,7 @@ public class GameSession {
     private List<Item> items = new ArrayList<>();
     private List<GroundItem> groundItems = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
+    private final List<ZombieProjectile> zombieProjectiles = new ArrayList<>();
 
     private Level level;
     private List<ZombieWave> waves = new ArrayList<>();
@@ -102,6 +104,9 @@ public class GameSession {
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) projectile.tick();
         }
+        for (ZombieProjectile zombieProjectile : zombieProjectiles) {
+            if (zombieProjectile.isAlive()) zombieProjectile.tick();
+        }
         for (Item item : items) {
             if (item.isAlive()) item.tick();
         }
@@ -135,6 +140,7 @@ public class GameSession {
         zombies.removeIf(z -> !z.isAlive());
         items.removeIf(i -> !i.isAlive());
         projectiles.removeIf(p -> !p.isAlive());
+        zombieProjectiles.removeIf(p -> !p.isAlive());
 
         checkZombieBreaches();
 
@@ -466,6 +472,14 @@ public class GameSession {
 
     public List<Projectile> getProjectiles() {
         return projectiles;
+    }
+
+    public void addZombieProjectile(ZombieProjectile projectile) {
+        if (projectile != null) zombieProjectiles.add(projectile);
+    }
+
+    public List<ZombieProjectile> getZombieProjectiles() {
+        return zombieProjectiles;
     }
 
     public double getElapsedSeconds() {

@@ -22,7 +22,7 @@ public class ReelingTackleStatus implements ZombieEffectStatus {
         if (!target.isAlive() || target.getPosition() == null) return;
 
         if (target.getFaction() == Faction.ZOMBIES) {
-            int lastGridCol = session.getLawn().getCols() - 1;
+            int lastGridCol = session.getEnvironment().getCols() - 1;
             if (target.getPosition().x() < lastGridCol) {
                 target.setPosition(new Position(lastGridCol, target.getPosition().y()));
             }
@@ -49,22 +49,22 @@ public class ReelingTackleStatus implements ZombieEffectStatus {
 
     private boolean dragPlantTowardZombie(GameSession session, int r, int c, Zombie caster) {
         for (int colIter = c - 1; colIter >= 0; colIter--) {
-            Cell activeCell = session.getLawn().getCell(r, colIter);
+            Cell activeCell = session.getEnvironment().getCell(r, colIter);
             if (activeCell != null && activeCell.getPlant() != null && activeCell.getPlant().isAlive()) {
                 Plant targetPlant = activeCell.getPlant();
-                double nextX = targetPlant.getLocation().x() + 1;
+                int currentCol = (int) targetPlant.getLocation().x();
+                int nextCol = currentCol + 1;
 
-                if (nextX >= c) {
+                if (nextCol >= c) {
                     targetPlant.takeDamage(targetPlant.getHP(), caster);
                     return true;
                 }
 
-                Cell targetCell = session.getLawn().getCell(r, nextX);
-                if (targetCell != null && targetCell.getPlant() == null && targetCell.getInteractableStructure() == null) {
+                Cell targetCell = session.getEnvironment().getCell(r, nextCol);
+                if (targetCell != null && targetCell.getPlant() == null && targetCell.getStructure() == null) {
                     activeCell.setPlant(null);
                     targetCell.setPlant(targetPlant);
-                    targetPlant.setPosition(new Position(nextX, r));
-                    targetPlant.setPosition(new Position(nextX, r));
+                    targetPlant.setPosition(new Position(nextCol, r));
                     return true;
                 }
                 return false;
