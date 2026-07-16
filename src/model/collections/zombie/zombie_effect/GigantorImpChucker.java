@@ -44,16 +44,16 @@ public class GigantorImpChucker implements ZombieEffectStatus {
 
     private void executeImpThrow(Zombie launcher, GameSession session) {
         int trackRow = (int) launcher.getPosition().y();
-        if (session.getLawn() == null) return;
+        if (session.getEnvironment() == null) return;
 
-        int totalGridCols = session.getLawn().getCols();
+        int totalGridCols = session.getEnvironment().getCols();
         int correctedCol = Math.min(landingGridCol, totalGridCols - 1);
 
         Position origin = launcher.getPosition();
         Position destination = new Position(correctedCol, trackRow);
 
         session.addZombieProjectile(new GargantuarImpProjectile(
-                origin, destination, airTravelDuration, projectileArcApex, trackRow, impCharacterAlias
+                origin, destination, airTravelDuration, projectileArcApex, trackRow, impCharacterAlias, session
         ));
     }
 }

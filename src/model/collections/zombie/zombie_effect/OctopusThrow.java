@@ -30,18 +30,20 @@ public class OctopusThrow implements ZombieEffectStatus {
     }
 
     private boolean launchEntanglingOctopus(Zombie activeOctopus, GameSession session) {
+        if (session.getEnvironment() == null) return false;
+
         int r = (int) activeOctopus.getPosition().y();
         double colX = activeOctopus.getPosition().x();
-        int maxCols = session.getLawn().getCols();
+        int maxCols = session.getEnvironment().getCols();
         Position originPos = activeOctopus.getPosition();
 
         if (activeOctopus.getFaction() == Faction.ZOMBIES) {
             for (int colIndex = (int) colX; colIndex >= 0; colIndex--) {
                 if (colIndex >= maxCols) continue;
-                Cell gridCell = session.getLawn().getCell(r, colIndex);
+                Cell gridCell = session.getEnvironment().getCell(r, colIndex);
                 if (gridCell != null && gridCell.getPlant() != null && gridCell.getPlant().isAlive()) {
                     Position targetPosition = new Position(gridCell.getPlant().getLocation().x(), gridCell.getPlant().getLocation().y());
-                    session.addZombieProjectile(new OctopusProjectile(originPos, targetPosition, 1.5));
+                    session.addZombieProjectile(new OctopusProjectile(originPos, targetPosition, 1.5, session));
                     return true;
                 }
             }
@@ -49,7 +51,7 @@ public class OctopusThrow implements ZombieEffectStatus {
             for (Zombie threat : session.getZombies()) {
                 if (threat.isAlive() && threat.getFaction() == Faction.ZOMBIES
                         && (int) threat.getPosition().y() == r && threat.getPosition().x() > colX) {
-                    session.addZombieProjectile(new OctopusProjectile(originPos, threat.getPosition(), 1.5));
+                    session.addZombieProjectile(new OctopusProjectile(originPos, threat.getPosition(), 1.5, session));
                     return true;
                 }
             }

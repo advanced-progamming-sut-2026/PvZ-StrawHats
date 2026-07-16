@@ -26,7 +26,7 @@ public class PianistMusicEffect implements ZombieEffectStatus {
     }
 
     private void triggerZombieRowShift(Zombie conductor, GameSession session) {
-        int limitRows = session.getLawn().getRows();
+        int limitRows = session.getEnvironment().getRows();
 
         for (Zombie dancer : session.getZombies()) {
             if (dancer == null || !dancer.isAlive() || dancer == conductor || dancer.getFaction() != conductor.getFaction()) {
