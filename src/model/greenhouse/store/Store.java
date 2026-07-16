@@ -2,9 +2,12 @@ package model.greenhouse.store;
 
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
+import model.match_mechanisms.seed_packets.RandomSeedPacket;
+import model.match_mechanisms.seed_packets.SelectableSeedPacket;
 import model.user_data.UserState;
 
-import java.time.LocalDate;
+import java.time.Instant;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,17 +34,42 @@ public class Store {
         refreshDailyOffer(state);
         PlantJsonParser.PlantConfig config = PlantFactory.getBlueprints().get(state.dailyOfferPlantId);
         String name = config == null ? "Unknown Plant" : config.name;
+
+        String timeRemaining = "";
+        if (state.dailyOfferDate != null) {
+            try {
+                Instant lastRefresh = Instant.parse(state.dailyOfferDate);
+                Duration elapsed = Duration.between(lastRefresh, Instant.now());
+                long hoursLeft = 23 - elapsed.toHours();
+                long minutesLeft = 59 - (elapsed.toMinutes() % 60);
+                timeRemaining = String.format(" (Refreshes in %dh %dm)", Math.max(0, hoursLeft), Math.max(0, minutesLeft));
+            } catch (Exception e) {
+            }
+        }
+
         return "Daily Offer: 10 seed packs of " + name + " for " + Product.DAILY_OFFER.getCoinCost()
-                + " coins" + (state.dailyOfferPurchased ? " (already purchased today)" : "");
+                + " coins" + (state.dailyOfferPurchased ? " (already purchased today)" : "") + timeRemaining;
     }
 
     public void refreshDailyOffer(UserState state) {
-        String today = LocalDate.now().toString();
-        if (today.equals(state.dailyOfferDate) && state.dailyOfferPlantId != null) return;
+        Instant now = Instant.now();
+
+        if (state.dailyOfferDate != null && state.dailyOfferPlantId != null) {
+            try {
+                Instant lastRefresh = Instant.parse(state.dailyOfferDate);
+                Duration timeElapsed = Duration.between(lastRefresh, now);
+                if (timeElapsed.toHours() < 24) {
+                    return;
+                }
+            } catch (Exception e) {
+            }
+        }
 
         List<Integer> candidates = new ArrayList<>(state.unlockedPlantIds);
-        state.dailyOfferDate = today;
+
+        state.dailyOfferDate = now.toString();
         state.dailyOfferPurchased = false;
+
         state.dailyOfferPlantId = candidates.isEmpty() ? null : candidates.get(RANDOM.nextInt(candidates.size()));
     }
 
@@ -89,31 +117,43 @@ public class Store {
     private String buyRandomSeedPacket(UserState state, int count) {
         int cost = Product.SEED_RANDOM.getCoinCost() * count;
         if (state.coins < cost) return "Error: not enough coins.";
+
         List<Integer> candidates = new ArrayList<>(state.unlockedPlantIds);
-        if (candidates.isEmpty()) return "Error: no unlocked plants available.";
+        if (candidates.isEmpty()) return "Error: no unlocked plants available to get seeds for.";
 
         state.coins -= cost;
-        StringBuilder sb = new StringBuilder("Purchased: ");
+
+        RandomSeedPacket packet = new RandomSeedPacket(count);
+        StringBuilder sb = new StringBuilder("Purchased " + count + " Random Seed Packet(s):\n");
+
         for (int i = 0; i < count; i++) {
-            int plantId = candidates.get(RANDOM.nextInt(candidates.size()));
-            state.addSeedPackets(plantId, 5);
-            sb.append(nameOf(plantId)).append(" x5 packs; ");
+            String openResult = packet.open(state);
+            sb.append("  - ").append(openResult).append("\n");
         }
+
         sb.append(state.coins).append(" coins remaining.");
         return sb.toString();
     }
 
     private String buySelectedSeedPacket(UserState state, int count, Integer plantTypeId) {
         if (plantTypeId == null) return "Error: -t <plant_type> is required for this item.";
-        if (!state.isPlantUnlocked(plantTypeId)) return "Error: that plant is not unlocked yet.";
+        if (!state.isPlantUnlocked(plantTypeId)) return "Error: that plant is not unlocked yet. You can only buy seeds for unlocked plants.";
 
         int cost = Product.SEED_CHOICE.getDiamondCost() * count;
         if (state.diamonds < cost) return "Error: not enough diamonds.";
 
         state.diamonds -= cost;
-        state.addSeedPackets(plantTypeId, 10 * count);
-        return "Purchased " + (10 * count) + " seed packs of " + nameOf(plantTypeId) + "; "
-                + state.diamonds + " diamonds remaining.";
+
+        SelectableSeedPacket packet = new SelectableSeedPacket(count);
+        StringBuilder sb = new StringBuilder("Purchased " + count + " Selectable Seed Packet(s):\n");
+
+        for (int i = 0; i < count; i++) {
+            String openResult = packet.openWithChoice(state, plantTypeId);
+            sb.append("  - ").append(openResult).append("\n");
+        }
+
+        sb.append(state.diamonds).append(" diamonds remaining.");
+        return sb.toString();
     }
 
     private String exchange(UserState state, int count) {
@@ -127,7 +167,7 @@ public class Store {
 
     private String buyDailyOffer(UserState state) {
         refreshDailyOffer(state);
-        if (state.dailyOfferPlantId == null) return "Error: no daily offer available.";
+        if (state.dailyOfferPlantId == null) return "Error: no daily offer available (no unlocked plants).";
         if (state.dailyOfferPurchased) return "Error: you already purchased today's offer.";
 
         int cost = Product.DAILY_OFFER.getCoinCost();

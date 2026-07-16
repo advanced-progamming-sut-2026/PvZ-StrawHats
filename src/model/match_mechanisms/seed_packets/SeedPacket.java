@@ -1,16 +1,18 @@
 package model.match_mechanisms.seed_packets;
 
-public abstract class SeedPacket {
-    private final int plantId;
-    private int count;
+import model.user_data.UserState;
 
-    protected SeedPacket(int plantId, int count) {
-        this.plantId = plantId;
+public abstract class SeedPacket {
+    protected String name;
+    protected int count;
+
+    public SeedPacket(String name, int count) {
+        this.name = name;
         this.count = count;
     }
 
-    public int getPlantId() {
-        return plantId;
+    public String getName() {
+        return name;
     }
 
     public int getCount() {
@@ -22,8 +24,12 @@ public abstract class SeedPacket {
     }
 
     public boolean consumeOne() {
-        if (count <= 0) return false;
-        count--;
-        return true;
+        if (count > 0) {
+            count--;
+            return true;
+        }
+        return false;
     }
+
+    public abstract String open(UserState state);
 }
