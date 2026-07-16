@@ -1,0 +1,273 @@
+[
+  {
+    "type": "intro",
+    "id": 101,
+    "name": "Ancient Egypt - Day 1",
+    "season": "egypt",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Peashooter", "Wall-nut"],
+    "forcedPlants": ["Sunflower", "Peashooter"],
+    "waves": [
+      { "delay": 10, "zombies": ["ZombieDefault"] },
+      { "delay": 25, "zombies": ["ZombieDefault", "ZombieDefault"] },
+      { "delay": 25, "zombies": ["ZombieDefault", "ZombieArmor1"] }
+    ]
+  },
+  {
+    "type": "conveyor",
+    "id": 102,
+    "name": "Ancient Egypt - Day 2",
+    "season": "egypt",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 50,
+    "availablePlants": [],
+    "forcedPlants": [],
+    "conveyorPlants": ["Peashooter", "Wall-nut", "Sunflower", "Potato Mine"],
+    "maxConveyorSize": 8,
+    "waves": [
+      { "delay": 15, "zombies": ["ZombieDefault", "ZombieDefault"] },
+      { "delay": 25, "zombies": ["ZombieDefault", "ZombieArmor1", "ZombieDefault"] },
+      { "delay": 25, "zombies": ["ZombieArmor1", "ZombieArmor1"] }
+    ]
+  },
+  {
+    "type": "locked",
+    "id": 103,
+    "name": "Ancient Egypt - Day 3",
+    "season": "egypt",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Peashooter", "Wall-nut", "Potato Mine"],
+    "forcedPlants": [],
+    "lockedPlants": ["Sunflower", "Repeater", "Snow Pea"],
+    "alwaysAvailable": ["Peashooter"],
+    "waves": [
+      { "delay": 10, "zombies": ["ZombieDefault"] },
+      { "delay": 20, "zombies": ["ZombieDefault", "ZombieArmor1"] },
+      { "delay": 25, "zombies": ["ZombieArmor1", "ZombieExplorer"] }
+    ]
+  },
+  {
+    "type": "boss",
+    "id": 104,
+    "name": "Ancient Egypt - Ra's Wrath",
+    "season": "egypt",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 200,
+    "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Wall-nut", "Potato Mine"],
+    "forcedPlants": [],
+    "bossType": "ZombieRa",
+    "waves": [
+      { "delay": 20, "zombies": ["ZombieDefault", "ZombieArmor1"] },
+      { "delay": 30, "zombies": ["ZombieArmor1", "ZombieExplorer", "ZombieDefault"] }
+    ]
+  },
+
+  {
+    "type": "normal",
+    "id": 201,
+    "name": "Frostbite Caves - Day 1",
+    "season": "cave",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Torchwood"],
+    "forcedPlants": [],
+    "waves": [
+      { "delay": 10, "zombies": ["ZombieIceAgeDodo"] },
+      { "delay": 25, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeHunter"] },
+      { "delay": 25, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+    ]
+  },
+  {
+    "type": "deadLine",
+    "id": 202,
+    "name": "Frostbite Caves - Day 2",
+    "season": "cave",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Chomper"],
+    "forcedPlants": [],
+    "deadLineColumn": 2,
+    "waves": [
+      { "delay": 12, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeDodo"] },
+      { "delay": 22, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"] },
+      { "delay": 22, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeHunter"] }
+    ]
+  },
+  {
+    "type": "nightOps",
+    "id": 203,
+    "name": "Frostbite Caves - Day 3",
+    "season": "cave",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 100,
+    "availablePlants": ["Sunflower", "Sun-shroom", "Snow Pea", "Wall-nut"],
+    "forcedPlants": ["Sunflower"],
+    "waves": [
+      { "delay": 15, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeHunter"] },
+      { "delay": 25, "zombies": ["ZombieIceAgeTroglobite"] },
+      { "delay": 25, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+    ]
+  },
+  {
+    "type": "boss",
+    "id": 204,
+    "name": "Frostbite Caves - Troglobite's Lair",
+    "season": "cave",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 200,
+    "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Torchwood", "Chomper"],
+    "forcedPlants": [],
+    "bossType": "ZombieIceAgeTroglobite",
+    "waves": [
+      { "delay": 20, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"] },
+      { "delay": 30, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+    ]
+  },
+
+  {
+    "type": "normal",
+    "id": 301,
+    "name": "Big Wave Beach - Day 1",
+    "season": "beach",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Peashooter", "Lily Pad", "Tangle Kelp"],
+    "forcedPlants": ["Lily Pad"],
+    "waves": [
+      { "delay": 10, "zombies": ["ZombieBeachSnorkel"] },
+      { "delay": 25, "zombies": ["ZombieBeachSnorkel", "ZombieBeachFisherman"] },
+      { "delay": 25, "zombies": ["ZombieBeachFisherman", "ZombieBeachOctopus"] }
+    ]
+  },
+  {
+    "type": "saveSeeds",
+    "id": 302,
+    "name": "Big Wave Beach - Day 2",
+    "season": "beach",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Peashooter", "Wall-nut", "Snow Pea"],
+    "forcedPlants": [],
+    "seedPositions": {
+      "1,4": "Wall-nut",
+      "3,4": "Wall-nut"
+    },
+    "waves": [
+      { "delay": 12, "zombies": ["ZombieBeachSnorkel", "ZombieBeachFisherman"] },
+      { "delay": 22, "zombies": ["ZombieBeachFisherman", "ZombieBeachOctopus"] },
+      { "delay": 22, "zombies": ["ZombieBeachOctopus", "ZombieBeachSnorkel"] }
+    ]
+  },
+  {
+    "type": "timedWar",
+    "id": 303,
+    "name": "Big Wave Beach - Day 3",
+    "season": "beach",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Lily Pad"],
+    "forcedPlants": [],
+    "timeLimitSeconds": 90,
+    "zombiesToKill": 12,
+    "waves": [
+      { "delay": 5, "zombies": ["ZombieBeachSnorkel", "ZombieBeachSnorkel"] },
+      { "delay": 20, "zombies": ["ZombieBeachFisherman", "ZombieBeachFisherman"] },
+      { "delay": 20, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman"] }
+    ]
+  },
+  {
+    "type": "boss",
+    "id": 304,
+    "name": "Big Wave Beach - Octopus Ambush",
+    "season": "beach",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 200,
+    "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Lily Pad", "Tangle Kelp"],
+    "forcedPlants": [],
+    "bossType": "ZombieBeachOctopus",
+    "waves": [
+      { "delay": 20, "zombies": ["ZombieBeachFisherman", "ZombieBeachSnorkel"] },
+      { "delay": 30, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman"] }
+    ]
+  },
+
+  {
+    "type": "normal",
+    "id": 401,
+    "name": "Dark Ages - Night 1",
+    "season": "darkage",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Wall-nut"],
+    "forcedPlants": ["Sun-shroom"],
+    "waves": [
+      { "delay": 10, "zombies": ["ZombieNewspaper"] },
+      { "delay": 25, "zombies": ["ZombieNewspaper", "ZombieDarkJuggler"] },
+      { "delay": 25, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] }
+    ]
+  },
+  {
+    "type": "lovePlants",
+    "id": 402,
+    "name": "Dark Ages - Night 2",
+    "season": "darkage",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 150,
+    "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Wall-nut", "Tall-nut"],
+    "forcedPlants": [],
+    "maxPlantLoss": 5,
+    "waves": [
+      { "delay": 12, "zombies": ["ZombieNewspaper", "ZombieDarkJuggler"] },
+      { "delay": 22, "zombies": ["ZombieWizard", "ZombieDarkJuggler"] },
+      { "delay": 22, "zombies": ["ZombieDarkImpDragon", "ZombieWizard"] }
+    ]
+  },
+  {
+    "type": "plantWhatYouGet",
+    "id": 403,
+    "name": "Dark Ages - Night 3",
+    "season": "darkage",
+    "rows": 5,
+    "cols": 9,
+    "primarySun": 300,
+    "availablePlants": ["Peashooter", "Wall-nut", "Repeater", "Snow Pea", "Potato Mine"],
+    "forcedPlants": [],
+    "waves": [
+      { "delay": 15, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] },
+      { "delay": 25, "zombies": ["ZombieWizard", "ZombieDarkImpDragon"] },
+      { "delay": 25, "zombies": ["ZombieDarkImpDragon", "ZombieDarkJuggler"] }
+    ]
+  },
+  {
+    "type": "boss",
+    "id": 404,
+    "name": "Dark Ages - The Dark King",
+    "season": "darkage",
+    "rows": 5,
+    "cols": 9,
+    "initialSun": 200,
+    "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Repeater", "Wall-nut", "Tall-nut"],
+    "forcedPlants": [],
+    "bossType": "ZombieDarkKing",
+    "waves": [
+      { "delay": 20, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] },
+      { "delay": 30, "zombies": ["ZombieWizard", "ZombieDarkImpDragon"] }
+    ]
+  }
+]
