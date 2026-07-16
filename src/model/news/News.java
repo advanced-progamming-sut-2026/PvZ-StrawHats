@@ -1,6 +1,14 @@
 package model.news;
 
 public class News {
+    private String text;
+    private boolean isRead;
+
+    public News(String text) {
+        this.text = text;
+        this.isRead = false;
+    }
+
     public String getText() {
         return text;
     }
@@ -15,8 +23,6 @@ public class News {
 
     public void setRead(boolean read) {
         isRead = read;
+        // *
     }
-
-    private String text;
-    private boolean isRead;
 }
