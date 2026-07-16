@@ -1,6 +1,7 @@
 package model.collections.zombie.zombie_effect;
 
 import model.collections.zombie.Zombie;
+import model.projectile.zombie_projectile.ZombiePeaProjectile;
 import service.GameClock;
 import model.utils.GameSession;
 

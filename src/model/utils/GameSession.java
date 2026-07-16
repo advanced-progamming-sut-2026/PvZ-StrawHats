@@ -1,7 +1,12 @@
 package model.utils;
 
 import model.collections.Item;
+import model.collections.item.GroundCoin;
+import model.collections.item.GroundDiamond;
+import model.collections.item.GroundItem;
 import model.collections.item.GroundPlantFood;
+import model.collections.item.GroundSeedPack;
+import model.collections.item.GroundSun;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
@@ -13,21 +18,28 @@ import model.pitches.Cell;
 import model.pitches.Environment;
 import model.pitches.LawnMower;
 import model.projectile.Projectile;
+import model.user_data.User;
+import model.user_data.UserState;
 import service.GameClock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.function.ToIntFunction;
 
 public class GameSession {
 
     public static ToIntFunction<? super Zombie> difficulty = Zombie::getMaxHp;
     private static GameSession instance;
+    private static final Random ITEM_RANDOM = new Random();
+    private static final double SKY_SUN_INTERVAL = 10.0;
+
     private final GameClock clock = new GameClock();
 
     private List<Plant> plants = new ArrayList<>();
     private List<Zombie> zombies = new ArrayList<>();
     private List<Item> items = new ArrayList<>();
+    private List<GroundItem> groundItems = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
 
     private Level level;
@@ -46,12 +58,15 @@ public class GameSession {
     private boolean gameWon = false;
     private int difficultyLevel;
 
+    private double skySunTimer = 0;
+
     public GameSession() {
         this(5, 9);
     }
 
     public GameSession(int rows, int cols) {
         setGridSize(rows, cols);
+        instance = this;
     }
 
     public static GameSession getInstance() {
@@ -92,6 +107,16 @@ public class GameSession {
         }
 
         if (wavesStarted) tickWaveScheduler(deltaTimeSeconds);
+
+        if (wavesStarted) {
+            skySunTimer += deltaTimeSeconds;
+            if (skySunTimer >= SKY_SUN_INTERVAL) {
+                skySunTimer = 0;
+                int col = ITEM_RANDOM.nextInt(environment.getCols());
+                int row = ITEM_RANDOM.nextInt(environment.getRows());
+                items.add(GroundSun.fallFromSky(new Position(col, row)));
+            }
+        }
 
         for (Zombie zombie : zombies) {
             if (!zombie.isAlive() && zombie.isPlantFoodPending()) {
@@ -212,6 +237,44 @@ public class GameSession {
 
     public void onZombieReachedEnd() {
         gameOver = true;
+    }
+
+    public void notifyZombieDied(Zombie zombie, String killerName) {
+        if (zombie == null) return;
+        Position dropPosition = zombie.getPosition();
+        if (dropPosition == null) return;
+
+        items.add(new GroundCoin(dropPosition, GroundCoin.CoinTier.rollRandom()));
+
+        if (ITEM_RANDOM.nextInt(100) < 10) {
+            items.add(new GroundDiamond(dropPosition, 1));
+        }
+
+        if (User.currentUser != null) {
+            UserState state = User.currentUser.userState;
+            if (!state.unlockedPlantIds.isEmpty() && ITEM_RANDOM.nextInt(100) < 5) {
+                List<Integer> unlocked = new ArrayList<>(state.unlockedPlantIds);
+                int plantId = unlocked.get(ITEM_RANDOM.nextInt(unlocked.size()));
+                items.add(new GroundSeedPack(dropPosition, plantId, 1));
+            }
+        }
+    }
+
+    public List<GroundItem> collectItemsNear(Position target) {
+        List<GroundItem> collectedItems = new ArrayList<>();
+        if (User.currentUser == null || target == null) return collectedItems;
+
+        UserState state = User.currentUser.userState;
+        for (Item item : items) {
+            if (item instanceof GroundItem groundItem
+                    && groundItem.isAlive()
+                    && !groundItem.isCollected()
+                    && groundItem.isNear(target)) {
+                groundItem.collect(this, state);
+                collectedItems.add(groundItem);
+            }
+        }
+        return collectedItems;
     }
 
     public void startWaves() {
@@ -389,8 +452,16 @@ public class GameSession {
         return items;
     }
 
+    public List<GroundItem> getGroundItems() {
+        return groundItems;
+    }
+
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public void setGroundItems(List<GroundItem> groundItems) {
+        this.groundItems = groundItems;
     }
 
     public List<Projectile> getProjectiles() {
@@ -414,9 +485,6 @@ public class GameSession {
         if (cell != null) {
             cell.setStructure(structure);
         }
-    }
-
-    public void notifyZombieDied(Zombie zombie, String poison) {
     }
 
     public LawnMower getLawn() {

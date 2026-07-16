@@ -4,15 +4,68 @@ import java.util.List;
 import java.util.Map;
 
 public class GrowthTracker {
-    private List<Map<String, Object>> stages;
+    private final List<Map<String, Object>> stages;
     private int currentStage = 1;
+    private double ageInSeconds = 0.0;
 
     public GrowthTracker(List<Map<String, Object>> stages) {
         this.stages = stages;
     }
-    public void update(double deltaTime) {}
-    public Double getStageValue(String key) { return null; }
-    public int getCurrentStage() { return currentStage; }
-    public void skipToMaxStage() { if(stages != null) currentStage = stages.size(); }
-    public List<Map<String, Object>> getRawStages() { return stages; }
+
+    public boolean hasStages() {
+        return stages != null && !stages.isEmpty();
+    }
+
+    public void update(double deltaTime) {
+        if (!hasStages()) return;
+        ageInSeconds += deltaTime;
+        for (Map<String, Object> stageData : stages) {
+            int stage = ((Number) stageData.get("stage")).intValue();
+            double targetTime = ((Number) stageData.get("time")).doubleValue();
+            if (ageInSeconds >= targetTime && stage > currentStage) {
+                currentStage = stage;
+            }
+        }
+    }
+
+    public Double getStageValue(String key) {
+        if (!hasStages()) return null;
+        for (Map<String, Object> stageData : stages) {
+            int stage = ((Number) stageData.get("stage")).intValue();
+            if (stage == currentStage && stageData.containsKey(key)) {
+                return ((Number) stageData.get(key)).doubleValue();
+            }
+        }
+        return null;
+    }
+
+    public int getCurrentStage() {
+        return currentStage;
+    }
+
+    public double getAgeInSeconds() {
+        return ageInSeconds;
+    }
+
+    public void skipToMaxStage() {
+        if (!hasStages()) return;
+
+        int maxStage = currentStage;
+        double maxTime = ageInSeconds;
+
+        for (Map<String, Object> stageData : stages) {
+            int stage = ((Number) stageData.get("stage")).intValue();
+            double targetTime = ((Number) stageData.get("time")).doubleValue();
+
+            if (stage > maxStage) maxStage = stage;
+            if (targetTime > maxTime) maxTime = targetTime;
+        }
+
+        this.currentStage = maxStage;
+        this.ageInSeconds = maxTime;
+    }
+
+    public List<Map<String, Object>> getRawStages() {
+        return stages;
+    }
 }
