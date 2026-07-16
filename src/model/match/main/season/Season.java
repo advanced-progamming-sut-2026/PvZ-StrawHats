@@ -23,4 +23,12 @@ public abstract class Season {
     public boolean hasIceTiles() { return false; }
     public boolean hasTide() { return false; }
     public boolean isNight() { return false; }
+
+    /**
+     * Per-tick season effect hook (ice wind, necromancy roll, etc.).
+     * Default does nothing; override in the seasons that need it.
+     */
+    public void applyPerTickEffect(model.utils.GameSession session, double deltaSeconds) {
+        // default no-op
+    }
 }

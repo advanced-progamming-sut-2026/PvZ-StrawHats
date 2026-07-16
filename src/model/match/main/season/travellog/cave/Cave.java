@@ -14,5 +14,15 @@ public class Cave extends Season {
     @Override
     public boolean hasIceTiles() { return true; }
 
-    public static void meltIce() { /* to be implemented */ }
+    /**
+     * Thaws a single frozen zombie (e.g. once its ice has taken enough damage,
+     * or a fire plant has been sitting next to it long enough). Callers are
+     * responsible for deciding *when* a zombie has thawed; this just applies it.
+     */
+    public static void meltIce(Zombie zombie) {
+        if (zombie == null) return;
+        if (zombie.getStatus() == Zombie.Status.FREEZE) {
+            zombie.setStatus(Zombie.Status.NORMAL);
+        }
+    }
 }

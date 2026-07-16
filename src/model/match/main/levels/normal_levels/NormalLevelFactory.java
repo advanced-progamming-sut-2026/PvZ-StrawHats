@@ -30,16 +30,19 @@ public class NormalLevelFactory {
 
     /**
      * Helper to build a single wave with a list of zombie types.
-     * The actual zombie instances are created here, with default positions.
-     * (Positions will be adjusted when spawned in GameSession.)
+     * The actual zombie instances are created here, spread one per row so
+     * every lane gets its share when the wave count exceeds the row count.
+     * (Exact spawn columns are still adjusted when the wave is actually spawned.)
      */
     public static ZombieWave createWave(double delay, String... zombieTypes) {
         List<Zombie> zombies = new ArrayList<>();
-        for (String type : zombieTypes) { // TODO: fix this part after zombies, and their positions
-            Zombie z = ZombieFactory.create(type, 9, 0);
-            // positions set to (9, 0) as placeholder.
-
+        int row = 0;
+        for (String type : zombieTypes) {
+            Zombie zombie = ZombieFactory.create(type, row, 9);
+            zombie.setPosition(new Position(9, row));
+            zombies.add(zombie);
+            row = (row + 1) % 5;
         }
-        return new ZombieWave();
+        return new ZombieWave(delay, zombies);
     }
 }

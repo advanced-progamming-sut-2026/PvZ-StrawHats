@@ -10,5 +10,12 @@ public class DarkAge extends Season {
     @Override
     public boolean isNight() { return true; }
 
-    public static void necromancy() { /* to be implemented */ }
+    /**
+     * At the start of each wave, some grave-bearing tiles have a chance to
+     * spawn a zombie from underneath.
+     * TODO: needs a real Grave/Obstacle model (model.pitches.Obstacle is
+     * currently an empty marker interface) before this can be implemented -
+     * specifically a way to know which cells have a grave and are empty.
+     */
+    public static void necromancy() { /* blocked on Obstacle/Grave support */ }
 }
