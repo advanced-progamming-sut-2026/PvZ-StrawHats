@@ -20,7 +20,7 @@ public class NewsMenu extends Menu {
             // دریافت لیست اخبار کاربر لاگین شده از مدل اکانت/کاربر
             // List<News> userNews = App.getLoggedInUser().getNewsList();
             boolean hasUnread = false;
-
+//eyyyy kiiiiirrrrrrr
             // template for printing unread news:
             /*
             for (News news : userNews) {

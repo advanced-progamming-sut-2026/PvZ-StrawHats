@@ -4,7 +4,7 @@ import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
-import model.pitches.LawnMower;
+import model.pitches.Environment;
 import model.utils.GameSession;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class JumpMove implements MoveBehavior {
 
         int currentRow = (int) pos.y();
         int targetCol = (int) (pos.x() - 0.5);
-        LawnMower lawn = session.getLawn();
+        Environment lawn = session.getLawn();
         Cell nextCell = (lawn != null) ? lawn.getCell(currentRow, targetCol) : null;
 
         boolean executeJump = false;
