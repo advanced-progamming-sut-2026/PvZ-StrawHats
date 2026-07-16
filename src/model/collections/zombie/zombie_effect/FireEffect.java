@@ -29,7 +29,7 @@ public class FireEffect implements ZombieEffectStatus {
         int frontGridCol = baseGridCol - 1;
 
         if (target.getFaction() == Faction.ZOMBIES) {
-            int totalCols = session.getLawn().getCols();
+            int totalCols = session.getEnvironment().getCols();
             if (frontGridCol >= 0 && frontGridCol < totalCols) {
                 applySearingDamage(target, session, targetRow, frontGridCol, currentX);
             }
@@ -49,7 +49,7 @@ public class FireEffect implements ZombieEffectStatus {
     }
 
     private void applySearingDamage(Zombie source, GameSession session, int r, int c, double originX) {
-        Cell cell = session.getLawn().getCell(r, c);
+        Cell cell = session.getEnvironment().getCell(r, c);
         if (cell != null && cell.getPlant() != null && cell.getPlant().isAlive()) {
             Plant vegetation = cell.getPlant();
             if (vegetation.getLocation() != null) {

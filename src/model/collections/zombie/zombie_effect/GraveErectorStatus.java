@@ -37,16 +37,18 @@ public class GraveErectorStatus implements ZombieEffectStatus {
     }
 
     private void launchNecroticSpire(Zombie spellcaster, GameSession session) {
+        if (session.getEnvironment() == null) return;
+
         List<Cell> emptyGridSpots = new ArrayList<>();
-        int gridRows = session.getLawn().getRows();
-        int gridCols = session.getLawn().getCols();
+        int gridRows = session.getEnvironment().getRows();
+        int gridCols = session.getEnvironment().getCols();
         int currentX = (int) spellcaster.getPosition().x();
 
         for (int r = 0; r < gridRows; r++) {
             for (int c = 0; c < gridCols; c++) {
                 if (c <= currentX) {
-                    Cell checkedCell = session.getLawn().getCell(r, c);
-                    if (checkedCell != null && checkedCell.getPlant() == null && checkedCell.getInteractableStructure() == null) {
+                    Cell checkedCell = session.getEnvironment().getCell(r, c);
+                    if (checkedCell != null && checkedCell.getPlant() == null && checkedCell.getStructure() == null) {
                         emptyGridSpots.add(checkedCell);
                     }
                 }
@@ -63,7 +65,7 @@ public class GraveErectorStatus implements ZombieEffectStatus {
             Position origin = spellcaster.getPosition();
             Position targetLocation = new Position(chosenCell.getCol(), chosenCell.getRow());
 
-            session.addZombieProjectile(new BoneProjectile(origin, targetLocation, 1.5));
+            session.addZombieProjectile(new BoneProjectile(origin, targetLocation, 1.5, session));
             spawnedSpires++;
         }
     }
