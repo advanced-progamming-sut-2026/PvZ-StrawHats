@@ -1,7 +1,9 @@
 package model.collections.zombie.zombie_effect;
 
 import model.collections.Faction;
+import model.collections.Item;
 import model.collections.item.GroundItem;
+import model.collections.item.GroundSun;
 import model.collections.item.ItemType;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
@@ -18,7 +20,7 @@ public class SunThief implements ZombieEffectStatus {
     private final int beamAttackDamage;
 
     private int collectedSuns = 0;
-    private boolean DispenseRefundOnDeath = false;
+    private boolean refundDispensedOnDeath = false;
     private double stateClock = 0;
     private double tickAccumulator = 0;
     private boolean engagingInTheft = false;
@@ -38,10 +40,10 @@ public class SunThief implements ZombieEffectStatus {
     @Override
     public void applyTickEffect(Zombie target, GameSession session) {
         if (!target.isAlive()) {
-            if (!DispenseRefundOnDeath) {
+            if (!refundDispensedOnDeath) {
                 int refundVal = (int) (collectedSuns * refundPercentage);
                 if (refundVal > 0) session.addSun(refundVal);
-                DispenseRefundOnDeath = true;
+                refundDispensedOnDeath = true;
             }
             return;
         }
@@ -85,24 +87,20 @@ public class SunThief implements ZombieEffectStatus {
     }
 
     private GroundItem scanForFallenSun(GameSession session) {
-        for (GroundItem groundLoot : session.getGroundItems()) {
-            if (!groundLoot.isAlive() || groundLoot.getItemType() != ItemType.SUN) continue;
-            if (groundLoot instanceof SunToken token && token.isFalling()) continue;
-            return groundLoot;
+        for (Item entry : session.getItems()) {
+            if (entry instanceof GroundItem groundLoot
+                    && groundLoot.isAlive()
+                    && !groundLoot.isCollected()
+                    && groundLoot.getItemType() == ItemType.SUN) {
+                return groundLoot;
+            }
         }
         return null;
     }
 
     private void consumeGroundSun(GroundItem sunItem) {
-        int extractedAmount = 0;
-        if (sunItem instanceof ProducedSun prodSun) {
-            extractedAmount = prodSun.getValue();
-        } else if (sunItem instanceof SunToken token) {
-            extractedAmount = token.getValue();
-        }
-
-        if (extractedAmount > 0) {
-            collectedSuns = Math.min(collectedSuns + extractedAmount, lootLimit);
+        if (sunItem instanceof GroundSun groundSun) {
+            collectedSuns = Math.min(collectedSuns + groundSun.getSunValue(), lootLimit);
         }
         sunItem.setAlive(false);
     }
@@ -134,12 +132,14 @@ public class SunThief implements ZombieEffectStatus {
     }
 
     private boolean detectImminentVegetation(Zombie raider, GameSession session) {
+        if (session.getEnvironment() == null) return false;
+
         int r = (int) raider.getPosition().y();
         int c = (int) raider.getPosition().x();
         for (int step = 1; step <= 4; step++) {
             int scanCol = c - step;
             if (scanCol >= 0) {
-                Cell cell = session.getLawn().getCell(r, scanCol);
+                Cell cell = session.getEnvironment().getCell(r, scanCol);
                 if (cell != null && cell.getPlant() != null && cell.getPlant().isAlive()) return true;
             }
         }
@@ -147,12 +147,14 @@ public class SunThief implements ZombieEffectStatus {
     }
 
     private void dischargeBeamWeapons(Zombie raider, GameSession session) {
+        if (session.getEnvironment() == null) return;
+
         int r = (int) raider.getPosition().y();
         int c = (int) raider.getPosition().x();
         for (int step = 1; step <= 4; step++) {
             int scanCol = c - step;
             if (scanCol >= 0) {
-                Cell cell = session.getLawn().getCell(r, scanCol);
+                Cell cell = session.getEnvironment().getCell(r, scanCol);
                 if (cell != null && cell.getPlant() != null && cell.getPlant().isAlive()) {
                     cell.getPlant().takeDamage(beamAttackDamage, raider);
                 }
