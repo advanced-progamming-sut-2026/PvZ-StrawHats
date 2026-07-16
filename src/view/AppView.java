@@ -1,9 +1,11 @@
 package view;
 
+import controller.menus.LeaderboardMenu;
 import model.App;
 import view.menus.*;
 import view.menus.collection_view.CollectionMenuView;
 import view.menus.while_match.BeforeMatchView;
+import view.menus.while_match.MatchMenuView;
 
 public class AppView {
     public static void run() {
@@ -43,6 +45,12 @@ public class AppView {
                 break;
             case "Travel Log Menu":
                 new TravelLogMenuView().getInput();
+                break;
+            case "Match Menu":
+                new MatchMenuView().getInput();
+                break;
+            case "Leaderboard Menu":
+                new LeaderboardMenuView().getInput();
                 break;
         }
     }
