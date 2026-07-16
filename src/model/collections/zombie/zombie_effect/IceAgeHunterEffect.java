@@ -4,6 +4,7 @@ import model.collections.Faction;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
+import model.projectile.zombie_projectile.SnowballProjectile;
 import service.GameClock;
 import model.utils.GameSession;
 

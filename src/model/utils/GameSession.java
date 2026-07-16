@@ -39,6 +39,7 @@ public class GameSession {
     private List<Plant> plants = new ArrayList<>();
     private List<Zombie> zombies = new ArrayList<>();
     private List<Item> items = new ArrayList<>();
+    private List<GroundItem> groundItems = new ArrayList<>();
     private final List<Projectile> projectiles = new ArrayList<>();
 
     private Level level;
@@ -451,8 +452,16 @@ public class GameSession {
         return items;
     }
 
+    public List<GroundItem> getGroundItems() {
+        return groundItems;
+    }
+
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public void setGroundItems(List<GroundItem> groundItems) {
+        this.groundItems = groundItems;
     }
 
     public List<Projectile> getProjectiles() {

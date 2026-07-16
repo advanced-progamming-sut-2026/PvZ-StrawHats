@@ -2,6 +2,7 @@ package model.collections.zombie.zombie_effect;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
+import model.projectile.zombie_projectile.GargantuarImpProjectile;
 import model.utils.GameSession;
 
 public class GigantorImpChucker implements ZombieEffectStatus {

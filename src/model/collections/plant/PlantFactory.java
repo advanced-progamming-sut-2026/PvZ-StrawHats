@@ -1,8 +1,27 @@
 package model.collections.plant;
 
+import model.collections.plant.actstrategy.ActStrategy;
 import model.collections.plant.actstrategy.ExplodeStrategy;
 import model.collections.plant.actstrategy.HomingStrategy;
+import model.collections.plant.actstrategy.LobberStrategy;
+import model.collections.plant.actstrategy.MeleeStrategy;
+import model.collections.plant.actstrategy.MintStrategy;
+import model.collections.plant.actstrategy.ModifyStrategy;
+import model.collections.plant.actstrategy.ShootStrategy;
+import model.collections.plant.actstrategy.StrikeStrategy;
 import model.collections.plant.actstrategy.SunProduceStrategy;
+import model.collections.plant.actstrategy.WallNutStrategy;
+import model.collections.plant.plantfood.GrantArmor;
+import model.collections.plant.plantfood.InstantKill;
+import model.collections.plant.plantfood.KnockBackBlast;
+import model.collections.plant.plantfood.LobberBarrage;
+import model.collections.plant.plantfood.LocalAttack;
+import model.collections.plant.plantfood.MapWideFreeze;
+import model.collections.plant.plantfood.PullUnderWater;
+import model.collections.plant.plantfood.RandomHypnotize;
+import model.collections.plant.plantfood.SpawnClones;
+import model.collections.plant.plantfood.SpawnSun;
+import model.collections.plant.plantfood.TimedProjectileBurst;
 import model.match_mechanisms.vector.Position;
 import model.collections.armour.ArmourFactory;
 import model.collections.armour.ArmourType;
@@ -51,6 +70,7 @@ public class PlantFactory {
         int runtimeDamage = config.damage;
         double runtimeRecharge = config.recharge;
         double runtimeAbility = config.abilityValue;
+        List<String> specialTags = new ArrayList<>();
 
         if (config.upgrades != null) {
             for (PlantJsonParser.UpgradeConfig upgrade : config.upgrades) {
@@ -61,6 +81,7 @@ public class PlantFactory {
                         case BUFF_ACTION_INTERVAL -> runtimeInterval += upgrade.value;
                         case BUFF_DAMAGE -> runtimeDamage += (int) upgrade.value;
                         case BUFF_RECHARGE -> runtimeRecharge += upgrade.value;
+                        case SPECIAL_MECHANIC -> specialTags.add(upgrade.specialTag);
                     }
                 }
             }
@@ -80,16 +101,10 @@ public class PlantFactory {
         plant.setLevel(level);
         plant.setPlantFoodType(config.plantFoodType);
         plant.setWrampUp(config.wrampUp);
+        plant.getRawUpgrades().addAll(specialTags);
 
         // انتساب استراتژی‌های اجرایی واقعی بر اساس نوع توانایی گیاه
-        if (config.abilityType != null) {
-            switch (config.abilityType) {
-                case PRODUCE_SUN -> plant.setActStrategy(new SunProduceStrategy());
-                case SHOOT_PROJECTILE -> plant.setActStrategy(new HomingStrategy());
-                case INSTANT_EXPLOSIVE, DELAYED_EXPLOSIVE -> plant.setActStrategy(new ExplodeStrategy());
-                default -> plant.setActStrategy(null);
-            }
-        }
+        plant.setActStrategy(buildActStrategy(config));
 
         if (config.abilityType == AbilityType.PASSIVE_SHIELD) {
             PlantArmour plantArmor = (PlantArmour) ArmourFactory.createArmour(
@@ -101,8 +116,48 @@ public class PlantFactory {
             plant.setArmor(plantArmor);
         }
 
+        plant.setPlantFoodEffect(buildPlantFoodEffect(config));
         plant.setShootingVectors(buildShootingVectors(config));
         return plant;
+    }
+
+    private static ActStrategy buildActStrategy(PlantJsonParser.PlantConfig config) {
+        if (config.abilityType == AbilityType.MINT_FAMILY_BOOST) return new MintStrategy();
+        if (config.abilityType == AbilityType.MODIFIER_UTILITY) return new ModifyStrategy();
+
+        if (config.category == null) return null;
+        return switch (config.category) {
+            case SUN_PRODUCER -> new SunProduceStrategy();
+            case SHOOTER -> new ShootStrategy();
+            case HOMING -> new HomingStrategy();
+            case STRIKE_THROUGH -> new StrikeStrategy();
+            case LOBBER -> new LobberStrategy();
+            case EXPLOSIVE -> new ExplodeStrategy();
+            case MELEE -> new MeleeStrategy();
+            case WALL_NUT -> new WallNutStrategy();
+            case MODIFIER -> new ModifyStrategy();
+            default -> null;
+        };
+    }
+
+    private static PlantFoodEffect buildPlantFoodEffect(PlantJsonParser.PlantConfig config) {
+        if (config.plantFoodType == null) return null;
+        int value = (int) config.plantFoodValue;
+
+        return switch (config.plantFoodType) {
+            case NONE -> null;
+            case SPAWN_SUN_ITEMS -> new SpawnSun(value);
+            case PROJECTILE_BURST -> new TimedProjectileBurst(Math.max(1, value));
+            case SPAWN_CLONES -> new SpawnClones(Math.max(1, value));
+            case LOCAL_AOE_ATTACK -> new LocalAttack(2.0, value);
+            case GRANT_PERMANENT_ARMOR -> new GrantArmor(value);
+            case RANDOM_HYPNOTIZE -> new RandomHypnotize(Math.max(1, value));
+            case KNOCKBACK_BLAST -> new KnockBackBlast(value, 2.0);
+            case PULL_UNDERWATER -> new PullUnderWater(1);
+            case MAP_WIDE_FREEZE -> new MapWideFreeze();
+            case INSTANT_KILL -> new InstantKill();
+            case LOBBER_BARRAGE -> new LobberBarrage(Math.max(1, value));
+        };
     }
 
     private static List<Position> buildShootingVectors(PlantJsonParser.PlantConfig config) {
