@@ -11,6 +11,7 @@ import model.collections.zombie.zombie_effect.EffectStatusRegistry;
 import model.collections.zombie.zombie_move.MoveBehaviorRegistry;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
+import model.pitches.obstacles.PushableType;
 import model.utils.GameSession;
 
 import java.io.File;

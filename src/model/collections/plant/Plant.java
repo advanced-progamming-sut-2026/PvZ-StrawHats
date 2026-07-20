@@ -1,12 +1,12 @@
 package model.collections.plant;
 
 import model.collections.Item;
-import model.collections.armour.PlantArmour;
 import model.collections.plant.actstrategy.ActStrategy;
-import model.collections.zombie.Zombie;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.Pluck;
 import model.match_mechanisms.vector.Position;
+import model.collections.zombie.Zombie;
+import model.collections.armour.PlantArmour;
 import model.utils.GameSession;
 
 import java.util.ArrayList;
@@ -39,8 +39,6 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private double plantFoodTimer = 0.0;
 
     private PlantArmour armor;
-
-
 
     public enum PlantState {
         ACTIVE,
@@ -129,8 +127,6 @@ public abstract class Plant extends Item implements Pluck, Attack {
         this.plantFoodEffect.applyStatusModifiers(this);
         this.plantFoodEffect.triggerSuperpower(this, session);
     }
-
-    public ActStrategy getActStrategy() {return actStrategy; }
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
@@ -172,5 +168,19 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setArmor(PlantArmour armor) { this.armor = armor; }
     public void setState(PlantState state) {
         this.state = state;
+    }
+
+    // Named getPlantState (not getState) because Item already declares a
+    // getState()/setState(ItemState) pair with an unrelated return type.
+    public PlantState getPlantState() {
+        return this.state;
+    }
+
+    public int getChillLevel() {
+        return this.chillLevel;
+    }
+
+    public void setChillLevel(int chillLevel) {
+        this.chillLevel = chillLevel;
     }
 }

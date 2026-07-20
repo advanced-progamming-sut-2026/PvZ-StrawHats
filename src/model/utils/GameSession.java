@@ -214,6 +214,22 @@ public class GameSession {
         return nextWaveIndex >= waves.size();
     }
 
+    public int getTotalWaveCount() {
+        return waves.size();
+    }
+
+    public int getWavesSpawnedCount() {
+        return nextWaveIndex;
+    }
+
+    /**
+     * Seconds until the next wave spawns, or -1 if every wave has already spawned.
+     */
+    public double getSecondsUntilNextWave() {
+        if (allWavesSpawned()) return -1;
+        return Math.max(0, waves.get(nextWaveIndex).getDelay() - waveTimer);
+    }
+
     private void checkZombieBreaches() {
         for (Zombie zombie : zombies) {
             if (!zombie.isAlive() || zombie.getPosition() == null) continue;

@@ -3,6 +3,7 @@ package model.collections.zombie.zombie_move;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.pitches.*;
+import model.pitches.obstacles.SlipperyDirection;
 import model.utils.GameSession;
 
 public interface MoveBehavior {

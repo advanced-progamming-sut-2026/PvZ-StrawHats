@@ -5,7 +5,7 @@ import model.collections.Item;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
-import model.pitches.Obstacle;
+import model.pitches.obstacles.Obstacle;
 import model.utils.GameSession;
 
 import java.lang.reflect.Field;

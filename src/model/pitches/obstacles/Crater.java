@@ -1,4 +1,4 @@
-package model.pitches;
+package model.pitches.obstacles;
 
 /**
  * Left behind wherever a zombie eats a plant. A crater blocks planting

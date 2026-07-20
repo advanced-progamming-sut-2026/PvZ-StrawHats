@@ -2,6 +2,8 @@ package model.projectile.zombie_projectile;
 
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
+import model.pitches.obstacles.ObstacleFactory;
+import model.pitches.obstacles.ObstacleInformation;
 import model.utils.GameSession;
 
 public class BoneProjectile extends ZombieProjectile {
@@ -32,9 +34,7 @@ public class BoneProjectile extends ZombieProjectile {
         Cell targetCell = session.getEnvironment().getCell(targetRow, targetCol);
 
         if (targetCell != null && targetCell.getPlant() == null && targetCell.getObstacle() == null) {
-            Grave newGrave = new Grave();
-            newGrave.setPosition(new Position(targetCol, targetRow));
-            targetCell.setObstacle(newGrave);
+            targetCell.setObstacle(ObstacleFactory.create(ObstacleInformation.GRAVE));
         }
     }
 }

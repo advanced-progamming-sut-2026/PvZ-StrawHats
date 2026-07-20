@@ -1,4 +1,4 @@
-package model.collections.zombie;
+package model.pitches.obstacles;
 
 public enum PushableType {
     ARCADE_CABINET,

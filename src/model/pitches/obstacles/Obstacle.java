@@ -1,4 +1,4 @@
-package model.pitches;
+package model.pitches.obstacles;
 
 public interface Obstacle {
     /**
