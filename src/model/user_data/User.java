@@ -34,7 +34,7 @@ public class User {
         this.email = email;
         this.gender = gender;
         this.stayLoggedIn = false;
-        this.userState = new UserState(new News[0], 0, 0, 0);
+        this.userState = new UserState(new ArrayList<>(), 0, 0, 0);
     }
 
 

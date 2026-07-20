@@ -6,51 +6,40 @@ import view.menus.collection_view.CollectionMenuView;
 import view.menus.while_match.BeforeMatchView;
 import view.menus.while_match.MatchMenuView;
 
+import java.util.Scanner;
+
 public class AppView {
     public static void run() {
-        switch (App.currentMenu.getName()) {
-            case "SignUP Menu":
-                new SignupMenuView().getInput();
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            MenuView currentView = resolveView(App.currentMenu.getName());
+            if (currentView == null) {
+                System.out.println("Unknown menu state, exiting.");
                 break;
-            case "Login Menu":
-                new LoginMenuView().getInput();
-                break;
-            case "Main Menu":
-                new MainMenuView().getInput();
-                break;
-            case "Profile Menu":
-                new ProfileMenuView().getInput();
-                break;
-            case "Game Menu":
-                new GameMenuView().getInput();
-                break;
-            case "News Menu":
-                new NewsMenuView().getInput();
-                break;
-            case "Collection Menu":
-                new CollectionMenuView().getInput();
-                break;
-            case "Before Menu":
-                new BeforeMatchView().getInput();
-                break;
-            case "Setting Menu":
-                new SettingMenuView().getInput();
-                break;
-            case "Greenhouse Menu":
-                new GreenhouseMenuView().getInput();
-                break;
-            case "Store Menu":
-                new StoreMenuView().getInput();
-                break;
-            case "Travel Log Menu":
-                new TravelLogMenuView().getInput();
-                break;
-            case "Match Menu":
-                new MatchMenuView().getInput();
-                break;
-            case "Leaderboard Menu":
-                new LeaderboardMenuView().getInput();
-                break;
+            }
+
+            String input = scanner.nextLine();
+            currentView.showMenu(input);
         }
+    }
+
+    private static MenuView resolveView(String menuName) {
+        return switch (menuName) {
+            case "SignUP Menu" -> new SignupMenuView();
+            case "Login Menu" -> new LoginMenuView();
+            case "Main Menu" -> new MainMenuView();
+            case "Profile Menu" -> new ProfileMenuView();
+            case "Game Menu" -> new GameMenuView();
+            case "News Menu" -> new NewsMenuView();
+            case "Collection Menu" -> new CollectionMenuView();
+            case "Before Menu" -> new BeforeMatchView();
+            case "Setting Menu" -> new SettingMenuView();
+            case "Greenhouse Menu" -> new GreenhouseMenuView();
+            case "Store Menu" -> new StoreMenuView();
+            case "Travel Log Menu" -> new TravelLogMenuView();
+            case "Match Menu" -> new MatchMenuView();
+            case "Leaderboard Menu" -> new LeaderboardMenuView();
+            default -> null;
+        };
     }
 }

@@ -3,21 +3,31 @@ package controller.menus;
 import controller.menus.authentication.SignupMenu;
 import model.App;
 import model.Regex;
+import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
 
 public abstract class Menu {
     public void changeMenu(String text) {
+        String menuKey;
+
         Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
-        matcher.matches();
-        String menu = matcher.group("menuname");
-        switch (menu) {
-            case "Game Menu" -> App.currentMenu = new GameMenu();
-            case "Profile Menu" -> App.currentMenu = new ProfileMenu();
-            case "Setting Menu" -> App.currentMenu = new SettingMenu();
-            case "News Menu" -> App.currentMenu = new NewsMenu();
-            case "SignUp Menu" -> App.currentMenu = new SignupMenu();
-            case "Main Menu" -> App.currentMenu = new MainMenu();
+        if (matcher.matches()) {
+            menuKey = matcher.group("menuname");
+        } else {
+            menuKey = text;
+        }
+
+        String normalized = menuKey.toLowerCase().replace("menu", "").trim();
+
+        switch (normalized) {
+            case "game" -> App.currentMenu = new GameMenu();
+            case "profile" -> App.currentMenu = new ProfileMenu();
+            case "settings", "setting" -> App.currentMenu = new SettingMenu();
+            case "news" -> App.currentMenu = new NewsMenu();
+            case "signup" -> App.currentMenu = new SignupMenu();
+            case "main" -> App.currentMenu = new MainMenu();
+            default -> GeneralPrinter.print("Error: no such menu.");
         }
     }
 

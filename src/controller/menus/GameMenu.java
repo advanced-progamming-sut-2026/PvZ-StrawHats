@@ -60,7 +60,7 @@ public class GameMenu extends Menu {
             matcher.matches();
             String menuName = matcher.group("menuname");
 
-            if (menuName.equals("Collection Menu")) {
+            if (menuName.trim().equalsIgnoreCase("Collection")) {
                 App.currentMenu = new CollectionMenu();
             } else {
                 changeMenu(text);

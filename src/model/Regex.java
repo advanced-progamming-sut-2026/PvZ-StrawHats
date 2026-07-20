@@ -49,10 +49,10 @@ public enum Regex {
     ),
 
     MENU_NEWS_SHOW_UNREAD(
-            "^\\s*menu\\s+news\\s+showunread\\s*$"
+            "^\\s*menu\\s+news\\s+show-unread\\s*$"
     ),
     MENU_NEWS_SHOW_ALL(
-            "^\\s*menu\\s+news\\s+showall\\s*$"
+            "^\\s*menu\\s+news\\s+show-all\\s*$"
     ),
     MENU_CHEAT_ADD(
             "^\\s*menu\\s+cheat\\s+add\\s+(?<n>\\S+)\\s+(?<r>\\S+)\\s*$"

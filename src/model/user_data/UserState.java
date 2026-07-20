@@ -7,8 +7,9 @@ import java.util.*;
 
 public class UserState {
 
-    public News[] news;
+    public List<News> news;
     public int lastLevel, diamonds, coins;
+    public int difficultyLevel;
 
     public Set<Integer> unlockedPlantIds = new HashSet<>();
     public Map<Integer, Integer> seedPacketInventory = new HashMap<>();
@@ -20,11 +21,12 @@ public class UserState {
     public Integer dailyOfferPlantId;
     public boolean dailyOfferPurchased;
 
-    public UserState(News[] news, int lastLevel, int diamonds, int coins) {
+    public UserState(List<News> news, int lastLevel, int diamonds, int coins) {
         this.news = news;
         this.lastLevel = lastLevel;
         this.diamonds = diamonds;
         this.coins = coins;
+        this.difficultyLevel = 3;
         this.unlockedPlantIds.add(1);
     }
 
@@ -54,5 +56,16 @@ public class UserState {
 
     public void addSeedPackets(int plantId, int count) {
         seedPacketInventory.merge(plantId, count, Integer::sum);
+    }
+
+    public void addNews(News item) {
+        if (item != null) news.add(item);
+    }
+
+    public boolean hasUnreadNews() {
+        for (News item : news) {
+            if (!item.isRead()) return true;
+        }
+        return false;
     }
 }
