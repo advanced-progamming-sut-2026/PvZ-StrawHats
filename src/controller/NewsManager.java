@@ -1,39 +1,28 @@
 package controller;
 
+import model.App;
 import model.news.News;
+import model.user_data.User;
 
 public class NewsManager {
 
-    // این متد برای دکمه منوی اصلی (Main Menu) استفاده می‌شود تا نقطه قرمز را نمایش دهد
     public static boolean hasUnreadNews() {
-        // * بررسی لیست اخبار کاربر لاگین شده
-        // for (News news : User.getLoggedInUser().getNewsList()) {
-        //     if (!news.isRead()) return true;
-        // }
-        return false;
+        if (App.currentUser == null) return false;
+        return App.currentUser.userState.hasUnreadNews();
     }
 
-    // تولید یک خبر جدید برای کاربر
     public static void generateNews(String type, String itemName) {
-        String message = "";
-        switch (type.toUpperCase()) {
-            case "PLANT":
-                message = "You unlocked a new Plant: " + itemName + "!";
-                break;
-            case "ZOMBIE":
-                message = "New Zombie discovered in your level: " + itemName + "!";
-                break;
-            case "MINIGAME":
-                message = "You unlocked a new Minigame: " + itemName + "!";
-                break;
-            case "MESSAGE":
-                message = "New message from network: " + itemName;
-                break;
-        }
+        if (App.currentUser == null) return;
 
-        News news = new News(message);
-        // * این خبر جدید باید به لیست اخبار کاربر لاگین شده افزوده شود
-        // User.getLoggedInUser().addNews(news);
-        // User.getLoggedInUser().save();
+        String message = switch (type.toUpperCase()) {
+            case "PLANT" -> "You unlocked a new Plant: " + itemName + "!";
+            case "ZOMBIE" -> "New Zombie discovered in your level: " + itemName + "!";
+            case "MINIGAME" -> "You unlocked a new Minigame: " + itemName + "!";
+            case "MESSAGE" -> "New message from network: " + itemName;
+            default -> itemName;
+        };
+
+        App.currentUser.userState.addNews(new News(message));
+        User.save();
     }
 }
