@@ -1,6 +1,5 @@
 package view;
 
-import controller.menus.LeaderboardMenu;
 import model.App;
 import view.menus.*;
 import view.menus.collection_view.CollectionMenuView;

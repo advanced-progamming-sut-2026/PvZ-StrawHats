@@ -2,6 +2,7 @@ package controller.mini_games;
 
 import controller.menus.Menu;
 import model.match.mini_games.Beghouled;
+import view.GeneralPrinter;
 
 public class BeghouledController extends Menu {
     private final Beghouled game;
@@ -26,7 +27,7 @@ public class BeghouledController extends Menu {
         } else if (trimmed.equals("advance time -t 1 ticks")) {
             game.tick(0.1);
         } else {
-            System.out.println("Unknown command in Beghouled.");
+            GeneralPrinter.print("Unknown command in Beghouled.");
         }
         reportOutcome();
     }
@@ -35,14 +36,14 @@ public class BeghouledController extends Menu {
         int[] coords = parseTwoCoords(text);
         boolean swapped = game.trySwap(coords[1], coords[0], coords[3], coords[2]);
         if (!swapped) {
-            System.out.println("That swap doesn't create a match — nothing happened.");
+            GeneralPrinter.print("That swap doesn't create a match — nothing happened.");
         }
     }
 
     private void handleUpgrade(String text) {
         String plantName = text.split("\\s+")[2];
         if (!game.upgrade(plantName)) {
-            System.out.println("Can't upgrade " + plantName + " (not enough sun, or no such upgrade).");
+            GeneralPrinter.print("Can't upgrade " + plantName + " (not enough sun, or no such upgrade).");
         }
     }
 
@@ -57,11 +58,11 @@ public class BeghouledController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
-            System.out.println("Reached " + game.getMatchesNeeded() + " matches — every zombie is cleared. You win!");
+            GeneralPrinter.print("Reached " + game.getMatchesNeeded() + " matches — every zombie is cleared. You win!");
         } else if (game.isLost()) {
-            System.out.println("The zombies got through. You lose!");
+            GeneralPrinter.print("The zombies got through. You lose!");
         } else {
-            System.out.println("Matches: " + game.getMatchesMade() + "/" + game.getMatchesNeeded());
+            GeneralPrinter.print("Matches: " + game.getMatchesMade() + "/" + game.getMatchesNeeded());
         }
     }
 

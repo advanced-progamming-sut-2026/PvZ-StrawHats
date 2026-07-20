@@ -3,8 +3,8 @@ package model.collections.zombie.zombie_effect;
 import model.collections.item.GroundSun;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class SunProducer implements ZombieEffectStatus {
     private static final int SUN_VALUE = GroundSun.SunDropType.REGULAR.getValue();

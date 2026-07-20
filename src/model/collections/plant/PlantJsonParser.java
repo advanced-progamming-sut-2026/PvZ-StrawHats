@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
+import view.GeneralPrinter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,7 +92,7 @@ public class PlantJsonParser {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Could not load plant data: " + e.getMessage());
+            GeneralPrinter.print("Could not load plant data: " + e.getMessage());
         }
         return result;
     }

@@ -8,6 +8,7 @@ import model.match.main.season.SeasonFactory;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
+import view.GeneralPrinter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -31,10 +32,10 @@ public class GameMenu extends Menu {
             App.currentMenu = new TravelLogMenu();
 
         } else if (Regex.MENU_COIN_WALLET.getMatcherRaw(text).matches()) {
-            System.out.println("Coins: " + User.currentUser.userState.coins);
+            GeneralPrinter.print("Coins: " + User.currentUser.userState.coins);
 
         } else if (Regex.MENU_GEM_WALLET.getMatcherRaw(text).matches()) {
-            System.out.println("Gems: " + User.currentUser.userState.diamonds);
+            GeneralPrinter.print("Gems: " + User.currentUser.userState.diamonds);
 
         } else if (Regex.MENU_LEADERBOARD.getMatcherRaw(text).matches()) {
             App.currentMenu = new LeaderboardMenu();
@@ -69,10 +70,10 @@ public class GameMenu extends Menu {
             exitMenu();
 
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
 
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 
@@ -81,7 +82,7 @@ public class GameMenu extends Menu {
         try {
             season = SeasonFactory.create(chapterName);
         } catch (IllegalArgumentException e) {
-            System.out.println("Error: no such chapter.");
+            GeneralPrinter.print("Error: no such chapter.");
             return;
         }
 
@@ -89,7 +90,7 @@ public class GameMenu extends Menu {
         try {
             allLevels = LevelLoader.loadLevels("/Levels.json");
         } catch (Exception e) {
-            System.out.println("Error: could not load levels.");
+            GeneralPrinter.print("Error: could not load levels.");
             return;
         }
         allLevels.sort(Comparator.comparingInt(Level::getId));
@@ -115,7 +116,7 @@ public class GameMenu extends Menu {
         }
 
         if (target == null) {
-            System.out.println("Error: chapter is locked.");
+            GeneralPrinter.print("Error: chapter is locked.");
         } else {
             controller.menus.match.MatchMenu.selectedLevel = target;
             App.currentMenu = new controller.menus.match.MatchMenu();

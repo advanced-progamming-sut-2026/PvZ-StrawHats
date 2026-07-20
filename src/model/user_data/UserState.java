@@ -1,10 +1,9 @@
 package model.user_data;
 
+import model.greenhouse.PotData;
 import model.news.News;
 
 import java.util.*;
-
-import model.greenhouse.PotData;
 
 public class UserState {
 

@@ -2,9 +2,9 @@ package controller.menus;
 
 import model.App;
 import model.Regex;
-import model.news.News;
+import view.GeneralPrinter;
+
 import java.util.regex.Matcher;
-import java.util.List;
 
 public class NewsMenu extends Menu {
 
@@ -25,13 +25,13 @@ public class NewsMenu extends Menu {
             /*
             for (News news : userNews) {
                 if (!news.isRead()) {
-                    System.out.println(news.getText());
+                    GeneralPrinter.print(news.getText());
                     news.setRead(true);
                     hasUnread = true;
                 }
             }
             if (!hasUnread) {
-                System.out.println("No unread news.");
+                GeneralPrinter.print("No unread news.");
             }
             */
             // * ذخیره تغییرات وضعیت اخبار در پروفایل کاربر
@@ -44,11 +44,11 @@ public class NewsMenu extends Menu {
             // template for printing all news:
             /*
             if (userNews.isEmpty()) {
-                System.out.println("No news available.");
+                GeneralPrinter.print("No news available.");
             } else {
                 for (News news : userNews) {
                     String status = news.isRead() ? "[READ]" : "[NEW]";
-                    System.out.println(status + " " + news.getText());
+                    GeneralPrinter.print(status + " " + news.getText());
                     news.setRead(true);
                 }
             }
@@ -68,7 +68,7 @@ public class NewsMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         }
     }
 

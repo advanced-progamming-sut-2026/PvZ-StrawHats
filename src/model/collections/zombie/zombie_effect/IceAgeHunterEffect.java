@@ -5,8 +5,8 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
 import model.projectile.zombie_projectile.SnowballProjectile;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class IceAgeHunterEffect implements ZombieEffectStatus {
     private final double snowballDelay;

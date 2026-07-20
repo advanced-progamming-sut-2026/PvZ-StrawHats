@@ -6,12 +6,7 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.projectile.Projectile;
 import model.projectile.StraightMove;
-import model.projectile.hit.FireHit;
-import model.projectile.hit.HitEffectStrategy;
-import model.projectile.hit.IceHit;
-import model.projectile.hit.NormalHit;
-import model.projectile.hit.PierceHit;
-import model.projectile.hit.PoisonHit;
+import model.projectile.hit.*;
 import model.utils.GameSession;
 
 import java.util.List;

@@ -3,8 +3,8 @@ package model.collections.zombie.zombie_effect;
 import model.collections.armour.Armour;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class KingBuffEffect implements ZombieEffectStatus {
     private final double coronationCooldown;

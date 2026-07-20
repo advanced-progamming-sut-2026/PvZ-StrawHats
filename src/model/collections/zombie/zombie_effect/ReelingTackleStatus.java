@@ -5,8 +5,8 @@ import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class ReelingTackleStatus implements ZombieEffectStatus {
     private final double reelCooldown;

@@ -1,9 +1,10 @@
 package controller.menus.authentication;
 
-import controller.menus.Menu;
 import controller.menus.MainMenu;
-import model.user_data.User;
+import controller.menus.Menu;
 import model.Regex;
+import model.user_data.User;
+import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
 
@@ -37,9 +38,9 @@ public class LoginMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Invalid command.");
+            GeneralPrinter.print("Invalid command.");
         }
     }
 
@@ -52,11 +53,11 @@ public class LoginMenu extends Menu {
 
         User user = User.findByUsername(username);
         if (user == null) {
-            System.out.println("Username not found.");
+            GeneralPrinter.print("Username not found.");
             return;
         }
         if (!user.checkPassword(password)) {
-            System.out.println("Incorrect password.");
+            GeneralPrinter.print("Incorrect password.");
             return;
         }
 
@@ -69,7 +70,7 @@ public class LoginMenu extends Menu {
 
         User.save();
 
-        System.out.println("Welcome back, " + user.nickname + "!");
+        GeneralPrinter.print("Welcome back, " + user.nickname + "!");
         currentMenu = new MainMenu();
     }
 
@@ -81,26 +82,26 @@ public class LoginMenu extends Menu {
 
         User user = User.findByUsername(username);
         if (user == null) {
-            System.out.println("Username not found.");
+            GeneralPrinter.print("Username not found.");
             return;
         }
         if (!user.email.equals(email)) {
-            System.out.println("Email does not match our records.");
+            GeneralPrinter.print("Email does not match our records.");
             return;
         }
         if (user.securityQuestion == null) {
-            System.out.println("No security question set for this account.");
+            GeneralPrinter.print("No security question set for this account.");
             return;
         }
 
         pendingPasswordReset = user;
-        System.out.println("Security question: " + user.securityQuestion);
-        System.out.println("Answer with: answer -a <your_answer>");
+        GeneralPrinter.print("Security question: " + user.securityQuestion);
+        GeneralPrinter.print("Answer with: answer -a <your_answer>");
     }
 
     private void handleAnswer(String text) {
         if (pendingPasswordReset == null) {
-            System.out.println("No active password reset. Use 'forget password' first.");
+            GeneralPrinter.print("No active password reset. Use 'forget password' first.");
             return;
         }
 
@@ -109,13 +110,13 @@ public class LoginMenu extends Menu {
         String answer = matcher.group("answer");
 
         if (!pendingPasswordReset.checkSecurityAnswer(answer)) {
-            System.out.println("Incorrect answer. Returning to menu.");
+            GeneralPrinter.print("Incorrect answer. Returning to menu.");
             pendingPasswordReset = null;
             return;
         }
 
         awaitingNewPassword = true;
-        System.out.println("Correct! Enter your new password:");
+        GeneralPrinter.print("Correct! Enter your new password:");
     }
 
     private void handleNewPassword(String text) {
@@ -125,7 +126,7 @@ public class LoginMenu extends Menu {
 
         pendingPasswordReset.setPassword(newPassword);
         User.save();
-        System.out.println("Password updated successfully. Please log in.");
+        GeneralPrinter.print("Password updated successfully. Please log in.");
 
         pendingPasswordReset = null;
         awaitingNewPassword = false;
@@ -134,19 +135,19 @@ public class LoginMenu extends Menu {
     private boolean isStrongPassword(String password) {
         String specialChars = "!#$%^&*()=+}{}[]|/\\:;'\"<>?";
         if (password.length() < 8) {
-            System.out.println("Weak password: must be at least 8 characters.");
+            GeneralPrinter.print("Weak password: must be at least 8 characters.");
             return false;
         }
         if (!password.matches(".*[a-z].*")) {
-            System.out.println("Weak password: must contain a lowercase letter.");
+            GeneralPrinter.print("Weak password: must contain a lowercase letter.");
             return false;
         }
         if (!password.matches(".*[A-Z].*")) {
-            System.out.println("Weak password: must contain an uppercase letter.");
+            GeneralPrinter.print("Weak password: must contain an uppercase letter.");
             return false;
         }
         if (!password.matches(".*[0-9].*")) {
-            System.out.println("Weak password: must contain a digit.");
+            GeneralPrinter.print("Weak password: must contain a digit.");
             return false;
         }
         boolean hasSpecial = false;
@@ -157,7 +158,7 @@ public class LoginMenu extends Menu {
             }
         }
         if (!hasSpecial) {
-            System.out.println("Weak password: must contain a special character.");
+            GeneralPrinter.print("Weak password: must contain a special character.");
             return false;
         }
         return true;
@@ -169,7 +170,7 @@ public class LoginMenu extends Menu {
         String menuName = matcher.group("menuname");
 
         if (menuName == "Main menu") {
-            System.out.println("You can only enter the Main Menu after logging in.");
+            GeneralPrinter.print("You can only enter the Main Menu after logging in.");
             return;
         }
         changeMenu(menuName);

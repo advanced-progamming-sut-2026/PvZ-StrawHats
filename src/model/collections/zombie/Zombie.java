@@ -7,17 +7,17 @@ import model.collections.plant.Plant;
 import model.collections.zombie.zombie_attack.AttackBehavior;
 import model.collections.zombie.zombie_defense.DefenseBehavior;
 import model.collections.zombie.zombie_effect.ZombieEffectStatus;
+import model.collections.zombie.zombie_move.HypnotizedMoveBehavior;
 import model.collections.zombie.zombie_move.MoveBehavior;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.vector.Position;
-import model.utils.GameSession;
-import model.projectile.Projectile;
 import model.projectile.ArcMove;
-import model.collections.zombie.zombie_move.*;
+import model.projectile.Projectile;
+import model.utils.GameSession;
 
-import java.util.Random;
 import java.util.List;
+import java.util.Random;
 
 public class Zombie extends Item implements Attack {
     private static final Random RAND = new Random();

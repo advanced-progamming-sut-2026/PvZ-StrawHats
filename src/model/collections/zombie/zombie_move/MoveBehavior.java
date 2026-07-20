@@ -2,11 +2,7 @@ package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import model.pitches.Cell;
-import model.pitches.Environment;
-import model.pitches.SlipperyDirection;
-import model.pitches.Tile;
-import model.pitches.TileType;
+import model.pitches.*;
 import model.utils.GameSession;
 
 public interface MoveBehavior {

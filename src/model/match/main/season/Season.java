@@ -2,6 +2,7 @@ package model.match.main.season;
 
 import model.match.main.season.travellog.TravelLog;
 import model.pitches.ObstacleInformation;
+
 import java.util.ArrayList;
 
 public abstract class Season {

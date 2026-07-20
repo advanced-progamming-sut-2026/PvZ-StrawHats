@@ -11,11 +11,7 @@ import model.pitches.ObstacleFactory;
 import model.pitches.ObstacleInformation;
 import model.utils.GameSession;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * A three-in-a-row puzzle laid over a normal (never-ending) zombie lawn.

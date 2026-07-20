@@ -2,13 +2,14 @@ package controller.menus.store;
 
 import controller.menus.Menu;
 import controller.menus.greenhouse.GreenhouseController;
+import model.App;
+import model.Regex;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.greenhouse.store.Store;
 import model.user_data.User;
 import model.user_data.UserState;
-import model.App;
-import model.Regex;
+import view.GeneralPrinter;
 
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,9 +28,9 @@ public class StoreController extends Menu {
         UserState state = User.currentUser.userState;
 
         if (Regex.SHOPPING_LIST.getMatcherRaw(text).matches()) {
-            System.out.println(STORE.renderPermanentGoods());
+            GeneralPrinter.print(STORE.renderPermanentGoods());
         } else if (Regex.SHOP_DAILY.getMatcherRaw(text).matches()) {
-            System.out.println(STORE.renderDailyOffer(state));
+            GeneralPrinter.print(STORE.renderDailyOffer(state));
         } else if (Regex.SHOP_BUY.getMatcherRaw(text).matches()) {
             Matcher m = Regex.SHOP_BUY.getMatcherRaw(text);
             m.matches();
@@ -38,16 +39,16 @@ public class StoreController extends Menu {
             String plantTypeName = m.group("planttype");
             Integer plantTypeId = plantTypeName == null ? null : resolvePlantId(plantTypeName);
             if (plantTypeName != null && plantTypeId == null) {
-                System.out.println("Error: unknown plant type '" + plantTypeName + "'.");
+                GeneralPrinter.print("Error: unknown plant type '" + plantTypeName + "'.");
             } else {
-                System.out.println(STORE.buy(state, itemId, count, plantTypeId));
+                GeneralPrinter.print(STORE.buy(state, itemId, count, plantTypeId));
             }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 

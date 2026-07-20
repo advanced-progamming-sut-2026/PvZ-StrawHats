@@ -1,10 +1,9 @@
 package model.collections.zombie.zombie_attack;
 
+import model.collections.zombie.BehaviorSpec;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import model.collections.zombie.BehaviorSpec;
-import model.utils.GameSession;
 
 public final class AttackBehaviorRegistry {
     private static final Map<String, AttackBehaviorFactory> REGISTRY = new HashMap<>();

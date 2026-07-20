@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import model.greenhouse.Greenhouse;
 import model.news.News;
+import view.GeneralPrinter;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -92,7 +93,7 @@ public class User {
                 if (user.stayLoggedIn) setUser(user);
 
         } catch (IOException e) {
-            System.out.println("Could not load users: " + e.getMessage());
+            GeneralPrinter.print("Could not load users: " + e.getMessage());
         }
     }
 
@@ -109,7 +110,7 @@ public class User {
         try (Writer writer = new FileWriter(SAVE_FILE)) {
             GSON.toJson(users, writer);
         } catch (IOException e) {
-            System.out.println("Could not save users: " + e.getMessage());
+            GeneralPrinter.print("Could not save users: " + e.getMessage());
         }
     }
 

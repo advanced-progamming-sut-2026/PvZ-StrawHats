@@ -2,6 +2,7 @@ package controller.mini_games;
 
 import controller.menus.Menu;
 import model.match.mini_games.izombie.IZombie;
+import view.GeneralPrinter;
 
 public class ImZombieController extends Menu {
     private final IZombie game;
@@ -24,7 +25,7 @@ public class ImZombieController extends Menu {
         } else if (trimmed.equals("advance time -t 1 ticks")) {
             game.tick(0.1);
         } else {
-            System.out.println("Unknown command in I, Zombie.");
+            GeneralPrinter.print("Unknown command in I, Zombie.");
         }
         reportOutcome();
     }
@@ -35,15 +36,15 @@ public class ImZombieController extends Menu {
         int row = Integer.parseInt(tokens[5]);
 
         if (!game.placeZombie(alias, row)) {
-            System.out.println("Can't place " + alias + " right now (not enough sun, or unavailable this level).");
+            GeneralPrinter.print("Can't place " + alias + " right now (not enough sun, or unavailable this level).");
         }
     }
 
     private void reportOutcome() {
         if (game.isWon()) {
-            System.out.println("Every brain has been eaten. You win!");
+            GeneralPrinter.print("Every brain has been eaten. You win!");
         } else if (game.isLost()) {
-            System.out.println("Out of sun and out of zombies. You lose!");
+            GeneralPrinter.print("Out of sun and out of zombies. You lose!");
         }
     }
 

@@ -6,8 +6,8 @@ import model.match_mechanisms.seed_packets.RandomSeedPacket;
 import model.match_mechanisms.seed_packets.SelectableSeedPacket;
 import model.user_data.UserState;
 
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

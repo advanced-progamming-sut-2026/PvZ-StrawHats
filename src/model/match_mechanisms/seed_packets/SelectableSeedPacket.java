@@ -1,8 +1,8 @@
 package model.match_mechanisms.seed_packets;
 
-import model.user_data.UserState;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
+import model.user_data.UserState;
 
 public class SelectableSeedPacket extends SeedPacket {
 

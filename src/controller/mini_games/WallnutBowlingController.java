@@ -2,6 +2,7 @@ package controller.mini_games;
 
 import controller.menus.Menu;
 import model.match.mini_games.wallnutbowlling.WallnutBowling;
+import view.GeneralPrinter;
 
 public class WallnutBowlingController extends Menu {
     private final WallnutBowling game;
@@ -24,7 +25,7 @@ public class WallnutBowlingController extends Menu {
         } else if (trimmed.equals("advance time -t 1 ticks")) {
             game.tick(0.1);
         } else {
-            System.out.println("Unknown command in Wallnut Bowling.");
+            GeneralPrinter.print("Unknown command in Wallnut Bowling.");
         }
         reportOutcome();
     }
@@ -36,15 +37,15 @@ public class WallnutBowlingController extends Menu {
         int row = Integer.parseInt(parts[1].trim());
 
         if (!game.plantNut(row, col)) {
-            System.out.println("Can't plant past the red line (column " + game.getRedLineColumn() + ").");
+            GeneralPrinter.print("Can't plant past the red line (column " + game.getRedLineColumn() + ").");
         }
     }
 
     private void reportOutcome() {
         if (game.isWon()) {
-            System.out.println("All waves cleared. You win!");
+            GeneralPrinter.print("All waves cleared. You win!");
         } else if (game.isLost()) {
-            System.out.println("The zombies got through. You lose!");
+            GeneralPrinter.print("The zombies got through. You lose!");
         }
     }
 

@@ -11,7 +11,6 @@ import model.collections.zombie.ZombieFactory;
 import model.match.main.levels.Level;
 import model.match.main.levels.normal_levels.NormalLevel;
 import model.match.main.levels.special_levels.*;
-import model.match.main.season.Season;
 import model.match.main.season.SeasonFactory;
 import model.match_mechanisms.Time;
 import model.match_mechanisms.ZombieWave;
@@ -29,10 +28,10 @@ public class LevelLoader {
 
     /**
      * Load all levels from a JSON resource file.
-     * @param resourcePath path relative to classpath, e.g. "/levels.json"
+     * path relative to classpath, e.g. "/levels.json"
      * @return list of Level objects
      */
-    public static List<Level> loadLevels(String resourcePath) throws Exception {
+    public static List<Level> loadLevels(String resourcePath) {
         var is = LevelLoader.class.getResourceAsStream(resourcePath);
         if (is == null) throw new IllegalArgumentException("Resource not found: " + resourcePath);
 

@@ -1,6 +1,7 @@
 package model.pitches;
 
 import model.collections.zombie.Zombie;
+import view.GeneralPrinter;
 
 import java.util.List;
 
@@ -28,16 +29,16 @@ public class LawnMower {
      */
     public boolean killZombiesInRow(List<Zombie> zombiesInRow) {
         if (isUsed) {
-            System.out.println("The zombie ate your brain; LOSER!!!");
+            GeneralPrinter.print("The zombie ate your brain; LOSER!!!");
             return false;
         }
 
-        System.out.println("The lawn mower in row " + rowNumber + " is triggered and killed these zombies:");
+        GeneralPrinter.print("The lawn mower in row " + rowNumber + " is triggered and killed these zombies:");
         if (zombiesInRow != null) {
             for (Zombie zombie : zombiesInRow) {
                 if (zombie != null && zombie.isAlive()) {
                     zombie.setHp(0);
-                    System.out.println(" - " + zombie.getName());
+                    GeneralPrinter.print(" - " + zombie.getName());
                 }
             }
         }

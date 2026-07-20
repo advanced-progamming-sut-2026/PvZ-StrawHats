@@ -1,8 +1,5 @@
 package model.collections.zombie.zombie_attack;
 
-import model.collections.zombie.BehaviorSpec;
-
-import java.util.HashMap;
 import java.util.Map;
 
 @FunctionalInterface

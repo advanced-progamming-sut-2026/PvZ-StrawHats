@@ -5,6 +5,7 @@ import model.Regex;
 import model.match.main.levels.Level;
 import model.user_data.User;
 import model.utils.LevelLoader;
+import view.GeneralPrinter;
 
 import java.util.Comparator;
 import java.util.List;
@@ -22,9 +23,9 @@ public class LeaderboardMenu extends Menu {
         if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 

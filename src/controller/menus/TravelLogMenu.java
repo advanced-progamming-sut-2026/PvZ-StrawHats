@@ -1,9 +1,9 @@
 package controller.menus;
 
-import controller.menus.Menu;
-import controller.menus.GameMenu;
 import model.App;
 import model.Regex;
+import view.GeneralPrinter;
+
 import java.util.regex.Matcher;
 
 public class TravelLogMenu extends Menu {
@@ -24,9 +24,9 @@ public class TravelLogMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Invalid command.");
+            GeneralPrinter.print("Invalid command.");
         }
     }
 

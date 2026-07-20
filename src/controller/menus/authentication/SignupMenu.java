@@ -1,9 +1,10 @@
 package controller.menus.authentication;
 
 import controller.menus.Menu;
+import model.Regex;
 import model.game_exceptions.GameException;
 import model.user_data.User;
-import model.Regex;
+import view.GeneralPrinter;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,7 +39,7 @@ public class SignupMenu extends Menu {
             if (Regex.PICK_QUESTION.getMatcherRaw(text).matches()) {
                 handlePickQuestion(text);
             } else {
-                System.out.println("Please pick a security question first.");
+                GeneralPrinter.print("Please pick a security question first.");
             }
             return;
         }
@@ -50,7 +51,7 @@ public class SignupMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
             throw new GameException("Invalid command");
         }
@@ -74,11 +75,11 @@ public class SignupMenu extends Menu {
         pendingGender = gender;
         isPendingSecurityAnswer = true;
 
-        System.out.println("Please pick a security question:");
+        GeneralPrinter.print("Please pick a security question:");
         for (String q : SECURITY_QUESTIONS) {
-            System.out.println(q);
+            GeneralPrinter.print(q);
         }
-        System.out.println("Usage: pick question -q <number> -a <answer> -c <answer_confirm>");
+        GeneralPrinter.print("Usage: pick question -q <number> -a <answer> -c <answer_confirm>");
     }
 
     private void handlePickQuestion(String text) {
@@ -89,19 +90,19 @@ public class SignupMenu extends Menu {
         try {
             questionNumber = Integer.parseInt(matcher.group("question"));
         } catch (NumberFormatException e) {
-            System.out.println("Invalid question number.");
+            GeneralPrinter.print("Invalid question number.");
             return;
         }
 
         if (questionNumber < 1 || questionNumber > SECURITY_QUESTIONS.size()) {
-            System.out.println("Question number must be between 1 and " + SECURITY_QUESTIONS.size() + ".");
+            GeneralPrinter.print("Question number must be between 1 and " + SECURITY_QUESTIONS.size() + ".");
             return;
         }
 
         String answer = matcher.group("answer"),  answerConfirm = matcher.group("answerConfirm");
 
         if (!answer.equals(answerConfirm)) {
-            System.out.println("Answers do not match. Please try again.");
+            GeneralPrinter.print("Answers do not match. Please try again.");
             return;
         }
 
@@ -110,17 +111,17 @@ public class SignupMenu extends Menu {
         User.addUser(newUser);
 
         isPendingSecurityAnswer = false;
-        System.out.println("Account created successfully! Please log in.");
+        GeneralPrinter.print("Account created successfully! Please log in.");
         currentMenu = new LoginMenu();
     }
 
     private boolean validateUsername(String username) {
         if (!username.matches("[a-zA-Z0-9\\-]+")) {
-            System.out.println("Username can only contain letters, digits, and '-'.");
+            GeneralPrinter.print("Username can only contain letters, digits, and '-'.");
             return false;
         }
         if (User.usernameExists(username)) {
-            System.out.println("Username already exists. Please choose a different one.");
+            GeneralPrinter.print("Username already exists. Please choose a different one.");
             return false;
         }
         return true;
@@ -128,19 +129,19 @@ public class SignupMenu extends Menu {
 
     private boolean validatePassword(String password, String confirm) {
         if (password.length() < 8) {
-            System.out.println("Weak password: must be at least 8 characters.");
+            GeneralPrinter.print("Weak password: must be at least 8 characters.");
             return false;
         }
         if (!password.matches(".*[a-z].*")) {
-            System.out.println("Weak password: must contain at least one lowercase letter.");
+            GeneralPrinter.print("Weak password: must contain at least one lowercase letter.");
             return false;
         }
         if (!password.matches(".*[A-Z].*")) {
-            System.out.println("Weak password: must contain at least one uppercase letter.");
+            GeneralPrinter.print("Weak password: must contain at least one uppercase letter.");
             return false;
         }
         if (!password.matches(".*[0-9].*")) {
-            System.out.println("Weak password: must contain at least one digit.");
+            GeneralPrinter.print("Weak password: must contain at least one digit.");
             return false;
         }
         boolean hasSpecial = false;
@@ -151,11 +152,11 @@ public class SignupMenu extends Menu {
             }
         }
         if (!hasSpecial) {
-            System.out.println("Weak password: must contain at least one special character (!#$%^&*...).");
+            GeneralPrinter.print("Weak password: must contain at least one special character (!#$%^&*...).");
             return false;
         }
         if (!password.equals(confirm)) {
-            System.out.println("Passwords do not match. Please re-enter.");
+            GeneralPrinter.print("Passwords do not match. Please re-enter.");
             return false;
         }
         return true;
@@ -163,7 +164,7 @@ public class SignupMenu extends Menu {
 
     private boolean validateNickname(String nickname) {
         if (nickname.length() < 3 || nickname.length() > 30) {
-            System.out.println("Nickname must be between 3 and 30 characters.");
+            GeneralPrinter.print("Nickname must be between 3 and 30 characters.");
             return false;
         }
         return true;
@@ -171,16 +172,16 @@ public class SignupMenu extends Menu {
 
     private boolean validateEmail(String email) {
         if (!email.matches("^[a-zA-Z0-9]([a-zA-Z0-9._\\-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9\\-]*[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9\\-]*[a-zA-Z0-9])?)*\\.[a-zA-Z]{2,}$")) {
-            System.out.println("Invalid email format.");
+            GeneralPrinter.print("Invalid email format.");
             return false;
         }
         if (email.contains("..")) {
-            System.out.println("Invalid email: consecutive dots are not allowed.");
+            GeneralPrinter.print("Invalid email: consecutive dots are not allowed.");
             return false;
         }
         for (char c : email.toCharArray()) {
             if (SPECIAL_CHARS.indexOf(c) >= 0 && c != '@' && c != '.' && c != '-' && c != '_') {
-                System.out.println("Invalid email: contains illegal characters.");
+                GeneralPrinter.print("Invalid email: contains illegal characters.");
                 return false;
             }
         }
@@ -189,7 +190,7 @@ public class SignupMenu extends Menu {
 
     private boolean validateGender(String gender) {
         if (!gender.equalsIgnoreCase("male") && !gender.equalsIgnoreCase("female")) {
-            System.out.println("Gender must be 'male' or 'female'.");
+            GeneralPrinter.print("Gender must be 'male' or 'female'.");
             return false;
         }
         return true;
@@ -202,13 +203,13 @@ public class SignupMenu extends Menu {
         if (menuName.equals("login menu") || menuName.equals("login")) {
             currentMenu = new LoginMenu();
         } else {
-            System.out.println("You can only enter the Login Menu from here.");
+            GeneralPrinter.print("You can only enter the Login Menu from here.");
         }
     }
 
     @Override
     public void exitMenu() {
-        System.out.println("Goodbye!");
+        GeneralPrinter.print("Goodbye!");
         System.exit(0);
     }
 

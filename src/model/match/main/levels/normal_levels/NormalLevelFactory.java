@@ -1,10 +1,9 @@
 package model.match.main.levels.normal_levels;
 
-import model.match.main.levels.Level;
-import model.match.main.season.Season;
-import model.match_mechanisms.ZombieWave;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
+import model.match.main.season.Season;
+import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
 
 import java.util.ArrayList;

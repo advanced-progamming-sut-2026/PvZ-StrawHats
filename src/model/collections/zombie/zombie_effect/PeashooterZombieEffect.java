@@ -2,8 +2,8 @@ package model.collections.zombie.zombie_effect;
 
 import model.collections.zombie.Zombie;
 import model.projectile.zombie_projectile.ZombiePeaProjectile;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class PeashooterZombieEffect implements ZombieEffectStatus {
     private double firingClock = 0.0;

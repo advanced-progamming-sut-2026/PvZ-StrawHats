@@ -3,8 +3,8 @@ package model.collections.zombie.zombie_effect;
 import model.collections.Faction;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
-import service.GameClock;
 import model.utils.GameSession;
+import service.GameClock;
 
 public class ThermiteExplosion implements ZombieEffectStatus {
     private static final int PLANT_DAMAGE = 99999;

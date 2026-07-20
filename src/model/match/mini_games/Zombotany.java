@@ -6,11 +6,7 @@ import model.collections.zombie.ZombieFactory;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * A normal level (same plant selection, sun, waves, win/loss as usual)

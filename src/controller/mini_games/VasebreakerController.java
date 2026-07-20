@@ -2,6 +2,7 @@ package controller.mini_games;
 
 import controller.menus.Menu;
 import model.match.mini_games.vasebreaker.Vasebreaker;
+import view.GeneralPrinter;
 
 public class VasebreakerController extends Menu {
     private final Vasebreaker game;
@@ -26,7 +27,7 @@ public class VasebreakerController extends Menu {
         } else if (trimmed.equals("advance time -t 1 ticks")) {
             game.tick(0.1);
         } else {
-            System.out.println("Unknown command in Vasebreaker.");
+            GeneralPrinter.print("Unknown command in Vasebreaker.");
         }
         reportOutcome();
     }
@@ -34,14 +35,14 @@ public class VasebreakerController extends Menu {
     private void handleBreak(String text) {
         int[] coords = parseCoords(text);
         if (!game.breakVaseAt(coords[1], coords[0])) {
-            System.out.println("There's no vase to break at (" + coords[0] + ", " + coords[1] + ").");
+            GeneralPrinter.print("There's no vase to break at (" + coords[0] + ", " + coords[1] + ").");
         }
     }
 
     private void handleCollect(String text) {
         int[] coords = parseCoords(text);
         if (!game.collectSeedPacket(coords[1], coords[0])) {
-            System.out.println("No seed packet to collect at (" + coords[0] + ", " + coords[1] + ").");
+            GeneralPrinter.print("No seed packet to collect at (" + coords[0] + ", " + coords[1] + ").");
         }
     }
 
@@ -53,9 +54,9 @@ public class VasebreakerController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
-            System.out.println("All vases broken. You win!");
+            GeneralPrinter.print("All vases broken. You win!");
         } else if (game.isLost()) {
-            System.out.println("The zombies got through. You lose!");
+            GeneralPrinter.print("The zombies got through. You lose!");
         }
     }
 

@@ -1,32 +1,13 @@
 package model.collections.plant;
 
-import model.collections.plant.actstrategy.ActStrategy;
-import model.collections.plant.actstrategy.ExplodeStrategy;
-import model.collections.plant.actstrategy.HomingStrategy;
-import model.collections.plant.actstrategy.LobberStrategy;
-import model.collections.plant.actstrategy.MeleeStrategy;
-import model.collections.plant.actstrategy.MintStrategy;
-import model.collections.plant.actstrategy.ModifyStrategy;
-import model.collections.plant.actstrategy.ShootStrategy;
-import model.collections.plant.actstrategy.StrikeStrategy;
-import model.collections.plant.actstrategy.SunProduceStrategy;
-import model.collections.plant.actstrategy.WallNutStrategy;
-import model.collections.plant.plantfood.GrantArmor;
-import model.collections.plant.plantfood.InstantKill;
-import model.collections.plant.plantfood.KnockBackBlast;
-import model.collections.plant.plantfood.LobberBarrage;
-import model.collections.plant.plantfood.LocalAttack;
-import model.collections.plant.plantfood.MapWideFreeze;
-import model.collections.plant.plantfood.PullUnderWater;
-import model.collections.plant.plantfood.RandomHypnotize;
-import model.collections.plant.plantfood.SpawnClones;
-import model.collections.plant.plantfood.SpawnSun;
-import model.collections.plant.plantfood.TimedProjectileBurst;
-import model.match_mechanisms.vector.Position;
 import model.collections.armour.ArmourFactory;
 import model.collections.armour.ArmourType;
 import model.collections.armour.PlantArmour;
-import model.collections.plant.AbilityType;
+import model.collections.plant.actstrategy.*;
+import model.collections.plant.plantfood.*;
+import model.match_mechanisms.vector.Position;
+import view.GeneralPrinter;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +29,7 @@ public class PlantFactory {
         try (java.io.FileInputStream fis = new java.io.FileInputStream("resource/Plants.json")) {
             init(fis);
         } catch (java.io.IOException e) {
-            System.out.println("Could not load resource/Plants.json: " + e.getMessage());
+            GeneralPrinter.print("Could not load resource/Plants.json: " + e.getMessage());
         }
     }
 

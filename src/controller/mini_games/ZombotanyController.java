@@ -2,6 +2,7 @@ package controller.mini_games;
 
 import controller.menus.Menu;
 import model.match.mini_games.Zombotany;
+import view.GeneralPrinter;
 
 public class ZombotanyController extends Menu {
     private final Zombotany game;
@@ -22,16 +23,16 @@ public class ZombotanyController extends Menu {
         if (trimmed.equals("advance time -t 1 ticks")) {
             game.tick(0.1);
         } else {
-            System.out.println("Unknown command in Zombotany.");
+            GeneralPrinter.print("Unknown command in Zombotany.");
         }
         reportOutcome();
     }
 
     private void reportOutcome() {
         if (game.isWon()) {
-            System.out.println("All waves cleared. You win!");
+            GeneralPrinter.print("All waves cleared. You win!");
         } else if (game.isLost()) {
-            System.out.println("The zombies got through. You lose!");
+            GeneralPrinter.print("The zombies got through. You lose!");
         }
     }
 
