@@ -40,6 +40,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
 
     private PlantArmour armor;
 
+
+
     public enum PlantState {
         ACTIVE,
         INCAPACITATED,
@@ -128,6 +130,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
         this.plantFoodEffect.triggerSuperpower(this, session);
     }
 
+    public ActStrategy getActStrategy() {return actStrategy; }
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
