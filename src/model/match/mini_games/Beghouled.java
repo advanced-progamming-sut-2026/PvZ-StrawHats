@@ -5,10 +5,8 @@ import model.collections.plant.PlantFactory;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.match_mechanisms.vector.Position;
-import model.pitches.Cell;
-import model.pitches.Environment;
-import model.pitches.ObstacleFactory;
-import model.pitches.ObstacleInformation;
+import model.pitches.*;
+import model.pitches.obstacles.Crater;
 import model.utils.GameSession;
 
 import java.util.*;
@@ -349,7 +347,7 @@ public class Beghouled extends MiniGameMode {
             for (int col = 0; col < env.getCols(); col++) {
                 Cell cell = env.getCell(row, col);
                 if (cell.getPlant() != null && !cell.getPlant().isAlive()) {
-                    cell.setObstacle(ObstacleFactory.create(ObstacleInformation.CRATER));
+                    cell.setObstacle(new Crater());
                     cell.setPlant(null);
                 }
             }

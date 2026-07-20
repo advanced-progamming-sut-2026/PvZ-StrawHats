@@ -3,6 +3,7 @@ package model.projectile.zombie_projectile;
 import model.collections.plant.Plant;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
+import model.pitches.obstacles.OctopusWrap;
 import model.utils.GameSession;
 
 public class OctopusProjectile extends ZombieProjectile {

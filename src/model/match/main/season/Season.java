@@ -1,7 +1,7 @@
 package model.match.main.season;
 
 import model.match.main.season.travellog.TravelLog;
-import model.pitches.ObstacleInformation;
+import model.pitches.obstacles.ObstacleInformation;
 
 import java.util.ArrayList;
 

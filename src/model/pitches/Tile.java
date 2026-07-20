@@ -1,5 +1,7 @@
 package model.pitches;
 
+import model.pitches.obstacles.SlipperyDirection;
+
 /** A single lawn cell's terrain, e.g. plain ground or a Slippery ice tile. */
 public class Tile {
     private final TileType type;

@@ -3,6 +3,7 @@ package model.pitches;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
+import model.pitches.obstacles.Obstacle;
 
 import java.util.ArrayList;
 import java.util.List;
