@@ -156,6 +156,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public ArrayList<PlantTag> getTags() { return tags; }
     public List<String> getRawUpgrades() { return rawUpgrades; }
     public void setActStrategy(ActStrategy actStrategy) { this.actStrategy = actStrategy; }
+    public ActStrategy getActStrategy() { return this.actStrategy; }
     public PlantFoodEffect getPlantFoodEffect() { return plantFoodEffect; }
     public void setPlantFoodEffect(PlantFoodEffect plantFoodEffect) { this.plantFoodEffect = plantFoodEffect; }
     public void setPlantFoodType(PlantFoodType plantFoodType) { this.plantFoodType = plantFoodType; }
