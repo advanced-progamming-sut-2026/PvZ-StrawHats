@@ -14,6 +14,7 @@ public class UserState {
     public int highScore = 0;
 
     public Set<Integer> unlockedPlantIds = new HashSet<>();
+    public Map<Integer, Integer> plantLevels = new HashMap<>();
     public Map<Integer, Integer> seedPacketInventory = new HashMap<>();
     public Map<Integer, Boolean> plantBoosts = new HashMap<>();
     public List<List<PotData>> greenhousePots;
@@ -38,6 +39,14 @@ public class UserState {
 
     public void unlockPlant(int plantId) {
         unlockedPlantIds.add(plantId);
+    }
+
+    public int getPlantLevel(int plantId) {
+        return plantLevels.getOrDefault(plantId, 1);
+    }
+
+    public void setPlantLevel(int plantId, int level) {
+        plantLevels.put(plantId, level);
     }
 
     public boolean hasBoost(int plantId) {
