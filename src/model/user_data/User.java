@@ -99,13 +99,16 @@ public class User {
 
     public static void setUser(User user) {
         currentUser = user;
+        model.App.currentUser = user;
         Greenhouse.getInstance()
                 .load(user.userState.greenhousePots);
     }
 
     public static void save() {
-        currentUser.userState.greenhousePots =
-                Greenhouse.getInstance().serialize();
+        if (currentUser != null) {
+            currentUser.userState.greenhousePots =
+                    Greenhouse.getInstance().serialize();
+        }
 
         try (Writer writer = new FileWriter(SAVE_FILE)) {
             GSON.toJson(users, writer);

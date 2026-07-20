@@ -10,6 +10,8 @@ public class UserState {
     public List<News> news;
     public int lastLevel, diamonds, coins;
     public int difficultyLevel;
+    public int gamesPlayed = 0;
+    public int highScore = 0;
 
     public Set<Integer> unlockedPlantIds = new HashSet<>();
     public Map<Integer, Integer> seedPacketInventory = new HashMap<>();
@@ -60,6 +62,12 @@ public class UserState {
 
     public void addNews(News item) {
         if (item != null) news.add(item);
+    }
+
+    public void recordGameResult(int levelReached, int score) {
+        gamesPlayed++;
+        if (levelReached > lastLevel) lastLevel = levelReached;
+        if (score > highScore) highScore = score;
     }
 
     public boolean hasUnreadNews() {

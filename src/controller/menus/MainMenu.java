@@ -4,6 +4,7 @@ import controller.NewsManager;
 import controller.menus.authentication.LoginMenu;
 import model.App;
 import model.Regex;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 public class MainMenu extends Menu{
@@ -51,6 +52,7 @@ public class MainMenu extends Menu{
     public void Logout() {
         App.currentMenu = new LoginMenu();
         App.currentUser = null;
+        User.currentUser = null;
     }
 
 }

@@ -88,7 +88,7 @@ public class SignupMenu extends Menu {
 
         int questionNumber;
         try {
-            questionNumber = Integer.parseInt(matcher.group("question"));
+            questionNumber = Integer.parseInt(matcher.group("questionnumber"));
         } catch (NumberFormatException e) {
             GeneralPrinter.print("Invalid question number.");
             return;
@@ -99,7 +99,7 @@ public class SignupMenu extends Menu {
             return;
         }
 
-        String answer = matcher.group("answer"),  answerConfirm = matcher.group("answerConfirm");
+        String answer = matcher.group("answer"),  answerConfirm = matcher.group("answerconfirm");
 
         if (!answer.equals(answerConfirm)) {
             GeneralPrinter.print("Answers do not match. Please try again.");
@@ -199,7 +199,7 @@ public class SignupMenu extends Menu {
     private void handleMenuEnter(String text) {
         Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
         matcher.matches();
-        String menuName = matcher.group("menuName").toLowerCase().trim();
+        String menuName = matcher.group("menuname").toLowerCase().trim();
         if (menuName.equals("login menu") || menuName.equals("login")) {
             currentMenu = new LoginMenu();
         } else {

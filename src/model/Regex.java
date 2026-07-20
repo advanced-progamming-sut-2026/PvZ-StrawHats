@@ -75,7 +75,7 @@ public enum Regex {
             "^\\s*menu\\s+profile\\s+change-password\\s+-p\\s+(?<newpassword>\\S+)\\s+-o\\s+(?<oldpassword>\\S+)\\s*$"
     ),
     MENU_PROFILE_SHOW_INFO(
-            "^\\s*menu\\s+profile\\s+showinfo\\s*$"
+            "^\\s*menu\\s+profile\\s+show-info\\s*$"
     ),
 
     // collection
