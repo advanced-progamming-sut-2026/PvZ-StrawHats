@@ -6,7 +6,6 @@ import model.App;
 import model.Regex;
 import model.match.main.levels.Level;
 import model.utils.GameSession;
-import view.GeneralPrinter;
 
 public class MatchMenu extends Menu {
     public static Level selectedLevel;
@@ -21,13 +20,14 @@ public class MatchMenu extends Menu {
         if (Regex.START_GAME.getMatcherRaw(text).matches()) {
             GameSession session = new GameSession(selectedLevel.getRows(), selectedLevel.getCols());
             session.setLevel(selectedLevel);
+            Before.selectedPlants.clear();
             App.currentMenu = new Before();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
+            System.out.println(showMenu());
         } else {
-            GeneralPrinter.print("Not Valid");
+            System.out.println("Not Valid");
         }
     }
 

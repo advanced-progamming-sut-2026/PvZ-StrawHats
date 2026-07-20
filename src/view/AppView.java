@@ -3,8 +3,10 @@ package view;
 import model.App;
 import view.menus.*;
 import view.menus.collection_view.CollectionMenuView;
+import view.menus.while_match.AfterMatchView;
 import view.menus.while_match.BeforeMatchView;
 import view.menus.while_match.MatchMenuView;
+import view.menus.while_match.MeanwhileMatchView;
 
 import java.util.Scanner;
 
@@ -32,13 +34,15 @@ public class AppView {
             case "Game Menu" -> new GameMenuView();
             case "News Menu" -> new NewsMenuView();
             case "Collection Menu" -> new CollectionMenuView();
-            case "Before Menu" -> new BeforeMatchView();
             case "Setting Menu" -> new SettingMenuView();
             case "Greenhouse Menu" -> new GreenhouseMenuView();
             case "Store Menu" -> new StoreMenuView();
             case "Travel Log Menu" -> new TravelLogMenuView();
             case "Match Menu" -> new MatchMenuView();
             case "Leaderboard Menu" -> new LeaderboardMenuView();
+            case "After Menu" -> new AfterMatchView();
+            case "Before Menu" -> new BeforeMatchView();
+            case "Meanwhile Menu" -> new MeanwhileMatchView();
             default -> null;
         };
     }
