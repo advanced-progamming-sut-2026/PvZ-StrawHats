@@ -26,7 +26,7 @@ public class PlantFactory {
 
     public static void autoInit() {
         if (loaded) return;
-        try (java.io.FileInputStream fis = new java.io.FileInputStream("resource/Plants.json")) {
+        try (java.io.FileInputStream fis = new java.io.FileInputStream("src/resource/Plants.json")) {
             init(fis);
         } catch (java.io.IOException e) {
             GeneralPrinter.print("Could not load resource/Plants.json: " + e.getMessage());
