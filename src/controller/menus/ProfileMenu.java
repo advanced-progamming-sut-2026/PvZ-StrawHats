@@ -17,8 +17,9 @@ public class ProfileMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
-
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+        
 
         if (Regex.MENU_PROFILE_SHOW_INFO.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(showMenu());

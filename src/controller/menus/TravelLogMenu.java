@@ -16,7 +16,11 @@ public class TravelLogMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+
+
+
 
 
         if (Regex.TRAVEL_LOG_PAGE.getMatcherRaw(text).matches()) {

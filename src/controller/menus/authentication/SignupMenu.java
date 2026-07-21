@@ -34,7 +34,6 @@ public class SignupMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
 
 
         if (isPendingSecurityAnswer) {
@@ -53,7 +52,7 @@ public class SignupMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
+            GeneralPrinter.print(getName());
         } else {
             GeneralPrinter.print("Invalid command");
         }
@@ -202,7 +201,7 @@ public class SignupMenu extends Menu {
         Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
         matcher.matches();
         String menuName = matcher.group("menuname").toLowerCase().trim();
-        if (menuName.equals("login menu") || menuName.equals("login")) {
+        if (menuName.equals("login")) {
             currentMenu = new LoginMenu();
         } else {
             GeneralPrinter.print("You can only enter the Login Menu from here.");
@@ -215,8 +214,5 @@ public class SignupMenu extends Menu {
         System.exit(0);
     }
 
-    @Override
-    public String showMenu() {
-        return "[ SignUP Menu ]\nCommands:\n  register -u <username> -p <password> <confirm> -n <nickname> -e <email> -g <gender>\n  menu enter <menu_name>\n  menu exit\n  menu show current";
-    }
+    
 }

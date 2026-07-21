@@ -18,7 +18,11 @@ public class WallnutBowlingController extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+
+
+
 
 
         String trimmed = text.trim();

@@ -25,6 +25,7 @@ public class GameMenu extends Menu {
     @Override
     public void handleCommand(String text){
         super.handleCommand(text);
+        if (isGeneralCmd) return;
 
         if (Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text);

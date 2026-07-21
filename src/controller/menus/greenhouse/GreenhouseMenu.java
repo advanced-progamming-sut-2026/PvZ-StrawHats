@@ -60,7 +60,11 @@ public class GreenhouseMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+
+
+
 
 
         UserState state = User.currentUser.userState;
@@ -109,8 +113,5 @@ public class GreenhouseMenu extends Menu {
         App.currentMenu = new GameMenu();
     }
 
-    @Override
-    public String showMenu() {
-        return Greenhouse.getInstance().renderStatus();
-    }
+    
 }

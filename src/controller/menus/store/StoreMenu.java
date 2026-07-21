@@ -25,7 +25,9 @@ public class StoreMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+
 
 
         UserState state = User.currentUser.userState;

@@ -22,7 +22,9 @@ public class LoginMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
-    super.handleCommand(text);
+
+
+
 
 
 
@@ -42,7 +44,7 @@ public class LoginMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
+            GeneralPrinter.print(getName());
         } else {
             GeneralPrinter.print("Invalid command.");
         }
@@ -185,8 +187,6 @@ public class LoginMenu extends Menu {
         changeMenu("SignUp Menu");
     }
 
-    @Override
-    public String showMenu() {
-        return "[ Login Menu ]\nCommands:\n  login -u <username> -p <password> [-stay-logged-in]\n  forget password -u <username> -e <email>\n  menu enter <menu_name>\n  menu exit\n  menu show current";
-    }
+    
+    
 }

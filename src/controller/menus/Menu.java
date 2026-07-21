@@ -9,9 +9,10 @@ import view.GeneralPrinter;
 import java.util.regex.Matcher;
 
 public abstract class Menu {
+    protected boolean isGeneralCmd = false;
+
     public void changeMenu(String text) {
         String menuKey;
-
         Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
         if (matcher.matches()) {
             menuKey = matcher.group("menuname");
@@ -37,17 +38,20 @@ public abstract class Menu {
     }
     public void handleCommand(String text){
         if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){
+            isGeneralCmd = true;
             changeMenu(text);
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(getName());
+            isGeneralCmd = true;
+            GeneralPrinter.print(showMenu());
         }
     };
 
-    public void getInput() {
+    
 
-    }
     public abstract String getName();
 
     public abstract void exitMenu();
-    public abstract String showMenu();
+    public String showMenu(){
+        return getName();
+    };
 }
