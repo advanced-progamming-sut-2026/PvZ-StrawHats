@@ -29,7 +29,10 @@ public class MeanwhileMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         String trimmed = text.trim().toLowerCase();
 
         if (trimmed.equals("pause")) {
@@ -42,8 +45,6 @@ public class MeanwhileMenu extends Menu {
             finishMatch(trimmed.replace("end game", "").replace("-r", "").trim());
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
         } else if (Regex.ADVANCE_TIME.getMatcherRaw(text).matches()) {
             advanceTime(text);
             checkMatchOutcome();

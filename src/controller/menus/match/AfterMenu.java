@@ -69,11 +69,12 @@ public class AfterMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
         } else {
             System.out.println("Not Valid");
         }

@@ -27,7 +27,10 @@ public class BeforeMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (Regex.SHOW_ALL_PLANTS.getMatcherRaw(text).matches()) {
             showAllPlants();
         } else if (Regex.SHOW_AVAILABLE_PLANTS.getMatcherRaw(text).matches()) {
@@ -48,8 +51,6 @@ public class BeforeMenu extends Menu {
             startMatch();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
         } else {
             System.out.println("Not Valid");
         }

@@ -14,7 +14,10 @@ public class NewsMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         super.handleCommand(text);
         if (Regex.MENU_NEWS_SHOW_UNREAD.getMatcherRaw(text).matches()) {
             showUnread();
@@ -25,10 +28,7 @@ public class NewsMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
 
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
-
-        } else {
+        }else {
             GeneralPrinter.print("Not Valid");
         }
     }

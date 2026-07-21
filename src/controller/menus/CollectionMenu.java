@@ -20,7 +20,10 @@ public class CollectionMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         UserState state = User.currentUser.userState;
 
         if (Regex.MENU_COLLECTION_SHOW_ALL_PLANTS.getMatcherRaw(text).matches()) {
@@ -49,8 +52,6 @@ public class CollectionMenu extends Menu {
             purchasePlant(state, matcher.group("plantname"));
         }  else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
         } else {
             System.out.println("Not Valid");
         }

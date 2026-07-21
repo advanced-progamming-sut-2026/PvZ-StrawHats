@@ -15,7 +15,10 @@ public class TravelLogMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (Regex.TRAVEL_LOG_PAGE.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.TRAVEL_LOG_PAGE.getMatcherRaw(text);
             matcher.matches();
@@ -23,9 +26,7 @@ public class TravelLogMenu extends Menu {
             // *
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
-        } else {
+        }  else {
             GeneralPrinter.print("Invalid command.");
         }
     }

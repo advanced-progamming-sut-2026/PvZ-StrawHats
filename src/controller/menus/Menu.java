@@ -38,6 +38,8 @@ public abstract class Menu {
     public void handleCommand(String text){
         if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){
             changeMenu(text);
+        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(getName());
         }
     };
 

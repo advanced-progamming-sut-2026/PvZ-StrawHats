@@ -17,7 +17,10 @@ public class VasebreakerController extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         String trimmed = text.trim();
 
         if (trimmed.matches("break vase -l \\(\\d+,\\s*\\d+\\)")) {

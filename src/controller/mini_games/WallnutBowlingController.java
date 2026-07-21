@@ -17,7 +17,10 @@ public class WallnutBowlingController extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         String trimmed = text.trim();
 
         if (trimmed.matches("plant nut -l \\(\\d+,\\s*\\d+\\)")) {

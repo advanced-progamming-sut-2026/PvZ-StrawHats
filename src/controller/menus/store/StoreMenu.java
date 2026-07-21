@@ -24,7 +24,10 @@ public class StoreMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         UserState state = User.currentUser.userState;
 
         if (Regex.SHOPPING_LIST.getMatcherRaw(text).matches()) {
@@ -45,9 +48,7 @@ public class StoreMenu extends Menu {
             }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
-        } else {
+        }  else {
             GeneralPrinter.print("Not Valid");
         }
     }

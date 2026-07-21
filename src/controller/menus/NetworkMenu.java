@@ -8,7 +8,10 @@ public class NetworkMenu extends Menu{
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
 
     }
 

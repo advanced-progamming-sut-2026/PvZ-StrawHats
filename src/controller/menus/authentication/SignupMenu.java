@@ -33,7 +33,10 @@ public class SignupMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (isPendingSecurityAnswer) {
             if (Regex.PICK_QUESTION.getMatcherRaw(text).matches()) {
                 handlePickQuestion(text);

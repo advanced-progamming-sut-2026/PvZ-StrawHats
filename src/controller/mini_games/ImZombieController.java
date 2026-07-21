@@ -17,7 +17,7 @@ public class ImZombieController extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
         String trimmed = text.trim();
 
         if (trimmed.matches("place zombie -t \\S+ -r \\d+")) {

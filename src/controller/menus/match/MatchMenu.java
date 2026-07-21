@@ -16,7 +16,10 @@ public class MatchMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (Regex.START_GAME.getMatcherRaw(text).matches()) {
             GameSession session = new GameSession(selectedLevel.getRows(), selectedLevel.getCols());
             session.setLevel(selectedLevel);
@@ -24,8 +27,6 @@ public class MatchMenu extends Menu {
             App.currentMenu = new BeforeMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
         } else {
             System.out.println("Not Valid");
         }

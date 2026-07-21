@@ -23,7 +23,9 @@ public class GameMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+        super.handleCommand(text);
+
         if (Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text);
             matcher.matches();
@@ -60,9 +62,6 @@ public class GameMenu extends Menu {
 
          else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
 
         } else {
             GeneralPrinter.print("Not Valid");

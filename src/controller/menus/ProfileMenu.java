@@ -16,7 +16,10 @@ public class ProfileMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         if (Regex.MENU_PROFILE_SHOW_INFO.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(showMenu());
         } else if (Regex.MENU_PROFILE_CHANGE_USERNAME.getMatcherRaw(text).matches()) {
@@ -29,9 +32,7 @@ public class ProfileMenu extends Menu {
             handleChangeEmail(text);
         }  else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
-        } else {
+        }  else {
             GeneralPrinter.print("Not Valid");
         }
     }

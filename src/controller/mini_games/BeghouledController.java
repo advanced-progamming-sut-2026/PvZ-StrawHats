@@ -17,7 +17,10 @@ public class BeghouledController extends Menu {
     }
 
     @Override
-    public void handleCommand(String text) {
+    public void handleCommand(String text){
+    super.handleCommand(text);
+
+
         String trimmed = text.trim();
 
         if (trimmed.matches("swap -l \\(\\d+,\\s*\\d+\\) -l \\(\\d+,\\s*\\d+\\)")) {
