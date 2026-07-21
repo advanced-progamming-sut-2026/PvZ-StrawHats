@@ -14,19 +14,23 @@ public class Greenhouse {
 
     private Greenhouse(Pot[][] pots) {
         this.pots = pots;
+        resetToFreshLayout();
     }
 
     public static Greenhouse getInstance() {
         if (instance == null) {
             instance = new Greenhouse(new Pot[ROW_COUNT][COL_COUNT]);
-            for (int j = 0; j < COL_COUNT; j++) {
-                instance.pots[0][j] = new Pot(false, 1, j + 1);
-                for (int i = 1; i < ROW_COUNT; i++) {
-                    instance.pots[i][j] = new Pot(true, i + 1, j + 1);
-                }
-            }
         }
         return instance;
+    }
+
+    private void resetToFreshLayout() {
+        for (int j = 0; j < COL_COUNT; j++) {
+            pots[0][j] = new Pot(false, 1, j + 1);
+            for (int i = 1; i < ROW_COUNT; i++) {
+                pots[i][j] = new Pot(true, i + 1, j + 1);
+            }
+        }
     }
 
     public static int getColCount() {
@@ -83,10 +87,13 @@ public class Greenhouse {
 
                 data.locked = pot.isLocked();
 
-                if (pot.getPotPlant() != null) {
-                    PotPlant plant = pot.getPotPlant();
-
-                    data.plantId = plant.getPlantId();
+                PotPlant plant = pot.getPotPlant();
+                if (plant != null) {
+                    if (plant.isMarigold()) {
+                        data.isMarigold = true;
+                    } else {
+                        data.plantId = plant.getPlantId();
+                    }
                     data.plantedAtMillis = plant.getPlantedAtMillis();
                 }
 
@@ -100,9 +107,10 @@ public class Greenhouse {
     }
 
     public void load(List<List<PotData>> data) {
-
-        if (data == null)
+        if (!isValidSave(data)) {
+            resetToFreshLayout();
             return;
+        }
 
         for (int r = 0; r < ROW_COUNT; r++) {
             for (int c = 0; c < COL_COUNT; c++) {
@@ -112,8 +120,11 @@ public class Greenhouse {
 
                 pot.setLocked(save.locked);
 
-                if (save.plantId != null) {
-
+                if (save.isMarigold) {
+                    Marigold marigold = new Marigold(pot);
+                    marigold.setPlantedAtMillis(save.plantedAtMillis);
+                    pot.setPotPlant(marigold);
+                } else if (save.plantId != null && PlantFactory.getBlueprints().get(save.plantId) != null) {
                     GreenhousePlant plant =
                             new GreenhousePlant(
                                     pot,
@@ -129,6 +140,15 @@ public class Greenhouse {
                 }
             }
         }
+    }
+
+    private boolean isValidSave(List<List<PotData>> data) {
+        if (data == null || data.size() < ROW_COUNT) return false;
+        for (int r = 0; r < ROW_COUNT; r++) {
+            List<PotData> row = data.get(r);
+            if (row == null || row.size() < COL_COUNT) return false;
+        }
+        return true;
     }
 
     public String renderStatus() {

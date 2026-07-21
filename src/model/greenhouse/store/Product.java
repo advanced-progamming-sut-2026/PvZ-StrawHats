@@ -3,9 +3,9 @@ package model.greenhouse.store;
 public enum Product {
     POT("pot", "Vase (Pot)", 2000, 0),
     PLANT_FOOD("plant-food", "Plant Food", 0, 3),
-    SEED_RANDOM("seed-random", "Random Seed Packet (5 packs)", 1000, 0),
-    SEED_CHOICE("seed-choice", "Selectable Seed Packet (10 packs)", 0, 5),
-    CURRENCY_EXCHANGE("currency-exchange", "Currency Exchange (500 coins)", 0, 5),
+    SEED_RANDOM("random-seed", "Random Seed Packet (5 packs)", 1000, 0),
+    SEED_CHOICE("selectable-seed", "Selectable Seed Packet (10 packs)", 0, 5),
+    CURRENCY_EXCHANGE("diamond-exchange", "Diamond Exchange (500 coins)", 0, 5),
     DAILY_OFFER("daily-offer", "Daily Special Seed Packet (10 packs)", 1600, 0);
 
     private final String itemId;

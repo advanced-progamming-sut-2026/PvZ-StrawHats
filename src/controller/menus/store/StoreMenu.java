@@ -24,12 +24,17 @@ public class StoreMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
+    public void handleCommand(String text) {
+        try {
+            super.handleCommand(text);
+            if (isGeneralCmd) return;
+            handleStoreCommand(text);
+        } catch (Exception e) {
+            GeneralPrinter.print("Error: could not process that command (" + e.getMessage() + ").");
+        }
+    }
 
-
-
+    private void handleStoreCommand(String text) {
         UserState state = User.currentUser.userState;
 
         if (Regex.SHOPPING_LIST.getMatcherRaw(text).matches()) {
@@ -50,7 +55,7 @@ public class StoreMenu extends Menu {
             }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        }  else {
+        } else {
             GeneralPrinter.print("Not Valid");
         }
     }
