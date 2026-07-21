@@ -28,7 +28,6 @@ public class LevelLoader {
 
     /**
      * Load all levels from a JSON resource file.
-     * path relative to classpath, e.g. "/levels.json"
      * @return list of Level objects
      */
     public static List<Level> loadLevels(String resourcePath) {

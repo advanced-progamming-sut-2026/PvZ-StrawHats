@@ -35,7 +35,7 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadZombies() {
-        try (var is = ZombieFactory.class.getResourceAsStream("/Zombie.json")) {
+        try (var is = ZombieFactory.class.getResourceAsStream("src/resource/Zombie.json")) {
             if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
@@ -54,7 +54,7 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadArmorData() {
-        try (var is = ZombieFactory.class.getResourceAsStream("/ArmorTypeData.json")) {
+        try (var is = ZombieFactory.class.getResourceAsStream("src/resource/ArmorTypeData.json")) {
             if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);

@@ -38,7 +38,7 @@ public class LeaderboardMenu extends Menu {
     public String showMenu() {
         List<Level> allLevels;
         try {
-            allLevels = LevelLoader.loadLevels("/Levels.json");
+            allLevels = LevelLoader.loadLevels("src/resource/Levels.json");
         } catch (Exception e) {
             return "Error: could not load levels.";
         }

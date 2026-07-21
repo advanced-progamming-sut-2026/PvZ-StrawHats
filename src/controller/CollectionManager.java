@@ -42,7 +42,7 @@ public class CollectionManager {
         Set<String> seen = new HashSet<>();
         List<Level> levels;
         try {
-            levels = LevelLoader.loadLevels("/Levels.json");
+            levels = LevelLoader.loadLevels("src/resource/Levels.json");
         } catch (Exception e) {
             return seen;
         }

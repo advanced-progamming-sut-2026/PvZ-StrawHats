@@ -89,7 +89,7 @@ public class GameMenu extends Menu {
 
         List<Level> allLevels;
         try {
-            allLevels = LevelLoader.loadLevels("/Levels.json");
+            allLevels = LevelLoader.loadLevels("src/resource/Levels.json");
         } catch (Exception e) {
             GeneralPrinter.print("Error: could not load levels.");
             return;
