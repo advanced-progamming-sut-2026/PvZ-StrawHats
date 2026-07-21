@@ -46,7 +46,6 @@ public class BeforeMenu extends Menu {
             boostPlant(matcher.group("type"));
         } else if (Regex.START_GAME.getMatcherRaw(text).matches()) {
             startMatch();
-        }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
