@@ -113,5 +113,11 @@ public class GreenhouseMenu extends Menu {
         App.currentMenu = new GameMenu();
     }
 
-    
+    @Override
+    public String showMenu() {
+        return Greenhouse.getInstance().renderStatus();
+    }
+
+
+
 }
