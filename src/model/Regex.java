@@ -156,6 +156,8 @@ public enum Regex {
     MENU_SHOW_CURRENT(
             "^\\s*menu\\s+show\\s+current\\s*$"
     ),
+
+    // in-match commands (core gameplay loop)
     ADVANCE_TIME(
             "^\\s*advance\\s+time\\s+-t\\s+(?<ticks>\\d+)\\s+ticks?\\s*$"
     ),
@@ -173,6 +175,9 @@ public enum Regex {
     ),
     ZOMBIES_INFO(
             "^\\s*zombies\\s+info\\s*$"
+    ),
+    COLLECT_SUN(
+            "^\\s*collect\\s+sun\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
     ),
     PLANT_ON_FIELD(
             "^\\s*plant\\s+plant\\s+-t\\s+(?<type>.+?)\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"

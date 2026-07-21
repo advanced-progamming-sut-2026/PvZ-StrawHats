@@ -29,14 +29,7 @@ public class MeanwhileMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
-
-
-
-
-
+    public void handleCommand(String text) {
         String trimmed = text.trim().toLowerCase();
 
         if (trimmed.equals("pause")) {
@@ -49,6 +42,8 @@ public class MeanwhileMenu extends Menu {
             finishMatch(trimmed.replace("end game", "").replace("-r", "").trim());
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
+        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
+            System.out.println(showMenu());
         } else if (Regex.ADVANCE_TIME.getMatcherRaw(text).matches()) {
             advanceTime(text);
             checkMatchOutcome();
@@ -62,6 +57,8 @@ public class MeanwhileMenu extends Menu {
             showTileStatus(text);
         } else if (Regex.ZOMBIES_INFO.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(GameSession.getInstance().renderZombiesInfo());
+        } else if (Regex.COLLECT_SUN.getMatcherRaw(text).matches()) {
+            collectSun(text);
         } else if (Regex.PLANT_ON_FIELD.getMatcherRaw(text).matches()) {
             plantOnField(text);
         } else if (Regex.PLUCK_PLANT_FIELD.getMatcherRaw(text).matches()) {
@@ -145,6 +142,22 @@ public class MeanwhileMenu extends Menu {
         Plant plant = PlantFactory.createPlant(config.id, level, new Position(x, y));
         session.plantAt(y, x, plant);
         GeneralPrinter.print(config.name + " planted at (" + x + ", " + y + ").");
+    }
+
+    private void collectSun(String text) {
+        Matcher matcher = Regex.COLLECT_SUN.getMatcherRaw(text);
+        matcher.matches();
+        int x = Integer.parseInt(matcher.group("x"));
+        int y = Integer.parseInt(matcher.group("y"));
+
+        GameSession session = GameSession.getInstance();
+        var collected = session.collectItemsNear(new Position(x, y));
+        if (collected.isEmpty()) {
+            GeneralPrinter.print("Error: no sun to collect at (" + x + ", " + y + ").");
+            return;
+        }
+        GeneralPrinter.print("Collected sun at (" + x + ", " + y + "). You now have "
+                + session.getSunCount() + " sun.");
     }
 
     private void pluckPlant(String text) {

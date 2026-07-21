@@ -1,5 +1,6 @@
 package model.utils;
 
+import controller.QuestManager;
 import model.collections.Item;
 import model.collections.item.*;
 import model.collections.plant.Plant;
@@ -17,14 +18,8 @@ import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
-import controller.QuestManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.ToIntFunction;
 
 public class GameSession {
@@ -444,7 +439,7 @@ public class GameSession {
     public String renderTileStatus(int row, int col) {
         Plant plant = findPlantAt(row, col);
         StringBuilder sb = new StringBuilder();
-        sb.append("tile (").append(row).append(", ").append(col).append("): ");
+        sb.append("tile (").append(col).append(", ").append(row).append("): ");
 
         if (plant != null) {
             sb.append("plant=").append(plant.getName()).append(" hp=").append(plant.getHP());
