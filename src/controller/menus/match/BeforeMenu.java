@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
-public class Before extends Menu {
+public class BeforeMenu extends Menu {
     private static final int PLANT_SLOTS = 8;
     public static List<String> selectedPlants = new ArrayList<>();
 
@@ -132,7 +132,7 @@ public class Before extends Menu {
             }
         }
         GameSession.getInstance().startWaves();
-        App.currentMenu = new Meanwhile();
+        App.currentMenu = new MeanwhileMenu();
     }
 
     @Override

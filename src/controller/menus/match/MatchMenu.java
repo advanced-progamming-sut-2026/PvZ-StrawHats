@@ -20,8 +20,8 @@ public class MatchMenu extends Menu {
         if (Regex.START_GAME.getMatcherRaw(text).matches()) {
             GameSession session = new GameSession(selectedLevel.getRows(), selectedLevel.getCols());
             session.setLevel(selectedLevel);
-            Before.selectedPlants.clear();
-            App.currentMenu = new Before();
+            BeforeMenu.selectedPlants.clear();
+            App.currentMenu = new BeforeMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {

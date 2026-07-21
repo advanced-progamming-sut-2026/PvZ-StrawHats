@@ -19,7 +19,7 @@ import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
 
-public class Meanwhile extends Menu {
+public class MeanwhileMenu extends Menu {
 
     private final CollectionManager manager = new CollectionManager();
 
@@ -115,7 +115,7 @@ public class Meanwhile extends Menu {
             GeneralPrinter.print("Error: no such plant type '" + type + "'.");
             return;
         }
-        if (!Before.selectedPlants.isEmpty() && !Before.selectedPlants.contains(config.name)) {
+        if (!BeforeMenu.selectedPlants.isEmpty() && !BeforeMenu.selectedPlants.contains(config.name)) {
             GeneralPrinter.print("Error: " + config.name + " is not in your loadout for this stage.");
             return;
         }
@@ -203,11 +203,11 @@ public class Meanwhile extends Menu {
     private void checkMatchOutcome() {
         GameSession session = GameSession.getInstance();
         if (session.isGameOver()) {
-            After.reset(false);
-            App.currentMenu = new After();
+            AfterMenu.reset(false);
+            App.currentMenu = new AfterMenu();
         } else if (session.isGameWon()) {
-            After.reset(true);
-            App.currentMenu = new After();
+            AfterMenu.reset(true);
+            App.currentMenu = new AfterMenu();
         }
     }
 
@@ -225,8 +225,8 @@ public class Meanwhile extends Menu {
 
     private void finishMatch(String result) {
         boolean won = result.equalsIgnoreCase("win");
-        After.reset(won);
-        App.currentMenu = new After();
+        AfterMenu.reset(won);
+        App.currentMenu = new AfterMenu();
     }
 
     @Override
