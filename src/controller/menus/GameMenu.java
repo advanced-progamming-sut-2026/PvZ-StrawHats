@@ -64,7 +64,7 @@ public class GameMenu extends Menu {
             exitMenu();
 
         } else {
-            GeneralPrinter.print("Not Valid");
+            GeneralPrinter.print("Not Valid. Type 'menu show current' to see the commands available here.");
         }
     }
 
@@ -121,6 +121,19 @@ public class GameMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[ Game Menu ]\n");
+        sb.append("Commands:\n");
+        sb.append("  menu enter chapter -c <chaptername>   (open/continue that chapter's next stage)\n");
+        sb.append("  greenhouse menu\n");
+        sb.append("  travel-log menu\n");
+        sb.append("  menu leaderboard\n");
+        sb.append("  coin-wallet menu\n");
+        sb.append("  gem-wallet menu\n");
+        sb.append("  menu cheat add <n> <coin/diamond>\n");
+        sb.append("  menu enter collection\n");
+        sb.append("  menu exit\n");
+        sb.append("  menu show current");
+        return sb.toString();
     }
 }
