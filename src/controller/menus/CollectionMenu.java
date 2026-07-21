@@ -47,9 +47,7 @@ public class CollectionMenu extends Menu {
             Matcher matcher = Regex.MENU_COLLECTION_PURCHASE_PLANT.getMatcherRaw(text);
             matcher.matches();
             purchasePlant(state, matcher.group("plantname"));
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            changeMenu(text);
-        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+        }  else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
             System.out.println(showMenu());

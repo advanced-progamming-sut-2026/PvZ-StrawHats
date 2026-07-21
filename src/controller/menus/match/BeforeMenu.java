@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
-public class Before extends Menu {
+public class BeforeMenu extends Menu {
     private static final int PLANT_SLOTS = 8;
     public static List<String> selectedPlants = new ArrayList<>();
 
@@ -46,8 +46,7 @@ public class Before extends Menu {
             boostPlant(matcher.group("type"));
         } else if (Regex.START_GAME.getMatcherRaw(text).matches()) {
             startMatch();
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            changeMenu(text);
+        }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
@@ -132,7 +131,7 @@ public class Before extends Menu {
             }
         }
         GameSession.getInstance().startWaves();
-        App.currentMenu = new Meanwhile();
+        App.currentMenu = new MeanwhileMenu();
     }
 
     @Override

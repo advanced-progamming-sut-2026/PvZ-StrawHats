@@ -24,10 +24,7 @@ public class SettingMenu extends Menu {
             matcher.matches();
             changeDifficulty(matcher.group("difficultylevel"));
 
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            changeMenu(text);
-
-        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+        }  else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
 
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {

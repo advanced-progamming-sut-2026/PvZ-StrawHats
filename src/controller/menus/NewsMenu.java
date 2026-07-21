@@ -15,14 +15,12 @@ public class NewsMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
+        super.handleCommand(text);
         if (Regex.MENU_NEWS_SHOW_UNREAD.getMatcherRaw(text).matches()) {
             showUnread();
 
         } else if (Regex.MENU_NEWS_SHOW_ALL.getMatcherRaw(text).matches()) {
             showAll();
-
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            changeMenu(text);
 
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
