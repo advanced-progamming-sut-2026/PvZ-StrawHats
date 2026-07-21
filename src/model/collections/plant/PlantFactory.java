@@ -26,10 +26,14 @@ public class PlantFactory {
 
     public static void autoInit() {
         if (loaded) return;
-        try (java.io.FileInputStream fis = new java.io.FileInputStream("src/resource/Plants.json")) {
-            init(fis);
+        try (java.io.InputStream is = PlantFactory.class.getResourceAsStream("/Plants.json")) {
+            if (is == null) {
+                GeneralPrinter.print("Could not load Plants.json: not found on classpath");
+                return;
+            }
+            init(is);
         } catch (java.io.IOException e) {
-            GeneralPrinter.print("Could not load resource/Plants.json: " + e.getMessage());
+            GeneralPrinter.print("Could not load Plants.json: " + e.getMessage());
         }
     }
 

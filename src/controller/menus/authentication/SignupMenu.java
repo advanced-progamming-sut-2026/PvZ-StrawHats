@@ -2,7 +2,6 @@ package controller.menus.authentication;
 
 import controller.menus.Menu;
 import model.Regex;
-import model.game_exceptions.GameException;
 import model.user_data.User;
 import view.GeneralPrinter;
 
@@ -24,9 +23,9 @@ public class SignupMenu extends Menu {
     private static final String SPECIAL_CHARS = "!#$%^&*()=+}{}[]|/\\:;'\"<>?";
 
     // the things we are working on currently
-    private String pendingUsername, pendingPassword, pendingNickname, pendingEmail, pendingGender;
-    private int pendingQuestion = -1;
-    private boolean isPendingSecurityAnswer = false;
+    private static String pendingUsername, pendingPassword, pendingNickname, pendingEmail, pendingGender;
+    private static int pendingQuestion = -1;
+    private static boolean isPendingSecurityAnswer = false;
 
     @Override
     public String getName() {
@@ -53,7 +52,7 @@ public class SignupMenu extends Menu {
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(showMenu());
         } else {
-            throw new GameException("Invalid command");
+            GeneralPrinter.print("Invalid command");
         }
     }
 

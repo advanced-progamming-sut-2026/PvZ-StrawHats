@@ -92,16 +92,16 @@ public enum Regex {
             "^\\s*menu\\s+collection\\s+show-all-zombies\\s*$"
     ),
     MENU_COLLECTION_SHOW_PLANT(
-            "^\\s*menu\\s+collection\\s+showplant\\s+-p\\s+(?<plantname>\\S+)\\s*$"
+            "^\\s*menu\\s+collection\\s+showplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
     MENU_COLLECTION_SHOW_ZOMBIE(
-            "^\\s*menu\\s+collection\\s+show-zombie\\s+-z\\s+(?<zombiename>\\S+)\\s*$"
+            "^\\s*menu\\s+collection\\s+show-zombie\\s+-z\\s+(?<zombiename>.+?)\\s*$"
     ),
     MENU_COLLECTION_UPGRADE_PLANT(
-            "^\\s*menu\\s+collection\\s+upgradeplant\\s+-p\\s+(?<plantname>\\S+)\\s*$"
+            "^\\s*menu\\s+collection\\s+upgradeplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
     MENU_COLLECTION_PURCHASE_PLANT(
-            "^\\s*menu\\s+collection\\s+purchaseplant\\s+-p\\s+(?<plantname>\\S+)\\s*$"
+            "^\\s*menu\\s+collection\\s+purchaseplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
 
     // green house
@@ -112,13 +112,13 @@ public enum Regex {
             "^\\s*show\\s+available\\s+plants\\s*$"
     ),
     ADD_PLANT(
-            "^\\s*add\\s+plant\\s+-t\\s+(?<type>\\S+)\\s*$"
+            "^\\s*add\\s+plant\\s+-t\\s+(?<type>.+?)\\s*$"
     ),
     REMOVE_PLANT(
-            "^\\s*remove\\s+plant\\s+-t\\s+(?<type>\\S+)\\s*$"
+            "^\\s*remove\\s+plant\\s+-t\\s+(?<type>.+?)\\s*$"
     ),
     BOOST_PLANT(
-            "^\\s*boost\\s+plant\\s+-t\\s+(?<type>\\S+)\\s*$"
+            "^\\s*boost\\s+plant\\s+-t\\s+(?<type>.+?)\\s*$"
     ),
     START_GAME(
             "^\\s*start\\s+game\\s*$"
@@ -146,12 +146,12 @@ public enum Regex {
             "^\\s*shop\\s+daily\\s*$"
     ),
     SHOP_BUY(
-            "^\\s*shop\\s+buy\\s+-i\\s+(?<itemid>\\S+)\\s+-n\\s+(?<count>\\d+)(?:\\s+-t\\s+(?<planttype>\\S+))?\\s*$"
+            "^\\s*shop\\s+buy\\s+-i\\s+(?<itemid>\\S+)\\s+-n\\s+(?<count>\\d+)(?:\\s+-t\\s+(?<planttype>.+?))?\\s*$"
     ),
 
     // in 3 ta hameja hastan vali handeleshoon fargh dare moragheb bashid toye override ha sooti nadid
     MENU_ENTER(
-            "^\\s*menu\\s+enter\\s+(?<menuname>\\S+)\\s*$"
+            "^\\s*menu\\s+enter\\s+(?<menuname>.+?)\\s*$"
     ),
     MENU_SHOW_CURRENT(
             "^\\s*menu\\s+show\\s+current\\s*$"

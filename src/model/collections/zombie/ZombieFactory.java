@@ -14,8 +14,6 @@ import model.match_mechanisms.vector.Position;
 import model.pitches.obstacles.PushableType;
 import model.utils.GameSession;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -24,8 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class ZombieFactory {
-    private static final String ZOMBIES_PATH = "resource/Zombie.json";
-    private static final String ARMOR_PATH = "resource/ArmorTypeData.json";
     private static final Map<String, Map<String, Object>> blueprints = new HashMap<>();
     private static final Map<String, Integer> armorBaseHp = new HashMap<>();
     private static boolean loaded = false;
@@ -39,12 +35,10 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadZombies() {
-        File file = new File(ZOMBIES_PATH);
-        if (!file.exists()) return;
-
-        try (FileReader reader = new FileReader(file)) {
+        try (var is = ZombieFactory.class.getResourceAsStream("/Zombie.json")) {
+            if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
-            List<Map<String, Object>> entries = new Gson().fromJson(reader, listType);
+            List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
             if (entries == null) return;
 
             for (Map<String, Object> entry : entries) {
@@ -60,12 +54,10 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadArmorData() {
-        File file = new File(ARMOR_PATH);
-        if (!file.exists()) return;
-
-        try (FileReader reader = new FileReader(file)) {
+        try (var is = ZombieFactory.class.getResourceAsStream("/ArmorTypeData.json")) {
+            if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
-            List<Map<String, Object>> entries = new Gson().fromJson(reader, listType);
+            List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
             if (entries == null) return;
 
             for (Map<String, Object> entry : entries) {

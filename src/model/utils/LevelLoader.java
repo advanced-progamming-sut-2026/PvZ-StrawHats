@@ -117,7 +117,15 @@ public class LevelLoader {
             if (raw.has("conveyorPlants")) {
                 raw.get("conveyorPlants").getAsJsonArray().forEach(e -> {
                     String plantType = e.getAsString();
-                    Plant p = PlantFactory.createPlant(0, level.getId(), new Position(9, 0)); //TODO: fix this
+                    Integer plantId = null;
+                    for (var config : PlantFactory.getBlueprints().values()) {
+                        if (config.name.equalsIgnoreCase(plantType)) {
+                            plantId = config.id;
+                            break;
+                        }
+                    }
+                    if (plantId == null) return; // unknown plant name in JSON, skip instead of crashing the whole level load
+                    Plant p = PlantFactory.createPlant(plantId, 1, new Position(9, 0));
                     conveyorPlants.add(p);
                 });
             }

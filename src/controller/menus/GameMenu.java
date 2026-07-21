@@ -60,7 +60,8 @@ public class GameMenu extends Menu {
             matcher.matches();
             String menuName = matcher.group("menuname");
 
-            if (menuName.trim().equalsIgnoreCase("Collection")) {
+            String normalizedName = menuName.trim().toLowerCase().replace("menu", "").trim();
+            if (normalizedName.equals("collection")) {
                 App.currentMenu = new CollectionMenu();
             } else {
                 changeMenu(text);

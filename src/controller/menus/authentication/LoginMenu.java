@@ -12,8 +12,8 @@ import static model.App.currentMenu;
 
 public class LoginMenu extends Menu {
 
-    private User pendingPasswordReset = null;
-    private boolean awaitingNewPassword = false;
+    private static User pendingPasswordReset = null;
+    private static boolean awaitingNewPassword = false;
 
     @Override
     public String getName() {
@@ -169,7 +169,7 @@ public class LoginMenu extends Menu {
         matcher.matches();
         String menuName = matcher.group("menuname");
 
-        if (menuName == "Main menu") {
+        if (menuName.trim().equalsIgnoreCase("Main menu")) {
             GeneralPrinter.print("You can only enter the Main Menu after logging in.");
             return;
         }
