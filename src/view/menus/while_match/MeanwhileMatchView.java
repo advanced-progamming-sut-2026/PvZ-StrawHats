@@ -14,12 +14,6 @@ public class MeanwhileMatchView extends MenuView {
 
     @Override
     public void showMenu(String text) {
-        if (PAUSE.matcher(text.trim()).matches() || RESUME.matcher(text.trim()).matches()
-                || RESTART.matcher(text.trim()).matches() || END_GAME.matcher(text.trim()).matches()
-                || Regex.MENU_EXIT.getMatcherRaw(text).matches() || Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            new Meanwhile().handleCommand(text);
-        } else {
-            System.out.println("Not Valid");
-        }
+
     }
 }
