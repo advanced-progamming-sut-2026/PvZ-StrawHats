@@ -17,7 +17,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private int id;
     private String name;
     private int level = 1;
-    private int recharge;
+    private double recharge;
     private double actionInterval;
     private int cost;
     private final ArrayList<PlantTag> tags = new ArrayList<>();
@@ -133,8 +133,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setName(String name) { this.name = name; }
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
-    public int getRecharge() { return recharge; }
-    public void setRecharge(int recharge) { this.recharge = recharge; }
+    public double getRecharge() { return recharge; }
+    public void setRecharge(double recharge) { this.recharge = recharge; }
     public double getActionInterval() { return actionIntervalStat != null ? actionIntervalStat.getValue() : actionInterval; }
     public void setActionInterval(double actionInterval) {
         this.actionInterval = actionInterval;
