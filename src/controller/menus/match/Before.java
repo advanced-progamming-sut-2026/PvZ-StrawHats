@@ -124,8 +124,12 @@ public class Before extends Menu {
             System.out.println("Error: no level loaded.");
             return;
         }
-        if (selectedPlants.isEmpty() && level.getForcedPlants() != null) {
-            selectedPlants.addAll(level.getForcedPlants());
+        if (level.getForcedPlants() != null) {
+            for (String forced : level.getForcedPlants()) {
+                if (!selectedPlants.contains(forced)) {
+                    selectedPlants.add(forced);
+                }
+            }
         }
         GameSession.getInstance().startWaves();
         App.currentMenu = new Meanwhile();

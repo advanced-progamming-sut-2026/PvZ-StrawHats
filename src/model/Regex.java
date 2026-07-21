@@ -13,7 +13,7 @@ public enum Regex {
             "^\\s*pick\\s+question\\s+-q\\s+(?<questionnumber>\\S+)\\s+-a\\s+(?<answer>\\S+)\\s+-c\\s+(?<answerconfirm>\\S+)\\s*$"
     ),
     LOGIN(
-            "^\\s*login\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)\\s+-stay-logged-in\\s*$"
+            "^\\s*login\\s+-u\\s+(?<username>\\S+)\\s+-p\\s+(?<password>\\S+)(?:\\s+-stay-logged-in)?\\s*$"
     ),
     FORGET_PASSWORD(
             "^\\s*forget\\s+password\\s+-u\\s+(?<username>\\S+)\\s+-e\\s+(?<email>\\S+)\\s*$"
@@ -156,6 +156,49 @@ public enum Regex {
     MENU_SHOW_CURRENT(
             "^\\s*menu\\s+show\\s+current\\s*$"
     ),
+    ADVANCE_TIME(
+            "^\\s*advance\\s+time\\s+-t\\s+(?<ticks>\\d+)\\s+ticks?\\s*$"
+    ),
+    SHOW_MAP(
+            "^\\s*show\\s+map\\s*$"
+    ),
+    SHOW_SUN_AMOUNT(
+            "^\\s*show\\s+sun\\s+amount\\s*$"
+    ),
+    SHOW_PLANT_STATUS(
+            "^\\s*show\\s+plant\\s+status\\s*$"
+    ),
+    SHOW_TILE_STATUS(
+            "^\\s*show\\s+tile\\s+status\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    ZOMBIES_INFO(
+            "^\\s*zombies\\s+info\\s*$"
+    ),
+    PLANT_ON_FIELD(
+            "^\\s*plant\\s+plant\\s+-t\\s+(?<type>.+?)\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    PLUCK_PLANT_FIELD(
+            "^\\s*pluck\\s+plant\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    FEED_PLANT_FIELD(
+            "^\\s*feed\\s+plant\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    CHEAT_ADD_SUNS(
+            "^\\s*cheat\\s+add\\s+-n\\s+(?<count>\\d+)\\s+suns\\s*$"
+    ),
+    CHEAT_ADD_PLANT_FOOD(
+            "^\\s*cheat\\s+add-plant-food\\s*$"
+    ),
+    CHEAT_REMOVE_COOLDOWN(
+            "^\\s*cheat\\s+remove-cooldown\\s*$"
+    ),
+    CHEAT_SPAWN_ZOMBIE(
+            "^\\s*cheat\\s+spawn-zombie\\s+-t\\s+(?<type>\\S+)\\s+-l\\s*\\(?\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)?\\s*$"
+    ),
+    RELEASE_THE_NUKE(
+            "^\\s*release\\s+the\\s+nuke\\s*$"
+    ),
+
     MENU_EXIT(
             "^\\s*menu\\s+exit\\s*$"
     );
