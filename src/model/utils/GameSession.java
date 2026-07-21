@@ -152,7 +152,10 @@ public class GameSession {
         }
 
         if (wavesStarted && allWavesSpawned() && zombies.isEmpty() && !gameOver) {
-            gameWon = true;
+            if (!gameWon) {
+                gameWon = true;
+                QuestManager.notifyLevelWon(this);
+            }
         }
     }
 
@@ -230,9 +233,6 @@ public class GameSession {
         return nextWaveIndex;
     }
 
-    /**
-     * Seconds until the next wave spawns, or -1 if every wave has already spawned.
-     */
     public double getSecondsUntilNextWave() {
         if (allWavesSpawned()) return -1;
         return Math.max(0, waves.get(nextWaveIndex).getDelay() - waveTimer);

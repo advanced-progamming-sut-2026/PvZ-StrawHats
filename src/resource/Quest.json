@@ -134,12 +134,9 @@
     "expiresAfterSeconds": null,
     "criteria": [
       {
-        "type": "KILL_ZOMBIES_TIME_LIMIT",
-        "target": 10,
-        "params": {
-          "timeLimitSeconds": 30,
-          "fromWave": 1
-        }
+        "type": "USE_EXPLOSIVE_PLANTS",
+        "target": 5,
+        "params": {}
       }
     ],
     "reward": {
@@ -196,10 +193,10 @@
     "expiresAfterSeconds": 86400,
     "criteria": [
       {
-        "type": "KILL_ZOMBIES_EXCLUSIVE_FAMILY",
-        "target": 1,
+        "type": "KILL_ZOMBIES_WITH_SPECIFIC_PLANT",
+        "target": 25,
         "params": {
-          "familyType": "chosen_family"
+          "plantType": "any_offensive"
         }
       }
     ],
@@ -217,10 +214,10 @@
     "expiresAfterSeconds": 86400,
     "criteria": [
       {
-        "type": "WIN_LEVEL_FORBIDDEN_FAMILY",
+        "type": "WIN_LEVEL_MAX_PLANTS_LOST",
         "target": 1,
         "params": {
-          "forbiddenFamilyType": "chosen_family"
+          "maxPlantsLost": 3
         }
       }
     ],
@@ -238,10 +235,10 @@
     "expiresAfterSeconds": null,
     "criteria": [
       {
-        "type": "WIN_DAY_LEVEL_WITH_NIGHT_PLANTS",
+        "type": "WIN_LEVEL_SYMMETRIC",
         "target": 1,
         "params": {
-          "allowedType": "mushrooms"
+          "requireSymmetric": true
         }
       }
     ],
@@ -259,10 +256,10 @@
     "expiresAfterSeconds": 86400,
     "criteria": [
       {
-        "type": "WIN_CONSECUTIVE_LEVELS_MAX_DIFFICULTY",
-        "target": 5,
+        "type": "KILL_ZOMBIES_IN_CHAPTER",
+        "target": 50,
         "params": {
-          "difficulty": "max"
+          "chapter": "any"
         }
       }
     ],
@@ -280,8 +277,8 @@
     "expiresAfterSeconds": 86400,
     "criteria": [
       {
-        "type": "KILL_ZOMBIES_FIRST_COLUMN_NO_LAWNMOWER",
-        "target": 10,
+        "type": "USE_EXPLOSIVE_PLANTS",
+        "target": 5,
         "params": {}
       }
     ],
