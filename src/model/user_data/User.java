@@ -102,6 +102,7 @@ public class User {
         model.App.currentUser = user;
         Greenhouse.getInstance()
                 .load(user.userState.greenhousePots);
+        model.quests.QuestLoader.initializeActiveQuestsForUser();
     }
 
     public static void save() {

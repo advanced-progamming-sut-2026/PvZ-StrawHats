@@ -19,7 +19,6 @@ public abstract class Quest {
 
     public void setProgress(int progress) {
         this.progress = progress;
-        // *
     }
 
     public boolean isCompleted() {
@@ -28,6 +27,5 @@ public abstract class Quest {
 
     public void setCompleted(boolean completed) {
         isCompleted = completed;
-        // *
     }
 }

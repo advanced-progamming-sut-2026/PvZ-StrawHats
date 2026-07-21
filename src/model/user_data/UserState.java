@@ -2,6 +2,7 @@ package model.user_data;
 
 import model.greenhouse.PotData;
 import model.news.News;
+import model.quests.GameQuest;
 
 import java.util.*;
 
@@ -19,6 +20,8 @@ public class UserState {
     public Map<Integer, Boolean> plantBoosts = new HashMap<>();
     public List<List<PotData>> greenhousePots;
     public int plantFoodCount = 0;
+
+    public List<GameQuest> activeQuests = new ArrayList<>();
 
     public String dailyOfferDate;
     public Integer dailyOfferPlantId;

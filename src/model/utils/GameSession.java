@@ -17,9 +17,13 @@ import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
+import controller.QuestManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
@@ -54,6 +58,7 @@ public class GameSession {
     private boolean gameOver = false;
     private boolean gameWon = false;
     private int difficultyLevel;
+    private int plantsLostThisMatch = 0;
 
     private double skySunTimer = 0;
 
@@ -131,6 +136,9 @@ public class GameSession {
         recordLevelSpecificDeaths();
         tickLevelSpecificLogic(deltaTimeSeconds);
 
+        for (Plant plant : plants) {
+            if (!plant.isAlive()) plantsLostThisMatch++;
+        }
         plants.removeIf(p -> !p.isAlive());
         zombies.removeIf(z -> !z.isAlive());
         items.removeIf(i -> !i.isAlive());
@@ -286,6 +294,21 @@ public class GameSession {
                 items.add(new GroundSeedPack(dropPosition, plantId, 1));
             }
         }
+
+        reportKillToQuests(killerName);
+    }
+
+    private void reportKillToQuests(String killerName) {
+        boolean killedByPlant = killerName != null && !killerName.equals("Unknown");
+
+        Map<String, Object> plantContext = new HashMap<>();
+        plantContext.put("plantType", killedByPlant ? killerName.toLowerCase().replace(" ", "").replace("-", "") : "none");
+        plantContext.put("isOffensive", killedByPlant);
+        QuestManager.updateProgress("KILL_ZOMBIES_WITH_SPECIFIC_PLANT", 1, plantContext);
+
+        Map<String, Object> chapterContext = new HashMap<>();
+        chapterContext.put("chapter", level != null ? level.getId() : "unknown");
+        QuestManager.updateProgress("KILL_ZOMBIES_IN_CHAPTER", 1, chapterContext);
     }
 
     public List<GroundItem> collectItemsNear(Position target) {
@@ -326,6 +349,13 @@ public class GameSession {
 
     public void addSun(int amount) {
         sunCount += amount;
+        if (amount > 0) {
+            QuestManager.updateProgress("COLLECT_SUN", amount, Collections.emptyMap());
+        }
+    }
+
+    public int getPlantsLostThisMatch() {
+        return plantsLostThisMatch;
     }
 
     public boolean spendSun(int amount) {
@@ -364,6 +394,11 @@ public class GameSession {
         cell.setPlant(plant);
         plant.setPosition(new Position(col, row));
         plants.add(plant);
+
+        if (plant.getTags() != null && plant.getTags().contains(model.collections.plant.PlantTag.EXPLOSIVE)) {
+            QuestManager.updateProgress("USE_EXPLOSIVE_PLANTS", 1, Collections.emptyMap());
+        }
+
         return true;
     }
 

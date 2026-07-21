@@ -10,6 +10,7 @@ public class GameQuest extends Quest {
     private Integer expiresAfterSeconds;
     private List<QuestCriterion> criteria;
     private QuestReward reward;
+    private long assignedAtEpochSecond;
 
     public String getId() {
         return id;
@@ -65,5 +66,18 @@ public class GameQuest extends Quest {
 
     public void setReward(QuestReward reward) {
         this.reward = reward;
+    }
+
+    public long getAssignedAtEpochSecond() {
+        return assignedAtEpochSecond;
+    }
+
+    public void setAssignedAtEpochSecond(long assignedAtEpochSecond) {
+        this.assignedAtEpochSecond = assignedAtEpochSecond;
+    }
+
+    public boolean isExpired(long nowEpochSecond) {
+        if (expiresAfterSeconds == null) return false;
+        return nowEpochSecond - assignedAtEpochSecond >= expiresAfterSeconds;
     }
 }

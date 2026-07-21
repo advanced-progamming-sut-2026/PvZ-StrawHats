@@ -1,6 +1,7 @@
 package controller.menus.match;
 
 import controller.CollectionManager;
+import controller.QuestManager;
 import controller.menus.GameMenu;
 import controller.menus.Menu;
 
@@ -55,6 +56,10 @@ public class After extends Menu {
 
         if (won && level != null) {
             state.recordGameResult(level.getId(), coinsAwarded);
+        }
+
+        if (won) {
+            QuestManager.notifyLevelWon(GameSession.getInstance());
         }
     }
 
