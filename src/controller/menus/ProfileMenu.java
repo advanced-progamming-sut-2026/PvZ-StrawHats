@@ -27,9 +27,7 @@ public class ProfileMenu extends Menu {
             handleChangeNickname(text);
         } else if (Regex.MENU_PROFILE_CHANGE_EMAIL.getMatcherRaw(text).matches()) {
             handleChangeEmail(text);
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            changeMenu(text);
-        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+        }  else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(showMenu());

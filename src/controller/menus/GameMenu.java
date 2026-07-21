@@ -1,5 +1,6 @@
 package controller.menus;
 
+import controller.menus.greenhouse.GreenhouseMenu;
 import model.App;
 import model.Regex;
 import model.match.main.levels.Level;
@@ -41,7 +42,7 @@ public class GameMenu extends Menu {
             App.currentMenu = new LeaderboardMenu();
 
         } else if (Regex.MENU_GREENHOUSE.getMatcherRaw(text).matches()) {
-            App.currentMenu = new controller.menus.greenhouse.GreenhouseController();
+            App.currentMenu = new GreenhouseMenu();
 
         } else if (Regex.MENU_CHEAT_ADD.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_CHEAT_ADD.getMatcherRaw(text);
@@ -55,19 +56,9 @@ public class GameMenu extends Menu {
                 User.currentUser.userState.diamonds += amount;
             }
 
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
-            matcher.matches();
-            String menuName = matcher.group("menuname");
+        }
 
-            String normalizedName = menuName.trim().toLowerCase().replace("menu", "").trim();
-            if (normalizedName.equals("collection")) {
-                App.currentMenu = new CollectionMenu();
-            } else {
-                changeMenu(text);
-            }
-
-        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+         else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
 
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {

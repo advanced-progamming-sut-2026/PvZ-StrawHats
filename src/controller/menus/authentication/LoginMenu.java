@@ -22,6 +22,7 @@ public class LoginMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
+
         if (awaitingNewPassword) {
             handleNewPassword(text);
             return;

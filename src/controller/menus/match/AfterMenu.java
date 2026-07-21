@@ -16,7 +16,7 @@ import model.utils.GameSession;
 import java.util.List;
 import java.util.Random;
 
-public class After extends Menu {
+public class AfterMenu extends Menu {
     private static final Random RANDOM = new Random();
     private static final CollectionManager MANAGER = new CollectionManager();
 
@@ -30,7 +30,7 @@ public class After extends Menu {
         rewardGranted = false;
     }
 
-    public After() {
+    public AfterMenu() {
         if (!rewardGranted) {
             grantReward();
             rewardGranted = true;

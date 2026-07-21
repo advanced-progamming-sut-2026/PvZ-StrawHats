@@ -1,5 +1,6 @@
 package controller.menus;
 
+import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import model.App;
 import model.Regex;
@@ -27,15 +28,24 @@ public abstract class Menu {
             case "news" -> App.currentMenu = new NewsMenu();
             case "signup" -> App.currentMenu = new SignupMenu();
             case "main" -> App.currentMenu = new MainMenu();
+            case "login" -> App.currentMenu = new LoginMenu();
+            case "collection" -> App.currentMenu = new CollectionMenu();
+            case "travellog" -> App.currentMenu = new TravelLogMenu();
+            case "network" -> App.currentMenu = new NetworkMenu();
             default -> GeneralPrinter.print("Error: no such menu.");
         }
     }
+    public void handleCommand(String text){
+        if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){
+            changeMenu(text);
+        }
+    };
 
     public void getInput() {
 
     }
     public abstract String getName();
-    public abstract void handleCommand(String text);
+
     public abstract void exitMenu();
     public abstract String showMenu();
 }

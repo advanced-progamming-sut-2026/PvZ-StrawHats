@@ -2,7 +2,7 @@ package controller.menus.greenhouse;
 
 import controller.menus.GameMenu;
 import controller.menus.Menu;
-import controller.menus.store.StoreController;
+import controller.menus.store.StoreMenu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantFactory;
@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 
-public class GreenhouseController extends Menu {
+public class GreenhouseMenu extends Menu {
 
     public void plantPotPlant(Pot pot) {
         if (pot == null) {
@@ -93,7 +93,7 @@ public class GreenhouseController extends Menu {
                 GeneralPrinter.print(pot.getPotController().grow(state));
             }
         } else if (Regex.ENTER_SHOP.getMatcherRaw(text).matches()) {
-            App.currentMenu = new StoreController();
+            App.currentMenu = new StoreMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
