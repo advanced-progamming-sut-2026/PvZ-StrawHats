@@ -26,11 +26,7 @@ public class PlantFactory {
 
     public static void autoInit() {
         if (loaded) return;
-        try (java.io.InputStream is = PlantFactory.class.getResourceAsStream("/Plants.json")) {
-            if (is == null) {
-                GeneralPrinter.print("Could not load Plants.json: not found on classpath");
-                return;
-            }
+        try (java.io.InputStream is = new java.io.FileInputStream("src/resource/Plants.json")) {
             init(is);
         } catch (java.io.IOException e) {
             GeneralPrinter.print("Could not load Plants.json: " + e.getMessage());
@@ -88,7 +84,6 @@ public class PlantFactory {
         plant.setWrampUp(config.wrampUp);
         plant.getRawUpgrades().addAll(specialTags);
 
-        // انتساب استراتژی‌های اجرایی واقعی بر اساس نوع توانایی گیاه
         plant.setActStrategy(buildActStrategy(config));
 
         if (config.abilityType == AbilityType.PASSIVE_SHIELD) {
