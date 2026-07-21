@@ -35,7 +35,7 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadZombies() {
-        try (var is = ZombieFactory.class.getResourceAsStream("src/resource/Zombie.json")) {
+        try (var is = openResource("src/resource/Zombie.json")) {
             if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
@@ -54,7 +54,7 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadArmorData() {
-        try (var is = ZombieFactory.class.getResourceAsStream("src/resource/ArmorTypeData.json")) {
+        try (var is = openResource("src/resource/ArmorTypeData.json")) {
             if (is == null) return;
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
@@ -70,6 +70,23 @@ public class ZombieFactory {
                 }
             }
         } catch (IOException ignored) {}
+    }
+
+    private static java.io.InputStream openResource(String resourcePath) throws IOException {
+        var is = ZombieFactory.class.getResourceAsStream(resourcePath);
+        if (is != null) return is;
+
+        is = ZombieFactory.class.getResourceAsStream("/" + resourcePath);
+        if (is != null) return is;
+
+        String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+        for (String candidate : new String[]{resourcePath, "resource/" + fileName, "src/resource/" + fileName}) {
+            java.io.File file = new java.io.File(candidate);
+            if (file.exists()) {
+                return new java.io.FileInputStream(file);
+            }
+        }
+        return null;
     }
 
     public static int getZombieCost(String alias) {

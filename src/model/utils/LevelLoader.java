@@ -171,8 +171,11 @@ public class LevelLoader {
         } else if (level instanceof BossLevel) {
             String bossType = raw.get("bossType").getAsString();
             ((BossLevel) level).setBossZombie(ZombieFactory.create(bossType, 9, 0));
+        } else if (level instanceof PlantWhatYouGetLevel) {
+            int primarySun = raw.has("primarySun") ? raw.get("primarySun").getAsInt() : 0;
+            ((PlantWhatYouGetLevel) level).setPrimarySun(primarySun);
         }
-        // PlantWhatYouGet, NightOps, Introduction, Normal have no extra fields.
+        // NightOps, Introduction, Normal have no extra fields.
 
         return level;
     }

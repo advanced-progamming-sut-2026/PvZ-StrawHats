@@ -1,6 +1,5 @@
 package model.utils;
 
-import controller.QuestManager;
 import model.collections.Item;
 import model.collections.item.*;
 import model.collections.plant.Plant;
@@ -18,8 +17,14 @@ import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
+import controller.QuestManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.function.ToIntFunction;
 
 public class GameSession {
@@ -88,6 +93,9 @@ public class GameSession {
 
         if (level != null) {
             level.updateTide(deltaTimeSeconds, this);
+            if (level.getSeason() != null) {
+                level.getSeason().applyPerTickEffect(this, deltaTimeSeconds);
+            }
         }
 
         for (Plant plant : plants) {
@@ -204,6 +212,9 @@ public class GameSession {
 
         if (waveTimer >= nextWave.getDelay()) {
             spawnWave(nextWave);
+            if (level != null && level.getSeason() != null) {
+                level.getSeason().onWaveStart(this, nextWaveIndex);
+            }
             nextWaveIndex++;
             waveTimer = 0;
         }
@@ -498,7 +509,11 @@ public class GameSession {
     public void setLevel(Level level) {
         this.level = level;
         if (level != null) {
+            addSun(level.getInitialSun());
             level.initSpecial(this);
+            if (level.getSeason() != null) {
+                level.getSeason().placeSeasonObstacles(this);
+            }
         }
     }
 
