@@ -77,6 +77,7 @@ public class PlantFactory {
 
         plant.setCost(Math.max(0, runtimeCost));
         plant.setActionInterval(Math.max(0.05, runtimeInterval));
+        plant.setRecharge(Math.max(0, runtimeRecharge));
         plant.setDamage(runtimeDamage);
         plant.setAbilityValue(runtimeAbility);
         plant.setLevel(level);
