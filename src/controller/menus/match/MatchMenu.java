@@ -27,7 +27,7 @@ public class MatchMenu extends Menu {
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
             System.out.println(showMenu());
         } else {
-            System.out.println("Not Valid");
+            System.out.println("Not Valid. Type 'menu show current' to see the commands available here.");
         }
     }
 
@@ -38,6 +38,13 @@ public class MatchMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return "Chapter: " + selectedLevel.getSeason().getName() + " | Stage: " + selectedLevel.getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Chapter: ").append(selectedLevel.getSeason().getName())
+                .append(" | Stage: ").append(selectedLevel.getName()).append("\n");
+        sb.append("Commands:\n");
+        sb.append("  start game   (choose your plant loadout for this stage)\n");
+        sb.append("  menu exit\n");
+        sb.append("  menu show current");
+        return sb.toString();
     }
 }

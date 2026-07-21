@@ -53,7 +53,7 @@ public class Before extends Menu {
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
             System.out.println(showMenu());
         } else {
-            System.out.println("Not Valid");
+            System.out.println("Not Valid. Type 'menu show current' to see the commands available here.");
         }
     }
 
@@ -144,6 +144,19 @@ public class Before extends Menu {
     public String showMenu() {
         Level level = currentLevel();
         String levelName = level != null ? level.getName() : "unknown";
-        return "Stage: " + levelName + " | Loadout: " + selectedPlants + " (" + selectedPlants.size() + "/" + PLANT_SLOTS + ")";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Stage: ").append(levelName)
+                .append(" | Loadout: ").append(selectedPlants)
+                .append(" (").append(selectedPlants.size()).append("/").append(PLANT_SLOTS).append(")\n");
+        sb.append("Commands:\n");
+        sb.append("  show all plants\n");
+        sb.append("  show available plants\n");
+        sb.append("  add plant -t <type>\n");
+        sb.append("  remove plant -t <type>\n");
+        sb.append("  boost plant -t <type>\n");
+        sb.append("  start game   (locks in your loadout and begins the match)\n");
+        sb.append("  menu exit\n");
+        sb.append("  menu show current");
+        return sb.toString();
     }
 }
