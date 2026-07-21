@@ -17,7 +17,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private int id;
     private String name;
     private int level = 1;
-    private double recharge;
+    private int recharge;
     private double actionInterval;
     private int cost;
     private final ArrayList<PlantTag> tags = new ArrayList<>();
@@ -133,8 +133,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setName(String name) { this.name = name; }
     public int getLevel() { return level; }
     public void setLevel(int level) { this.level = level; }
-    public double getRecharge() { return recharge; }
-    public void setRecharge(double recharge) { this.recharge = recharge; }
+    public int getRecharge() { return recharge; }
+    public void setRecharge(int recharge) { this.recharge = recharge; }
     public double getActionInterval() { return actionIntervalStat != null ? actionIntervalStat.getValue() : actionInterval; }
     public void setActionInterval(double actionInterval) {
         this.actionInterval = actionInterval;
@@ -161,7 +161,13 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setPlantFoodEffect(PlantFoodEffect plantFoodEffect) { this.plantFoodEffect = plantFoodEffect; }
     public void setPlantFoodType(PlantFoodType plantFoodType) { this.plantFoodType = plantFoodType; }
     public void setAbilityValue(double value) { this.abilityValue = value; }
-    public double getAbilityValue() { return this.abilityValue; }
+    public double getAbilityValue() {
+        if (growthTracker != null) {
+            Double staged = growthTracker.getStageValue("abilityValue");
+            if (staged != null) return staged;
+        }
+        return this.abilityValue;
+    }
     public void setWrampUp(List<Map<String, Object>> wrampUp) { this.growthTracker = (wrampUp != null && !wrampUp.isEmpty()) ? new GrowthTracker(wrampUp) : null; }
     public List<Position> getShootingVectors() { return shootingVectors; }
     public void setShootingVectors(List<Position> shootingVectors) { this.shootingVectors = shootingVectors; }

@@ -27,7 +27,7 @@ public class ExplodeStrategy implements ActStrategy{
                 targets = lineDetect(user , session);
                 break;
             case 4 :
-                targets = wholePitchDetect(user , session);
+                targets = wholePitchDetect(session);
                 makeHole(session);
                 break;
         }
@@ -38,7 +38,7 @@ public class ExplodeStrategy implements ActStrategy{
     private boolean isZombieTouch(Plant user , GameSession session) {
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
-            Position zomPos = zombie.getPosition();
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             if(zombie.getPosition().distanceTo(userPos) < TRAP_ACTIVATION_RADIUS)
                 return true;
         }
@@ -52,6 +52,7 @@ public class ExplodeStrategy implements ActStrategy{
         double shortest = Double.MAX_VALUE;
 
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             double distance = zomPos.distanceTo(userPos);
             if(distance < shortest) {
@@ -67,6 +68,7 @@ public class ExplodeStrategy implements ActStrategy{
         ArrayList<Zombie> targets = new ArrayList<>();
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(Math.abs(zomPos.y() - userPos.y()) < 1 && Math.abs(zomPos.x() - userPos.x()) < 1)
                 targets.add(zombie);
@@ -78,6 +80,7 @@ public class ExplodeStrategy implements ActStrategy{
         ArrayList<Zombie> targets = new ArrayList<>();
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(Math.abs(userPos.y() - zomPos.y()) < 0.5) {
                 targets.add(zombie);
@@ -86,8 +89,8 @@ public class ExplodeStrategy implements ActStrategy{
         return targets;
     }
 
-    private ArrayList<Zombie> wholePitchDetect(Plant user , GameSession session) {
-        return (ArrayList<Zombie>) session.getZombies();
+    private ArrayList<Zombie> wholePitchDetect(GameSession session) {
+        return new ArrayList<>(session.getZombies());
     }
 
     private void makeHole(GameSession session) {

@@ -9,6 +9,7 @@ import model.match.main.season.SeasonFactory;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
+import model.utils.GameSession;
 import view.GeneralPrinter;
 
 import java.util.Comparator;
@@ -23,10 +24,7 @@ public class GameMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
-
+    public void handleCommand(String text) {
         if (Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text);
             matcher.matches();
@@ -59,13 +57,26 @@ public class GameMenu extends Menu {
                 User.currentUser.userState.diamonds += amount;
             }
 
-        }
+        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
+            Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
+            matcher.matches();
+            String menuName = matcher.group("menuname");
 
-         else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+            String normalizedName = menuName.trim().toLowerCase().replace("menu", "").trim();
+            if (normalizedName.equals("collection")) {
+                App.currentMenu = new CollectionMenu();
+            } else {
+                changeMenu(text);
+            }
+
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
 
+        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(showMenu());
+
         } else {
-            GeneralPrinter.print("Not Valid. Type 'menu show current' to see the commands available here.");
+            GeneralPrinter.print("Not Valid");
         }
     }
 
@@ -80,7 +91,8 @@ public class GameMenu extends Menu {
 
         List<Level> allLevels;
         try {
-            allLevels = LevelLoader.loadLevels("src/resource/Levels.json");
+            GameSession.getInstance().setDifficultyLevel(User.currentUser.userState.difficultyLevel);
+            allLevels = LevelLoader.loadLevels("/Levels.json");
         } catch (Exception e) {
             GeneralPrinter.print("Error: could not load levels.");
             return;
@@ -122,19 +134,6 @@ public class GameMenu extends Menu {
 
     @Override
     public String showMenu() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ Game Menu ]\n");
-        sb.append("Commands:\n");
-        sb.append("  menu enter chapter -c <chaptername>   (open/continue that chapter's next stage)\n");
-        sb.append("  greenhouse menu\n");
-        sb.append("  travel-log menu\n");
-        sb.append("  menu leaderboard\n");
-        sb.append("  coin-wallet menu\n");
-        sb.append("  gem-wallet menu\n");
-        sb.append("  menu cheat add <n> <coin/diamond>\n");
-        sb.append("  menu enter collection\n");
-        sb.append("  menu exit\n");
-        sb.append("  menu show current");
-        return sb.toString();
+        return getName();
     }
 }

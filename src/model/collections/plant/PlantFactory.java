@@ -24,13 +24,24 @@ public class PlantFactory {
         loaded = true;
     }
 
+    private static final String[] PLANTS_JSON_CANDIDATES = {
+            "src/resource/Plants.json",
+            "resource/Plants.json"
+    };
+
     public static void autoInit() {
         if (loaded) return;
-        try (java.io.InputStream is = new java.io.FileInputStream("src/resource/Plants.json")) {
-            init(is);
-        } catch (java.io.IOException e) {
-            GeneralPrinter.print("Could not load Plants.json: " + e.getMessage());
+        for (String path : PLANTS_JSON_CANDIDATES) {
+            java.io.File file = new java.io.File(path);
+            if (!file.exists()) continue;
+            try (java.io.InputStream is = new java.io.FileInputStream(file)) {
+                init(is);
+                return;
+            } catch (java.io.IOException e) {
+                GeneralPrinter.print("Could not load " + path + ": " + e.getMessage());
+            }
         }
+        GeneralPrinter.print("Could not find Plants.json in any known location.");
     }
 
     public static Map<Integer, PlantJsonParser.PlantConfig> getBlueprints() {
@@ -77,8 +88,8 @@ public class PlantFactory {
 
         plant.setCost(Math.max(0, runtimeCost));
         plant.setActionInterval(Math.max(0.05, runtimeInterval));
-        plant.setRecharge(Math.max(0, runtimeRecharge));
         plant.setDamage(runtimeDamage);
+        plant.setRecharge((int) Math.max(0, runtimeRecharge));
         plant.setAbilityValue(runtimeAbility);
         plant.setLevel(level);
         plant.setPlantFoodType(config.plantFoodType);
@@ -141,9 +152,29 @@ public class PlantFactory {
         };
     }
 
+    private static final Map<String, List<Position>> NAMED_SHOOT_PATTERNS = Map.of(
+            "Threepeater", List.of(new Position(1, -1), new Position(1, 0), new Position(1, 1)),
+            "Split Pea", List.of(new Position(1, 0), new Position(-1, 0)),
+            "Rotobaga", List.of(new Position(1, 1), new Position(1, -1), new Position(-1, 1), new Position(-1, -1)),
+            "Starfruit", List.of(
+                    new Position(1, 0), new Position(-1, 0),
+                    new Position(0, 1), new Position(0, -1),
+                    new Position(0.7, 0.7)
+            )
+    );
+
     private static List<Position> buildShootingVectors(PlantJsonParser.PlantConfig config) {
         List<Position> vectors = new ArrayList<>();
-        if (config.abilityType == AbilityType.SHOOT_PROJECTILE) {
+        if (config.category != PlantType.SHOOTER) return vectors;
+
+        List<Position> named = NAMED_SHOOT_PATTERNS.get(config.name);
+        if (named != null) {
+            vectors.addAll(named);
+            return vectors;
+        }
+
+        int shots = Math.min(6, Math.max(1, (int) config.abilityValue));
+        for (int i = 0; i < shots; i++) {
             vectors.add(new Position(1, 0));
         }
         return vectors;

@@ -32,25 +32,29 @@ public class MeleeStrategy implements ActStrategy {
         switch ((int)user.getAbilityValue()) {
             case 1 : //(front and back)
                 for(Zombie zombie : session.getZombies()) {
-                    if(zombie != null && zombie.isAlive() && Math.abs(zombie.getPosition().x() - userPos.x()) < 1)
+                    if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
+                    if(Math.abs(zombie.getPosition().x() - userPos.x()) < 1)
                         return true;
                 }
                 break;
             case 2 : //(area damage)
                 for(Zombie zombie : session.getZombies()) {
+                    if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     Position zomPos = zombie.getPosition();
-                    if(zombie.isAlive() && Math.abs(zomPos.x() - userPos.x()) < 1 && Math.abs(zomPos.y() - userPos.y()) < 1)
+                    if(Math.abs(zomPos.x() - userPos.x()) < 1 && Math.abs(zomPos.y() - userPos.y()) < 1)
                         return true;
                 }
                 break;
             case 3 : //(wave damage)
                 for(Zombie zombie : session.getZombies()) {
+                    if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     if(Math.abs(zombie.getPosition().distanceTo(userPos)) < 5)
                         return true;
                 }
                 break;
             case 4 : //(swallow)
                 for (Zombie zombie : session.getZombies()) {
+                    if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     if(zombie.getPosition().x() - userPos.x() < 1)
                         return true;
                 }
@@ -67,6 +71,7 @@ public class MeleeStrategy implements ActStrategy {
 
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(Math.abs(zomPos.y() - userPos.y()) < 0.5) continue;
             if(zomPos.x() - userPos.x() > 0 && zomPos.x() - userPos.x() < 1) {
@@ -93,6 +98,7 @@ public class MeleeStrategy implements ActStrategy {
         ArrayList<Zombie> targets = new ArrayList<>();
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(Math.abs(zomPos.y() - userPos.y()) < 1 && Math.abs(zomPos.x() - userPos.x()) < 1)
                 targets.add(zombie);
@@ -104,6 +110,7 @@ public class MeleeStrategy implements ActStrategy {
         ArrayList<Zombie> targets = new ArrayList<>();
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(zomPos.distanceTo(userPos) < 5)
                 targets.add(zombie);
@@ -118,6 +125,7 @@ public class MeleeStrategy implements ActStrategy {
 
         Position userPos = user.getPosition();
         for(Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
             Position zomPos = zombie.getPosition();
             if(Math.abs(zomPos.y() - userPos.y()) < 0.5) continue;
             if(zomPos.x() - userPos.x() > 0 && zomPos.x() - userPos.x() < 1) {

@@ -136,6 +136,29 @@ public enum Regex {
     GROW_POT(
             "^\\s*grow\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
     ),
+
+    // in-match
+    PLANT_AT(
+            "^\\s*plant\\s+-t\\s+(?<type>.+?)\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    REMOVE_PLANT_AT(
+            "^\\s*remove\\s+plant\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    COLLECT_ITEM(
+            "^\\s*collect\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    USE_PLANT_FOOD(
+            "^\\s*use\\s+food\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    SHOW_GARDEN(
+            "^\\s*show\\s+garden\\s*$"
+    ),
+    SHOW_TILE(
+            "^\\s*show\\s+tile\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
+    WAIT_SECONDS(
+            "^\\s*wait\\s+(?<seconds>\\d+)\\s*$"
+    ),
     ENTER_SHOP(
             "^\\s*enter\\s+shop\\s*$"
     ),

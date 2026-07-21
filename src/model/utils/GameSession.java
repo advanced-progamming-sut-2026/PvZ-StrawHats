@@ -212,6 +212,8 @@ public class GameSession {
     private void spawnWave(ZombieWave wave) {
         if (wave.getWaveZombies() == null) return;
         for (Zombie zombie : wave.getWaveZombies()) {
+            int row = ITEM_RANDOM.nextInt(environment.getRows());
+            zombie.setPosition(new Position(environment.getCols(), row));
             spawnZombie(zombie);
         }
     }
@@ -540,6 +542,10 @@ public class GameSession {
 
     public int getDifficultyLevel() {
         return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(int difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
     }
 
 

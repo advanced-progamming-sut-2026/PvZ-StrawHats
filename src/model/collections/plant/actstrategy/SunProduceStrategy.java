@@ -4,6 +4,7 @@ import model.collections.item.GroundSun;
 import model.collections.plant.Plant;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 public class SunProduceStrategy implements ActStrategy {
     @Override
@@ -24,6 +25,8 @@ public class SunProduceStrategy implements ActStrategy {
 
         int sunValue = (int) user.getAbilityValue();
         session.getItems().add(new GroundSun(location, sunValue));
+        GeneralPrinter.print("plant " + user.getName() + " produced a sun at ("
+                + (int) location.x() + ", " + (int) location.y() + ").");
 
         user.setInternalTimer(user.getActionInterval());
     }
