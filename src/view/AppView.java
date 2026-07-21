@@ -8,11 +8,10 @@ import view.menus.while_match.BeforeMatchView;
 import view.menus.while_match.MatchMenuView;
 import view.menus.while_match.MeanwhileMatchView;
 
-import java.util.Scanner;
 
 public class AppView {
     public static void run() {
-        Scanner scanner = new Scanner(System.in);
+
         while (true) {
             MenuView currentView = resolveView(App.currentMenu.getName());
             if (currentView == null) {
@@ -20,8 +19,8 @@ public class AppView {
                 break;
             }
 
-            String input = scanner.nextLine();
-            currentView.showMenu(input);
+            currentView.getInput();
+
         }
     }
 

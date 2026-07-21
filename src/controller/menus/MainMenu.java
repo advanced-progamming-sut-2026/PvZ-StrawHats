@@ -50,9 +50,12 @@ public class MainMenu extends Menu{
     }
 
     public void Logout() {
+        User.save();
         App.currentMenu = new LoginMenu();
         App.currentUser = null;
+        User.currentUser.stayLoggedIn = false;
         User.currentUser = null;
+        GeneralPrinter.print("Logged out successfully.");
     }
 
 }
