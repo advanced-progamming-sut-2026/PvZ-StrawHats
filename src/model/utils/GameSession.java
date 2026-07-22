@@ -53,6 +53,8 @@ public class GameSession {
     private List<Zombie> currentWaveZombies = new ArrayList<>();
     private int currentWaveStartingHp = 0;
     private double previousWaveMultiplier = 1.0;
+    private static final double HUGE_WAVE_ALERT_LEAD_SECONDS = 5.0;
+    private boolean hugeWaveAlertShown = false;
 
     private int sunCount;
     private int plantFoodCount;
@@ -220,6 +222,12 @@ public class GameSession {
         waveTimer += deltaTimeSeconds;
         ZombieWave nextWave = waves.get(nextWaveIndex);
 
+        if (nextWave.isFinalWave() && !hugeWaveAlertShown
+                && waveTimer >= Math.max(0, nextWave.getDelay() - HUGE_WAVE_ALERT_LEAD_SECONDS)) {
+            hugeWaveAlertShown = true;
+            GeneralPrinter.print("A huge wave of zombies is approaching!");
+        }
+
         if (waveTimer < nextWave.getDelay()) return;
         if (!previousWaveMostlyCleared()) return;
 
@@ -271,7 +279,7 @@ public class GameSession {
 
             int cost = ZombieFactory.getZombieCost(zombie.getAlias());
             GeneralPrinter.print("Zombie " + zombie.getName() + " spawned at wave " + waveNumber
-                    + " in lane " + lane + " which cost " + cost + ".");
+                    + " in lane " + (lane + 1) + " which cost " + cost + ".");
 
             spawnZombie(zombie);
             currentWaveZombies.add(zombie);
@@ -596,6 +604,10 @@ public class GameSession {
         this.waves = waves != null ? waves : new ArrayList<>();
         this.nextWaveIndex = 0;
         this.waveTimer = 0;
+        this.previousWaveMultiplier = 1.0;
+        this.currentWaveZombies = new ArrayList<>();
+        this.currentWaveStartingHp = 0;
+        this.hugeWaveAlertShown = false;
     }
 
     public List<Item> getItems() {
