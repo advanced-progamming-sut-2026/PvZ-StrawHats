@@ -13,6 +13,7 @@ import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.game_exceptions.GameException;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
+import model.match.main.levels.special_levels.PlantWhatYouGetLevel;
 import model.match_mechanisms.vector.Position;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -26,6 +27,7 @@ import java.util.regex.Matcher;
 public class MeanwhileMenu extends Menu {
 
     private final CollectionManager manager = new CollectionManager();
+    private boolean paused = false;
 
     @Override
     public String getName() {
@@ -34,11 +36,25 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
-        if (text.equals("pause")) {
-            GeneralPrinter.print(showMenu());
-        } else if (text.equals("resume")) {
-            GeneralPrinter.print("Resuming match...");
-        } else if (text.equals("restart")) {
+        String normalized = text.trim().toLowerCase();
+        if (normalized.equals("pause")) {
+            if (paused) {
+                GeneralPrinter.print("The match is already paused.");
+            } else {
+                paused = true;
+                GeneralPrinter.print("Game paused. Time will not advance until you use 'resume'.");
+            }
+        } else if (normalized.equals("resume")) {
+            if (!paused) {
+                GeneralPrinter.print("The match is already running.");
+            } else {
+                paused = false;
+                GeneralPrinter.print("Resuming match...");
+            }
+        } else if (paused && !isAllowedWhilePaused(text)) {
+            throw new GameException("the match is paused; use 'resume' before taking that action.");
+        } else if (normalized.equals("restart")) {
+            paused = false;
             restartMatch();
         } else if (text.toLowerCase().startsWith("end game")) {
             requestEndGame(text);
@@ -100,6 +116,8 @@ public class MeanwhileMenu extends Menu {
         } else if (Regex.RELEASE_THE_NUKE.getMatcherRaw(text).matches()) {
             GameSession.getInstance().killAllZombies();
             GeneralPrinter.print("All zombies were removed.");
+        } else if (Regex.START_ZOMBIE_WAVES.getMatcherRaw(text).matches()) {
+            startZombieWaves();
         } else if (Regex.SHOW_GARDEN.getMatcherRaw(text).matches()
                 || Regex.SHOW_MAP.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(GameSession.getInstance().renderMap());
@@ -165,7 +183,9 @@ public class MeanwhileMenu extends Menu {
         int level = state.getPlantLevel(config.id);
         Plant plant = PlantFactory.createPlant(config.id, level, new Position(col, row));
 
-        if (!session.isPlantReady(config.id)) {
+        boolean freePlantingTime = session.getLevel() instanceof PlantWhatYouGetLevel
+                && !session.isWavesStarted();
+        if (!freePlantingTime && !session.isPlantReady(config.id)) {
             throw new GameException(config.name + " is recharging for "
                     + String.format("%.1f", session.getPlantCooldown(config.id)) + " more seconds.");
         }
@@ -177,7 +197,7 @@ public class MeanwhileMenu extends Menu {
             throw new GameException("that tile is occupied, blocked, or out of bounds.");
         } else {
             session.spendSun(plant.getCost());
-            session.startPlantCooldown(config.id, plant.getRecharge());
+            if (!freePlantingTime) session.startPlantCooldown(config.id, plant.getRecharge());
             boolean boosted = state.consumeBoost(config.id);
             if (boosted) {
                 plant.activatePlant(session);
@@ -234,15 +254,17 @@ public class MeanwhileMenu extends Menu {
     }
 
     private void waitSeconds(int seconds) {
-        int ticks = Math.min(seconds, 60) * 10;
-        advanceTicks(ticks);
+        long requestedTicks = (long) seconds * 10L;
+        advanceTicks((int) Math.min(requestedTicks, 6000L));
     }
 
     private void advanceTicks(int ticks) {
         GameSession session = GameSession.getInstance();
         int safeTicks = Math.min(Math.max(ticks, 0), 6000);
+        int elapsedTicks = 0;
         for (int i = 0; i < safeTicks; i++) {
             session.tick();
+            elapsedTicks++;
             if (session.isGameOver() || session.isGameWon()) break;
         }
         if (session.isGameOver()) {
@@ -250,8 +272,23 @@ public class MeanwhileMenu extends Menu {
         } else if (session.isGameWon()) {
             finishMatch("win");
         } else {
-            GeneralPrinter.print("Time passes... (" + safeTicks + " ticks)");
+            GeneralPrinter.print("Time passes... (" + elapsedTicks + " ticks)");
         }
+    }
+
+    private boolean isAllowedWhilePaused(String text) {
+        return Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()
+                || Regex.SHOW_GARDEN.getMatcherRaw(text).matches()
+                || Regex.SHOW_MAP.getMatcherRaw(text).matches()
+                || Regex.SHOW_PLANT_STATUS.getMatcherRaw(text).matches()
+                || Regex.SHOW_SUN_AMOUNT.getMatcherRaw(text).matches()
+                || Regex.SHOW_PLANT_FOOD_AMOUNT.getMatcherRaw(text).matches()
+                || Regex.SHOW_TILE.getMatcherRaw(text).matches()
+                || Regex.SHOW_TILE_STATUS.getMatcherRaw(text).matches()
+                || Regex.ZOMBIES_INFO.getMatcherRaw(text).matches()
+                || Regex.MENU_EXIT.getMatcherRaw(text).matches()
+                || text.trim().equalsIgnoreCase("restart")
+                || text.trim().toLowerCase().startsWith("end game");
     }
 
     private void spawnZombie(String alias, int x, int y) {
@@ -282,7 +319,7 @@ public class MeanwhileMenu extends Menu {
             GameSession fresh = new GameSession(freshLevel.getRows(), freshLevel.getCols());
             fresh.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
             fresh.setLevel(freshLevel);
-            fresh.startWaves();
+            if (!(freshLevel instanceof PlantWhatYouGetLevel)) fresh.startWaves();
             GeneralPrinter.print("Match restarted.");
         } catch (Exception e) {
             throw new GameException("could not restart the level.");
@@ -301,8 +338,21 @@ public class MeanwhileMenu extends Menu {
 
     private void finishMatch(String result) {
         boolean won = result.equalsIgnoreCase("win");
+        if (!won) controller.QuestManager.notifyLevelLost();
         AfterMenu.reset(won);
         App.currentMenu = new AfterMenu();
+    }
+
+    private void startZombieWaves() {
+        GameSession session = GameSession.getInstance();
+        if (!(session.getLevel() instanceof PlantWhatYouGetLevel)) {
+            throw new GameException("this command is only used in Plant What You Get stages.");
+        }
+        if (session.isWavesStarted()) {
+            throw new GameException("zombie waves have already started.");
+        }
+        session.startWaves();
+        GeneralPrinter.print("Zombie waves started.");
     }
 
     @Override
@@ -317,9 +367,21 @@ public class MeanwhileMenu extends Menu {
             conveyorOffer = " | conveyor: "
                     + (conveyor.getCurrentPlant() == null ? "waiting" : conveyor.getCurrentPlant().getName());
         }
-        return "Paused" + conveyorOffer + " - Options: plant -t <name> at (x,y) | remove/dig plant at (x,y) | "
-                + "collect (x,y) | use food at (x,y) | show sun amount | show plant-food amount | show garden | "
-                + "show tile (x,y) | zombies info | wait <seconds> | advance time -t <ticks> ticks | "
-                + "resume | restart | end game | menu exit";
+        String startWaves = GameSession.getInstance().getLevel() instanceof PlantWhatYouGetLevel
+                && !GameSession.getInstance().isWavesStarted()
+                ? "\n  start zombie waves" : "";
+        return (paused ? "[ Match Paused ]" : "[ Match in Progress ]") + conveyorOffer + "\nCommands:\n"
+                + "  plant plant -t <type> -l (<x>, <y>)\n"
+                + "  pluck plant -l (<x>, <y>) | dig plant at (<x>, <y>)\n"
+                + "  collect (<x>, <y>) | collect sun -l (<x>, <y>)\n"
+                + "  feed plant -l (<x>, <y>)\n"
+                + "  show map | show sun amount | show plant-food amount\n"
+                + "  show plant status | show tile status -l (<x>, <y>) | zombies info\n"
+                + "  advance time -t <count> ticks | wait <seconds>"
+                + startWaves + "\n"
+                + "  cheat add -n <count> suns | cheat add-plant-food | cheat remove-cooldown\n"
+                + "  cheat spawn-zombie -t <type> -l (<x>, <y>) | release the nuke\n"
+                + "  pause | resume | restart | end game -r <win/lose>\n"
+                + "  menu exit | menu show current";
     }
 }

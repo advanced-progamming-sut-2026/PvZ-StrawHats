@@ -8,6 +8,8 @@ import model.match_mechanisms.vector.Position;
 import model.collections.zombie.Zombie;
 import model.collections.armour.PlantArmour;
 import model.utils.GameSession;
+import service.GameClock;
+import view.GeneralPrinter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +81,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
         if (growthTracker != null) growthTracker.update(deltaTimeSeconds);
 
         if (plantFoodTimer > 0) {
-            plantFoodTimer -= deltaTimeSeconds;
+            plantFoodTimer = GameClock.countDown(plantFoodTimer, deltaTimeSeconds);
             if (plantFoodEffect != null) {
                 plantFoodEffect.tickDurationEffect(this, deltaTimeSeconds);
             }
@@ -87,7 +89,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
         }
 
         if (actStrategy == null) return;
-        internalTimer -= deltaTimeSeconds;
+        internalTimer = GameClock.countDown(internalTimer, deltaTimeSeconds);
 
         actStrategy.act(this, session);
     }
@@ -112,6 +114,11 @@ public abstract class Plant extends Item implements Pluck, Attack {
             if (newHp <= 0) {
                 setHP(0);
                 this.state = PlantState.DYING;
+                Position position = getLocation();
+                if (position != null) {
+                    GeneralPrinter.print("Plant " + name + " at (" + ((int) position.x() + 1)
+                            + ", " + ((int) position.y() + 1) + ") is destroyed.");
+                }
             } else {
                 setHP(newHp);
             }

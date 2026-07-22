@@ -135,7 +135,10 @@ public class GameMenu extends Menu {
                 + "Commands:\n"
                 + "  menu show chapters\n"
                 + "  menu enter chapter -c <chapter_name>\n"
-                + "  menu travel-log | menu leaderboard | menu greenhouse\n"
-                + "  menu coin-wallet | menu gem-wallet | menu exit";
+                + "  menu enter collection\n"
+                + "  travel-log menu | menu leaderboard | greenhouse menu\n"
+                + "  coin-wallet menu | gem-wallet menu\n"
+                + "  menu cheat add <n> <coin/diamond>\n"
+                + "  menu exit | menu show current";
     }
 }

@@ -44,7 +44,7 @@ public class LoginMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(getName());
+            GeneralPrinter.print(showMenu());
         } else {
             GeneralPrinter.print("Invalid command.");
         }
@@ -175,16 +175,27 @@ public class LoginMenu extends Menu {
         matcher.matches();
         String menuName = matcher.group("menuname");
 
-        if (menuName.trim().equalsIgnoreCase("Main menu")) {
-            GeneralPrinter.print("You can only enter the Main Menu after logging in.");
-            return;
+        String normalized = menuName.toLowerCase().replace("menu", "").trim();
+        if (normalized.equals("signup")) {
+            changeMenu("signup");
+        } else {
+            GeneralPrinter.print("You can only enter the Signup Menu before logging in.");
         }
-        changeMenu(menuName);
     }
 
     @Override
     public void exitMenu() {
         changeMenu("SignUp Menu");
+    }
+
+    @Override
+    public String showMenu() {
+        return "[ Login Menu ]\nCommands:\n"
+                + "  login -u <username> -p <password> [-stay-logged-in]\n"
+                + "  forget password -u <username> -e <email>\n"
+                + "  answer -a <answer>\n"
+                + "  menu enter signup\n"
+                + "  menu exit | menu show current";
     }
 
     

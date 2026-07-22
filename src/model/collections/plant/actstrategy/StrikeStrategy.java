@@ -20,7 +20,7 @@ public class StrikeStrategy implements ActStrategy {
         user.setInternalTimer(user.getActionInterval());
 
         int pierceCount = (int) user.getAbilityValue();
-        session.getProjectiles().add(new Projectile(
+        session.getProjectiles().add(new Projectile(user,
                 user.getPosition(),
                 new Position(20, 0), target,
                 user.getDamage(),

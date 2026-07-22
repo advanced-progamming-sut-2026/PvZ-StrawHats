@@ -74,6 +74,7 @@ public class PlantFactory {
         }
 
         Plant plant = new GenericPlant(config.name, position, Math.max(0, runtimeHp));
+        plant.setPosition(position);
         plant.setId(config.id);
         plant.setType(config.category);
         if (config.tags != null) {

@@ -4,6 +4,7 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.match.main.levels.Level;
 import model.utils.GameSession;
+import service.GameClock;
 
 import java.util.List;
 import java.util.Random;
@@ -31,7 +32,7 @@ public class ConveyorBeltLevel extends Level {
         if (currentPlant != null) return;
 
         conveyorTimer += deltaSeconds;
-        if (conveyorTimer >= CONVEYOR_INTERVAL_SECONDS) {
+        if (GameClock.hasReached(conveyorTimer, CONVEYOR_INTERVAL_SECONDS)) {
             conveyorTimer = 0;
             offerNextPlant();
         }

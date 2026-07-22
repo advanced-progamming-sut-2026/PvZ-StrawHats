@@ -1,5 +1,7 @@
 package model.match_mechanisms;
 
+import service.GameClock;
+
 public class Time {
     // ---- Global game tick (static) ----
     private static int tick;
@@ -30,9 +32,8 @@ public class Time {
      * @param delta seconds elapsed
      */
     public void tick(double delta) {
-        if (running && secondsRemaining > 0) {
-            secondsRemaining -= delta;
-            if (secondsRemaining < 0) secondsRemaining = 0;
+        if (running && !GameClock.isZero(secondsRemaining)) {
+            secondsRemaining = GameClock.countDown(secondsRemaining, delta);
         }
     }
 
@@ -41,7 +42,7 @@ public class Time {
     }
 
     public boolean isZero() {
-        return secondsRemaining <= 0;
+        return GameClock.isZero(secondsRemaining);
     }
 
     public boolean isRunning() {

@@ -32,7 +32,7 @@ public class ShootStrategy implements ActStrategy {
 
             Position velocity = direction.normalize().scale(20.0);
 
-            session.getProjectiles().add(new Projectile(
+            session.getProjectiles().add(new Projectile(user,
                     user.getPosition(),
                     velocity,
                     target,

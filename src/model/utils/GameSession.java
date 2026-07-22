@@ -3,6 +3,9 @@ package model.utils;
 import model.collections.Item;
 import model.collections.item.*;
 import model.collections.plant.Plant;
+import model.collections.plant.PlantFactory;
+import model.collections.plant.PlantJsonParser;
+import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
@@ -30,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.ToIntFunction;
 
 public class GameSession {
@@ -37,7 +42,9 @@ public class GameSession {
     public static ToIntFunction<? super Zombie> difficulty = Zombie::getMaxHp;
     private static GameSession instance;
     private static final Random ITEM_RANDOM = new Random();
-    private static final double SKY_SUN_INTERVAL = 10.0;
+    private static final double MIN_SKY_SUN_INTERVAL = 12.0;
+    private static final double SKY_SUN_INTERVAL_START = 6.0;
+    private static final double SKY_SUN_INTERVAL_GROWTH = 0.05;
 
     private final GameClock clock = new GameClock();
 
@@ -53,6 +60,7 @@ public class GameSession {
     private int nextWaveIndex = 0;
     private double waveTimer = 0;
     private boolean wavesStarted = false;
+    private double wavesStartedAtSeconds = 0;
 
     private List<Zombie> currentWaveZombies = new ArrayList<>();
     private int currentWaveStartingHp = 0;
@@ -70,6 +78,9 @@ public class GameSession {
     private boolean gameWon = false;
     private int difficultyLevel;
     private int plantsLostThisMatch = 0;
+    private final Set<String> plantFamiliesUsedThisMatch = new HashSet<>();
+    private boolean plantedAnyPlantThisMatch = false;
+    private boolean usedNonNightPlantThisMatch = false;
     private final Map<Integer, Double> plantCooldowns = new HashMap<>();
 
     private double skySunTimer = 0;
@@ -110,8 +121,8 @@ public class GameSession {
         clock.tick();
         double deltaTimeSeconds = GameClock.SECONDS_PER_TICK;
 
-        plantCooldowns.replaceAll((plantId, remaining) -> Math.max(0, remaining - deltaTimeSeconds));
-        plantCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
+        plantCooldowns.replaceAll((plantId, remaining) -> GameClock.countDown(remaining, deltaTimeSeconds));
+        plantCooldowns.entrySet().removeIf(entry -> GameClock.isZero(entry.getValue()));
 
         if (level != null) {
             level.updateTide(deltaTimeSeconds, this);
@@ -140,14 +151,14 @@ public class GameSession {
 
         if (wavesStarted && (level == null || level.isSkySunEnabled())) {
             skySunTimer += deltaTimeSeconds;
-            if (skySunTimer >= getEffectiveSkySunInterval()) {
+            if (GameClock.hasReached(skySunTimer, getEffectiveSkySunInterval())) {
                 skySunTimer = 0;
                 int col = ITEM_RANDOM.nextInt(environment.getCols());
                 int row = ITEM_RANDOM.nextInt(environment.getRows());
                 GroundSun sun = GroundSun.fallFromSky(new Position(col, row));
                 items.add(sun);
-                GeneralPrinter.print("A " + sun.getDropType().name().toLowerCase()
-                        + " sun fell from the sky at (" + (col + 1) + ", " + (row + 1) + ").");
+                GeneralPrinter.print("New " + sun.getDropType().name().toLowerCase()
+                        + " sun is dropping at position (" + (col + 1) + ", " + (row + 1) + ").");
             }
         }
 
@@ -191,8 +202,11 @@ public class GameSession {
     }
 
     private double getEffectiveSkySunInterval() {
-        if (difficultyLevel <= 0) return SKY_SUN_INTERVAL;
-        return SKY_SUN_INTERVAL * (difficultyLevel / 3.0);
+        double elapsed = getElapsedSecondsSinceWavesStarted();
+        double baseInterval = Math.max(SKY_SUN_INTERVAL_START
+                + SKY_SUN_INTERVAL_GROWTH * elapsed, MIN_SKY_SUN_INTERVAL);
+        if (difficultyLevel <= 0) return baseInterval;
+        return baseInterval * (difficultyLevel / 3.0);
     }
 
     private void recordLevelSpecificDeaths() {
@@ -244,12 +258,13 @@ public class GameSession {
         ZombieWave nextWave = waves.get(nextWaveIndex);
 
         if (nextWave.isFinalWave() && !hugeWaveAlertShown
-                && waveTimer >= Math.max(0, nextWave.getDelay() - HUGE_WAVE_ALERT_LEAD_SECONDS)) {
+                && GameClock.hasReached(waveTimer,
+                Math.max(0, nextWave.getDelay() - HUGE_WAVE_ALERT_LEAD_SECONDS))) {
             hugeWaveAlertShown = true;
             GeneralPrinter.print("A huge wave of zombies is approaching!");
         }
 
-        if (waveTimer < nextWave.getDelay()) return;
+        if (!GameClock.hasReached(waveTimer, nextWave.getDelay())) return;
         if (!previousWaveMostlyCleared()) return;
 
         spawnWave(nextWave);
@@ -289,10 +304,10 @@ public class GameSession {
 
         for (Zombie template : wave.getWaveZombies()) {
             int lane = ITEM_RANDOM.nextInt(getRows());
-            Zombie zombie = ZombieFactory.create(template.getAlias(), lane, getCols());
-            int spawnColumn = getCols();
+            int spawnColumn = getCols() - 1;
+            Zombie zombie = ZombieFactory.create(template.getAlias(), lane, spawnColumn);
             if (wave.isFinalWave() && level != null && level.getSeason() instanceof Egypt) {
-                spawnColumn = Math.max(0, getCols() - SandStorm.sandstorm());
+                spawnColumn = Math.max(0, spawnColumn - SandStorm.sandstorm());
             }
             zombie.setPosition(new Position(spawnColumn, lane));
 
@@ -378,13 +393,19 @@ public class GameSession {
         Position dropPosition = zombie.getPosition();
         if (dropPosition == null) return;
 
+        int displayX = (int) Math.round(dropPosition.x()) + 1;
+        int displayY = (int) Math.round(dropPosition.y()) + 1;
         GeneralPrinter.print("Zombie of type " + zombie.getName() + " is dead at ("
-                + (int) Math.round(dropPosition.x()) + ", " + (int) Math.round(dropPosition.y()) + ")");
+                + displayX + ", " + displayY + ").");
 
-        items.add(new GroundCoin(dropPosition, GroundCoin.CoinTier.rollRandom()));
+        GroundCoin coin = new GroundCoin(dropPosition, GroundCoin.CoinTier.rollRandom());
+        items.add(coin);
+        GeneralPrinter.print("A " + coin.getTier().name().toLowerCase()
+                + " coin dropped at (" + displayX + ", " + displayY + ").");
 
         if (ITEM_RANDOM.nextInt(100) < 10) {
             items.add(new GroundDiamond(dropPosition, 1));
+            GeneralPrinter.print("A diamond dropped at (" + displayX + ", " + displayY + ").");
         }
 
         if (User.currentUser != null) {
@@ -393,23 +414,11 @@ public class GameSession {
                 List<Integer> unlocked = new ArrayList<>(state.unlockedPlantIds);
                 int plantId = unlocked.get(ITEM_RANDOM.nextInt(unlocked.size()));
                 items.add(new GroundSeedPack(dropPosition, plantId, 1));
+                GeneralPrinter.print("A seed pack dropped at (" + displayX + ", " + displayY + ").");
             }
         }
 
-        reportKillToQuests(killerName);
-    }
-
-    private void reportKillToQuests(String killerName) {
-        boolean killedByPlant = killerName != null && !killerName.equals("Unknown");
-
-        Map<String, Object> plantContext = new HashMap<>();
-        plantContext.put("plantType", killedByPlant ? killerName.toLowerCase().replace(" ", "").replace("-", "") : "none");
-        plantContext.put("isOffensive", killedByPlant);
-        QuestManager.updateProgress("KILL_ZOMBIES_WITH_SPECIFIC_PLANT", 1, plantContext);
-
-        Map<String, Object> chapterContext = new HashMap<>();
-        chapterContext.put("chapter", level != null ? level.getId() : "unknown");
-        QuestManager.updateProgress("KILL_ZOMBIES_IN_CHAPTER", 1, chapterContext);
+        QuestManager.notifyZombieKilled(this, zombie, killerName);
     }
 
     public List<GroundItem> collectItemsNear(Position target) {
@@ -446,10 +455,12 @@ public class GameSession {
     }
 
     public void startWaves() {
+        if (wavesStarted) return;
         ZombieFactory.init();
         nextWaveIndex = 0;
         waveTimer = 0;
         skySunTimer = 0;
+        wavesStartedAtSeconds = clock.getElapsedSeconds();
         wavesStarted = true;
     }
 
@@ -511,7 +522,7 @@ public class GameSession {
     }
 
     public boolean isPlantReady(int plantId) {
-        return plantCooldowns.getOrDefault(plantId, 0.0) <= 0;
+        return GameClock.isZero(plantCooldowns.getOrDefault(plantId, 0.0));
     }
 
     public double getPlantCooldown(int plantId) {
@@ -529,6 +540,18 @@ public class GameSession {
         cell.setPlant(plant);
         plant.setPosition(new Position(col, row));
         plants.add(plant);
+
+        plantedAnyPlantThisMatch = true;
+        boolean nightPlant = false;
+        if (plant.getTags() != null) {
+            for (PlantTag tag : plant.getTags()) {
+                plantFamiliesUsedThisMatch.add(tag.getName().toLowerCase());
+                plantFamiliesUsedThisMatch.add(tag.name().toLowerCase());
+            }
+            nightPlant = plant.getTags().contains(PlantTag.NIGHT)
+                    || plant.getTags().contains(PlantTag.SHROOM);
+        }
+        if (!nightPlant) usedNonNightPlantThisMatch = true;
 
         if (plant.getTags() != null && plant.getTags().contains(model.collections.plant.PlantTag.EXPLOSIVE)) {
             QuestManager.updateProgress("USE_EXPLOSIVE_PLANTS", 1, Collections.emptyMap());
@@ -565,13 +588,38 @@ public class GameSession {
 
     public String renderMap() {
         StringBuilder sb = new StringBuilder();
+        sb.append("Wave: ").append(getWavesSpawnedCount()).append("/").append(getTotalWaveCount())
+                .append(" | Sun: ").append(sunCount)
+                .append(" | Plant food: ").append(plantFoodCount);
+        if (!allWavesSpawned()) {
+            sb.append(" | Next wave: ")
+                    .append(String.format("%.1fs", getSecondsUntilNextWave()));
+        }
+        sb.append("\n");
         for (int r = 0; r < environment.getRows(); r++) {
+            sb.append(r + 1).append(lawnMowers[r].isUsed() ? " [ ] " : " [M] ");
             for (int c = 0; c < environment.getCols(); c++) {
                 sb.append(mapSymbolFor(environment.getCell(r, c)));
             }
             sb.append("\n");
         }
-        sb.append("(P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
+        sb.append("(M=lawn mower, P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
+        List<GroundItem> visibleItems = items.stream()
+                .filter(GroundItem.class::isInstance)
+                .map(GroundItem.class::cast)
+                .filter(Item::isAlive)
+                .toList();
+        if (!visibleItems.isEmpty()) {
+            sb.append("\nGround items:");
+            for (GroundItem item : visibleItems) {
+                Position position = item.getPosition();
+                if (position == null) continue;
+                sb.append("\n  ").append(item.getItemType().name().toLowerCase())
+                        .append(" at (").append((int) Math.round(position.x()) + 1)
+                        .append(", ").append((int) Math.round(position.y()) + 1).append(")");
+                if (item instanceof GroundSun sun && sun.isFalling()) sb.append(" [falling]");
+            }
+        }
         return sb.toString().trim();
     }
 
@@ -588,15 +636,38 @@ public class GameSession {
     }
 
     public String renderPlantsStatus() {
-        if (plants.isEmpty()) return "no plants on the field";
-        StringBuilder sb = new StringBuilder();
-        for (Plant plant : plants) {
-            sb.append(plant.getName())
-                    .append(" | hp: ").append(plant.getHP())
-                    .append(" | level: ").append(plant.getLevel())
-                    .append("\n");
+        StringBuilder sb = new StringBuilder("Loadout planting status:");
+        List<String> selected = controller.menus.match.BeforeMenu.selectedPlants;
+        if (selected.isEmpty()) {
+            sb.append("\n  no plants selected");
         }
-        return sb.toString().trim();
+        for (String selectedName : selected) {
+            PlantJsonParser.PlantConfig config = PlantFactory.getBlueprints().values().stream()
+                    .filter(candidate -> candidate.name.equalsIgnoreCase(selectedName))
+                    .findFirst().orElse(null);
+            if (config == null) continue;
+            double cooldown = getPlantCooldown(config.id);
+            sb.append("\n  ").append(config.name)
+                    .append(" | cost: ").append(config.cost)
+                    .append(" | ").append(GameClock.isZero(cooldown)
+                            ? "ready" : String.format("recharging: %.1fs", cooldown));
+        }
+        sb.append("\nPlants on the field:");
+        if (plants.isEmpty()) {
+            sb.append("\n  none");
+            return sb.toString();
+        }
+        for (Plant plant : plants) {
+            Position position = plant.getPosition();
+            sb.append("\n  ").append(plant.getName())
+                    .append(" | hp: ").append(plant.getHP())
+                    .append(" | level: ").append(plant.getLevel());
+            if (position != null) {
+                sb.append(" | position: (").append((int) position.x() + 1)
+                        .append(", ").append((int) position.y() + 1).append(")");
+            }
+        }
+        return sb.toString();
     }
 
     public String renderTileStatus(int row, int col) {
@@ -652,9 +723,18 @@ public class GameSession {
         if (zombies.isEmpty()) return "no zombies on the field";
         StringBuilder sb = new StringBuilder();
         for (Zombie zombie : zombies) {
+            Position position = zombie.getPosition();
             sb.append(zombie.getName())
                     .append(" | hp: ").append(zombie.getHp())
-                    .append(" | row: ").append((int) zombie.getPosition().y())
+                    .append("/").append(zombie.getMaxHp());
+            if (position != null) {
+                sb.append(" | position: (").append(String.format("%.2f", position.x() + 1))
+                        .append(", ").append((int) Math.round(position.y()) + 1).append(")");
+            }
+            if (zombie.getArmor() != null && zombie.getArmor().getHP() > 0) {
+                sb.append(" | armor: ").append(zombie.getArmor().getHP());
+            }
+            sb.append(" | state: ").append(zombie.getZombieState())
                     .append("\n");
         }
         return sb.toString().trim();
@@ -707,10 +787,15 @@ public class GameSession {
             gameOver = false;
             gameWon = false;
             wavesStarted = false;
+            wavesStartedAtSeconds = 0;
             plantsLostThisMatch = 0;
+            plantFamiliesUsedThisMatch.clear();
+            plantedAnyPlantThisMatch = false;
+            usedNonNightPlantThisMatch = false;
             plantFoodCount = 0;
             sunCount = level.getInitialSun();
             setWaves(level.getWaves());
+            QuestManager.notifyLevelStarted(this);
             level.initSpecial(this);
             if (level.getSeason() != null) {
                 level.getSeason().placeSeasonObstacles(this);
@@ -758,6 +843,22 @@ public class GameSession {
 
     public double getElapsedSeconds() {
         return clock.getElapsedSeconds();
+    }
+
+    public double getElapsedSecondsSinceWavesStarted() {
+        return wavesStarted ? Math.max(0, clock.getElapsedSeconds() - wavesStartedAtSeconds) : 0;
+    }
+
+    public boolean hasUsedPlantFamily(String family) {
+        return family != null && plantFamiliesUsedThisMatch.contains(family.trim().toLowerCase());
+    }
+
+    public boolean usedOnlyNightPlants() {
+        return plantedAnyPlantThisMatch && !usedNonNightPlantThisMatch;
+    }
+
+    public boolean isLawnMowerUsed(int row) {
+        return row >= 0 && row < lawnMowers.length && lawnMowers[row].isUsed();
     }
 
     public int getDifficultyLevel() {

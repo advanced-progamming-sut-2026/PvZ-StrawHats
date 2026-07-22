@@ -5,6 +5,7 @@ import model.collections.Item;
 import model.collections.armour.Armour;
 import model.collections.plant.Plant;
 import model.collections.zombie.zombie_attack.AttackBehavior;
+import model.collections.zombie.zombie_attack.ZombieTargeting;
 import model.collections.zombie.zombie_defense.DefenseBehavior;
 import model.collections.zombie.zombie_effect.ZombieEffectStatus;
 import model.collections.zombie.zombie_move.HypnotizedMoveBehavior;
@@ -177,6 +178,9 @@ public class Zombie extends Item implements Attack {
         if (damageSource instanceof Plant plant) {
             return plant.getName();
         }
+        if (damageSource instanceof Projectile projectile && projectile.getSourcePlant() != null) {
+            return projectile.getSourcePlant().getName();
+        }
         return "Unknown";
     }
 
@@ -225,7 +229,7 @@ public class Zombie extends Item implements Attack {
     }
 
     public Item acquireTarget(GameSession session) {
-        return faction.findTarget(this, session);
+        return ZombieTargeting.findTarget(this, session);
     }
 
     public void hypnotize() {

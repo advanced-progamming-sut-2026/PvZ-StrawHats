@@ -74,6 +74,12 @@ public class StoreMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return STORE.renderPermanentGoods();
+        return "[ Store Menu ]\n"
+                + STORE.renderPermanentGoods() + "\n"
+                + "Commands:\n"
+                + "  shopping list\n"
+                + "  shop daily\n"
+                + "  shop buy -i <item_id> -n <count> [-t <plant_type>]\n"
+                + "  menu exit | menu show current";
     }
 }

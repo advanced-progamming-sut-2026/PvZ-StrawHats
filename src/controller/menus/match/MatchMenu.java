@@ -57,7 +57,13 @@ public class MatchMenu extends Menu {
             session.setLevel(selectedLevel);
             unlockStagePlants(selectedLevel);
             BeforeMenu.selectedPlants.clear();
-            App.currentMenu = new BeforeMenu();
+            if (selectedLevel instanceof ConveyorBeltLevel) {
+                session.startWaves();
+                App.currentMenu = new MeanwhileMenu();
+                GeneralPrinter.print("Conveyor stage started. Your first plant is ready on the belt.");
+            } else {
+                App.currentMenu = new BeforeMenu();
+            }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else {
@@ -74,7 +80,8 @@ public class MatchMenu extends Menu {
             throw new model.game_exceptions.GameException("stage is locked or does not exist.");
         }
         selectedLevel = chosen;
-        GeneralPrinter.print("Selected " + chosen.getName() + ".");
+        GeneralPrinter.print("Selected " + chosen.getName()
+                + ". Use 'start game' to enter this stage.");
     }
 
     private void unlockStagePlants(Level level) {
@@ -114,10 +121,13 @@ public class MatchMenu extends Menu {
 
     @Override
     public String showMenu() {
-        if (selectedLevel == null) return "No stage selected.";
         StringBuilder sb = new StringBuilder();
-        sb.append("Chapter: ").append(selectedLevel.getSeason().getName())
-                .append(" | Stage: ").append(selectedLevel.getName()).append("\n");
+        if (selectedLevel == null) {
+            sb.append("[ Match Menu ]\nNo stage selected.\n");
+        } else {
+            sb.append("Chapter: ").append(selectedLevel.getSeason().getName())
+                    .append(" | Stage: ").append(selectedLevel.getName()).append("\n");
+        }
         sb.append("Commands:\n");
         sb.append("  show stages\n");
         sb.append("  select stage -s <stage_number_or_id>\n");

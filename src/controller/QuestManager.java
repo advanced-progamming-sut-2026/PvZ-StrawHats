@@ -3,6 +3,7 @@ package controller;
 import model.collections.plant.PlantJsonParser;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantTag;
+import model.collections.zombie.Zombie;
 import model.pitches.Cell;
 import model.pitches.Environment;
 import model.quests.GameQuest;
@@ -21,6 +22,79 @@ import java.util.Random;
 public class QuestManager {
 
     private static final Random RANDOM = new Random();
+
+    public static void notifyLevelStarted(GameSession session) {
+        if (session == null || User.currentUser == null) return;
+        boolean changed = resetIncompleteQuestProgress("KILL_ZOMBIES_TIME_LIMIT");
+        changed |= resetIncompleteQuestProgress("USE_EXPLOSIVE_PLANTS");
+        if (changed) QuestLoader.saveActiveQuestsProgress();
+    }
+
+    public static void notifyZombieKilled(GameSession session, Zombie zombie, String killerName) {
+        if (session == null || zombie == null || User.currentUser == null) return;
+
+        String normalizedKiller = normalizeName(killerName);
+        boolean killedByPlant = !normalizedKiller.isEmpty() && !normalizedKiller.equals("unknown");
+        PlantJsonParser.PlantConfig killerConfig = findPlantConfig(killerName);
+        List<String> killerFamilies = new ArrayList<>();
+        if (killerConfig != null && killerConfig.tags != null) {
+            for (PlantTag tag : killerConfig.tags) {
+                killerFamilies.add(tag.getName().toLowerCase());
+                killerFamilies.add(tag.name().toLowerCase());
+            }
+        }
+        if (killedByPlant) killerFamilies.add(killerName.trim().toLowerCase());
+
+        boolean changed = false;
+        for (GameQuest quest : QuestLoader.getAllQuests()) {
+            if (quest.isCompleted() || quest.getCriteria() == null) continue;
+
+            for (QuestCriterion criterion : quest.getCriteria()) {
+                String type = criterion.getType();
+                Map<String, Object> params = criterion.getParams();
+                if (type == null) continue;
+
+                boolean matched;
+                switch (type) {
+                    case "KILL_ZOMBIES_WITH_SPECIFIC_PLANT" -> {
+                        String required = stringParam(params, "plantType");
+                        matched = required.equalsIgnoreCase("any_offensive")
+                                ? killedByPlant
+                                : normalizeName(required).equals(normalizedKiller);
+                        changed |= matched ? addQuestProgress(quest, 1) : resetQuestProgress(quest);
+                    }
+                    case "KILL_ZOMBIES_EXCLUSIVE_FAMILY" -> {
+                        String family = stringParam(params, "familyType").toLowerCase();
+                        matched = killedByPlant && killerFamilies.stream()
+                                .anyMatch(value -> value.equalsIgnoreCase(family));
+                        changed |= matched ? addQuestProgress(quest, 1) : resetQuestProgress(quest);
+                    }
+                    case "KILL_ZOMBIES_TIME_LIMIT" -> {
+                        Map<String, Object> context = mapOf("maxElapsedSeconds",
+                                session.getElapsedSecondsSinceWavesStarted());
+                        if (matchesParams(params, context)) changed |= addQuestProgress(quest, 1);
+                    }
+                    case "KILL_ZOMBIES_IN_CHAPTER" -> {
+                        String chapter = session.getLevel() != null && session.getLevel().getSeason() != null
+                                ? session.getLevel().getSeason().getName() : "unknown";
+                        if (matchesParams(params, mapOf("chapter", chapter))) {
+                            changed |= addQuestProgress(quest, 1);
+                        }
+                    }
+                    case "KILL_ZOMBIES_FIRST_COLUMN_NO_LAWNMOWER" -> {
+                        if (zombie.getPosition() == null) break;
+                        int row = (int) Math.round(zombie.getPosition().y());
+                        if (zombie.getPosition().x() <= 0.5 && session.isLawnMowerUsed(row)) {
+                            changed |= addQuestProgress(quest, 1);
+                        }
+                    }
+                    default -> {
+                    }
+                }
+            }
+        }
+        if (changed) QuestLoader.saveActiveQuestsProgress();
+    }
 
     public static void updateProgress(String criteriaType, int amount, Map<String, Object> context) {
         if (User.currentUser == null) return;
@@ -113,6 +187,84 @@ public class QuestManager {
                 updateProgress("WIN_LEVEL_EMPTY_ROW_AND_COLUMN", 1, ctx);
             }
         }
+
+        notifyForbiddenFamilyWin(session);
+
+        boolean isDayLevel = session.getLevel() != null
+                && session.getLevel().getSeason() != null
+                && !session.getLevel().getSeason().isNight();
+        Map<String, Object> dayContext = new HashMap<>();
+        dayContext.put("isDayLevel", isDayLevel);
+        dayContext.put("onlyNightPlants", session.usedOnlyNightPlants());
+        updateProgress("WIN_DAY_LEVEL_WITH_NIGHT_PLANTS", 1, dayContext);
+
+        if (session.getDifficultyLevel() == 5) {
+            updateProgress("WIN_CONSECUTIVE_LEVELS_MAX_DIFFICULTY", 1, new HashMap<>());
+        } else if (resetIncompleteQuestProgress("WIN_CONSECUTIVE_LEVELS_MAX_DIFFICULTY")) {
+            QuestLoader.saveActiveQuestsProgress();
+        }
+    }
+
+    public static void notifyLevelLost() {
+        if (User.currentUser == null) return;
+        if (resetIncompleteQuestProgress("WIN_CONSECUTIVE_LEVELS_MAX_DIFFICULTY")) {
+            QuestLoader.saveActiveQuestsProgress();
+        }
+    }
+
+    private static void notifyForbiddenFamilyWin(GameSession session) {
+        boolean changed = false;
+        for (GameQuest quest : QuestLoader.getAllQuests()) {
+            if (quest.isCompleted() || quest.getCriteria() == null) continue;
+            for (QuestCriterion criterion : quest.getCriteria()) {
+                if (!"WIN_LEVEL_FORBIDDEN_FAMILY".equals(criterion.getType())) continue;
+                String family = stringParam(criterion.getParams(), "familyType");
+                if (!session.hasUsedPlantFamily(family)) changed |= addQuestProgress(quest, 1);
+            }
+        }
+        if (changed) QuestLoader.saveActiveQuestsProgress();
+    }
+
+    private static boolean addQuestProgress(GameQuest quest, int amount) {
+        if (quest == null || quest.isCompleted() || amount <= 0) return false;
+        quest.setProgress(quest.getProgress() + amount);
+        checkCompletion(quest);
+        return true;
+    }
+
+    private static boolean resetQuestProgress(GameQuest quest) {
+        if (quest == null || quest.isCompleted() || quest.getProgress() == 0) return false;
+        quest.setProgress(0);
+        return true;
+    }
+
+    private static boolean resetIncompleteQuestProgress(String criterionType) {
+        boolean changed = false;
+        for (GameQuest quest : QuestLoader.getAllQuests()) {
+            if (quest.isCompleted() || quest.getCriteria() == null) continue;
+            boolean hasCriterion = quest.getCriteria().stream()
+                    .anyMatch(criterion -> criterionType.equals(criterion.getType()));
+            if (hasCriterion) changed |= resetQuestProgress(quest);
+        }
+        return changed;
+    }
+
+    private static String stringParam(Map<String, Object> params, String key) {
+        if (params == null || params.get(key) == null) return "";
+        return String.valueOf(params.get(key));
+    }
+
+    private static PlantJsonParser.PlantConfig findPlantConfig(String plantName) {
+        String normalized = normalizeName(plantName);
+        if (normalized.isEmpty()) return null;
+        for (PlantJsonParser.PlantConfig config : PlantFactory.getBlueprints().values()) {
+            if (normalizeName(config.name).equals(normalized)) return config;
+        }
+        return null;
+    }
+
+    private static String normalizeName(String value) {
+        return value == null ? "" : value.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
     }
 
     private static Map<String, Object> mapOf(String key, Object value) {
@@ -169,6 +321,8 @@ public class QuestManager {
                 if (((Number) requiredValue).doubleValue() != ((Number) contextValue).doubleValue()) {
                     return false;
                 }
+            } else if (requiredValue instanceof String && contextValue instanceof String) {
+                if (!((String) requiredValue).equalsIgnoreCase((String) contextValue)) return false;
             } else if (!requiredValue.equals(contextValue)) {
                 if (requiredValue.equals("n")) {
                     continue;

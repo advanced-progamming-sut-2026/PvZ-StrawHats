@@ -35,7 +35,7 @@ public class HomingStrategy implements ActStrategy {
 
         if (isMagic) {
             int pierceCount = (int) user.getAbilityValue();
-            Projectile p = new Projectile(
+            Projectile p = new Projectile(user,
                     user.getPosition(), velocity, target,
                     user.getDamage(), new StraightMove(), new PierceHit(pierceCount)
             );
@@ -43,7 +43,7 @@ public class HomingStrategy implements ActStrategy {
             return p;
         }
 
-        return new Projectile(
+        return new Projectile(user,
                 user.getPosition(), velocity, target,
                 user.getDamage(), new StraightMove(), new NormalHit(1)
         );

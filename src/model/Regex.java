@@ -39,19 +39,19 @@ public enum Regex {
             "^\\s*(?:menu\\s+)?select\\s+stage\\s+-s\\s+(?<stage>\\d+)\\s*$"
     ),
     MENU_GREENHOUSE(
-            "^\\s*menu\\s+greenhouse\\s*$"
+            "^\\s*(?:menu\\s+greenhouse|greenhouse\\s+menu)\\s*$"
     ),
     MENU_TRAVEL_LOG(
-            "^\\s*menu\\s+travel-log\\s*$"
+            "^\\s*(?:menu\\s+travel-log|travel-log\\s+menu)\\s*$"
     ),
     MENU_LEADERBOARD(
             "^\\s*menu\\s+leaderboard\\s*$"
     ),
     MENU_COIN_WALLET(
-            "^\\s*menu\\s+coin-wallet\\s*$"
+            "^\\s*(?:menu\\s+coin-wallet|coin-wallet\\s+menu)\\s*$"
     ),
     MENU_GEM_WALLET(
-            "^\\s*menu\\s+gem-wallet\\s*$"
+            "^\\s*(?:menu\\s+gem-wallet|gem-wallet\\s+menu)\\s*$"
     ),
     MENU_SETTINGS_CHANGE_DIFFICULTY(
             "^\\s*menu\\s+settings\\s+change-difficulty\\s+-l\\s+(?<difficultylevel>\\S+)\\s*$"
@@ -71,6 +71,9 @@ public enum Regex {
     ),
     TRAVEL_LOG_COLLECT(
             "^\\s*travel\\s+log\\s+collect\\s+-q\\s+(?<questid>\\S+)\\s*$"
+    ),
+    TRAVEL_LOG_PLAY_MINIGAME(
+            "^\\s*travel\\s+log\\s+play\\s+-m\\s+(?<minigame>[a-zA-Z,-]+)\\s+-l\\s+(?<level>[1-3])\\s*$"
     ),
 
     // profile menu
@@ -175,10 +178,10 @@ public enum Regex {
             "^\\s*wait\\s+(?<seconds>\\d+)\\s*$"
     ),
     ENTER_SHOP(
-            "^\\s*menu\\s+enter\\s+shop\\s*$"
+            "^\\s*(?:menu\\s+)?enter\\s+shop\\s*$"
     ),
     SHOPPING_LIST(
-            "^\\s*shop\\s+list\\s*$"
+            "^\\s*(?:shop\\s+list|shopping\\s+list)\\s*$"
     ),
     SHOP_DAILY(
             "^\\s*shop\\s+daily\\s*$"
@@ -192,7 +195,7 @@ public enum Regex {
             "^\\s*menu\\s+enter\\s+(?<menuname>.+?)\\s*$"
     ),
     MENU_SHOW_CURRENT(
-            "^\\s*menu\\s+show\\s+current\\s*$"
+            "^\\s*(?:menu\\s+show\\s+current|show\\s+current\\s+menu)\\s*$"
     ),
 
     // in-match commands (core gameplay loop)
@@ -209,7 +212,7 @@ public enum Regex {
             "^\\s*show\\s+plant(?:-|\\s+)food\\s+amount\\s*$"
     ),
     SHOW_PLANT_STATUS(
-            "^\\s*show\\s+plants\\s+status\\s*$"
+            "^\\s*show\\s+plants?\\s+status\\s*$"
     ),
     SHOW_TILE_STATUS(
             "^\\s*show\\s+tile\\s+status\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
@@ -244,10 +247,13 @@ public enum Regex {
     RELEASE_THE_NUKE(
             "^\\s*release\\s+the\\s+nuke\\s*$"
     ),
+    START_ZOMBIE_WAVES(
+            "^\\s*start\\s+zombie\\s+waves\\s*$"
+    ),
 
     // mini-games
     MINIGAME_ADVANCE_TIME(
-            "^\\s*advance\\s+time\\s+-t\\s+1\\s+ticks\\s*$"
+            "^\\s*advance\\s+time\\s+-t\\s+(?<ticks>\\d+)\\s+ticks?\\s*$"
     ),
     BEGHOULED_SWAP(
             "^\\s*swap\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s*$"

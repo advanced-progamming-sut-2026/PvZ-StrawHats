@@ -6,19 +6,21 @@ import java.util.Scanner;
 
 
 public abstract class MenuView {
-    private Scanner scanner = new Scanner(System.in);
+    private static final Scanner SCANNER = new Scanner(System.in);
 
     public abstract void showMenu(String text);
 
-    public void getInput() {
-        String input = scanner.nextLine();
-        if (input.equalsIgnoreCase("exit")) return; // fore debug
+    public boolean getInput() {
+        if (!SCANNER.hasNextLine()) return false;
+        String input = SCANNER.nextLine();
+        if (input.equalsIgnoreCase("exit")) return false; // fore debug
         this.showMenu(input);
         App.currentMenu.handleCommand(input.trim());
+        return true;
     }
 
     public Scanner getScanner() {
-        return scanner;
+        return SCANNER;
     }
 }
 

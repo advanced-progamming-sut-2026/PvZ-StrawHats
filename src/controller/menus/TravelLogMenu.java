@@ -1,10 +1,22 @@
 package controller.menus;
 
 import controller.QuestManager;
+import controller.mini_games.BeghouledController;
+import controller.mini_games.ImZombieController;
+import controller.mini_games.VasebreakerController;
+import controller.mini_games.WallnutBowlingController;
+import controller.mini_games.ZombotanyController;
 import model.App;
 import model.Regex;
+import model.match.mini_games.Beghouled;
+import model.match.mini_games.Zombotany;
+import model.match.mini_games.izombie.IZombie;
+import model.match.mini_games.vasebreaker.Vasebreaker;
+import model.match.mini_games.wallnutbowlling.WallnutBowling;
 import model.quests.GameQuest;
 import model.quests.QuestLoader;
+import model.user_data.User;
+import model.game_exceptions.GameException;
 import view.GeneralPrinter;
 
 import java.util.ArrayList;
@@ -39,6 +51,10 @@ public class TravelLogMenu extends Menu {
             Matcher matcher = Regex.TRAVEL_LOG_COLLECT.getMatcherRaw(text);
             matcher.matches();
             GeneralPrinter.print(QuestManager.collectReward(matcher.group("questid")));
+        } else if (Regex.TRAVEL_LOG_PLAY_MINIGAME.getMatcherRaw(text).matches()) {
+            Matcher matcher = Regex.TRAVEL_LOG_PLAY_MINIGAME.getMatcherRaw(text);
+            matcher.matches();
+            startMiniGame(matcher.group("minigame"), Integer.parseInt(matcher.group("level")));
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else {
@@ -56,6 +72,17 @@ public class TravelLogMenu extends Menu {
         String category = tokenMatcher.group("category").toUpperCase();
         String pageNumRaw = tokenMatcher.group("pageNum");
         int requestedSubPage = pageNumRaw.isEmpty() ? 1 : Integer.parseInt(pageNumRaw);
+
+        if (category.equals("MINIGAMES")) {
+            if (requestedSubPage != 1) {
+                GeneralPrinter.print("Error: the MINIGAMES page has only one page.");
+                return;
+            }
+            currentCategory = category;
+            currentSubPage = 1;
+            GeneralPrinter.print(renderCurrentPage());
+            return;
+        }
 
         List<GameQuest> questsInCategory = questsForCategory(category);
         if (questsInCategory.isEmpty()) {
@@ -87,6 +114,7 @@ public class TravelLogMenu extends Menu {
     }
 
     private String renderCurrentPage() {
+        if (currentCategory.equals("MINIGAMES")) return renderMiniGames();
         List<GameQuest> questsInCategory = questsForCategory(currentCategory);
         if (questsInCategory.isEmpty()) {
             return "No quests on page \"" + currentCategory + "\".";
@@ -141,6 +169,35 @@ public class TravelLogMenu extends Menu {
         return bar + " " + clamped + "/" + target;
     }
 
+    private String renderMiniGames() {
+        return "Page: MINIGAMES\n"
+                + "- Vasebreaker (levels 1-3)\n"
+                + "- Wallnut Bowling (levels 1-3)\n"
+                + "- I-Zombie (levels 1-3)\n"
+                + "- Beghouled (levels 1-3)\n"
+                + "- Zombotany (levels 1-3)";
+    }
+
+    private void startMiniGame(String name, int level) {
+        String normalized = name.toLowerCase().replace("-", "").replace(",", "");
+        switch (normalized) {
+            case "vasebreaker" -> {
+                int[] unlocked = User.currentUser.userState.unlockedPlantIds.stream()
+                        .mapToInt(Integer::intValue).toArray();
+                if (unlocked.length == 0) unlocked = new int[] {1};
+                App.currentMenu = new VasebreakerController(new Vasebreaker(level, unlocked));
+            }
+            case "wallnutbowling", "walnutbowling" ->
+                    App.currentMenu = new WallnutBowlingController(new WallnutBowling(level));
+            case "izombie" -> App.currentMenu = new ImZombieController(new IZombie(level));
+            case "beghouled" -> App.currentMenu = new BeghouledController(new Beghouled(level));
+            case "zombotany" -> App.currentMenu = new ZombotanyController(new Zombotany(level));
+            default -> throw new GameException("no such mini-game.");
+        }
+        GeneralPrinter.print("Starting " + App.currentMenu.getName() + " level " + level + ".");
+        GeneralPrinter.print(App.currentMenu.showMenu());
+    }
+
     @Override
     public void exitMenu() {
         App.currentMenu = new GameMenu();
@@ -148,6 +205,10 @@ public class TravelLogMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return "Travel Log - " + renderCurrentPage();
+        return "[ Travel Log Menu ]\n" + renderCurrentPage() + "\nCommands:\n"
+                + "  travel log page <DAILY/MAIN/EPIC/ALL/MINIGAMES>\n"
+                + "  travel log collect -q <quest_id>\n"
+                + "  travel log play -m <vasebreaker/wallnut-bowling/i-zombie/beghouled/zombotany> -l <1-3>\n"
+                + "  menu exit | menu show current";
     }
 }

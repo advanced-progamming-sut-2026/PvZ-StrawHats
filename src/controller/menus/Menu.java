@@ -55,6 +55,6 @@ public abstract class Menu {
 
     public abstract void exitMenu();
     public String showMenu(){
-        return getName();
+        return "[ " + getName() + " ]\nCommands:\n  menu exit | menu show current";
     };
 }

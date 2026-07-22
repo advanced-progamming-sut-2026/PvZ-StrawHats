@@ -36,11 +36,12 @@ public class LeaderboardMenu extends Menu {
 
     @Override
     public String showMenu() {
+        String commands = "\nCommands:\n  menu exit | menu show current";
         List<Level> allLevels;
         try {
             allLevels = LevelLoader.loadLevels();
         } catch (Exception e) {
-            return "Error: could not load levels.";
+            return "[ Leaderboard Menu ]\nError: could not load levels." + commands;
         }
 
         List<User> ranked = User.users.stream()
@@ -48,13 +49,13 @@ public class LeaderboardMenu extends Menu {
                 .sorted(Comparator.comparingInt((User u) -> u.userState.lastLevel).reversed())
                 .collect(Collectors.toList());
 
-        if (ranked.isEmpty()) return "No records yet.";
+        if (ranked.isEmpty()) return "[ Leaderboard Menu ]\nNo records yet." + commands;
 
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("[ Leaderboard Menu ]\n");
         for (User u : ranked) {
             sb.append(u.nickname).append(" - ").append(formatProgress(u.userState.lastLevel, allLevels)).append("\n");
         }
-        return sb.toString().trim();
+        return sb.toString().trim() + commands;
     }
 
     private String formatProgress(int lastLevelId, List<Level> allLevels) {

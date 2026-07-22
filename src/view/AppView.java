@@ -20,7 +20,7 @@ public class AppView {
                 break;
             }
             try {
-                currentView.getInput();
+                if (!currentView.getInput()) break;
             } catch (GameException e) {
                 GeneralPrinter.print("[Error] "+e.getMessage());
             } catch (Exception e) {
@@ -45,9 +45,12 @@ public class AppView {
             case "Travel Log Menu" -> new TravelLogMenuView();
             case "Match Menu" -> new MatchMenuView();
             case "Leaderboard Menu" -> new LeaderboardMenuView();
+            case "Network Menu" -> new MainMenuView();
             case "After Menu" -> new AfterMatchView();
             case "Before Menu" -> new BeforeMatchView();
             case "Meanwhile Menu" -> new MeanwhileMatchView();
+            case "Vasebreaker Menu", "Wallnut Bowling Menu", "I, Zombie Menu",
+                    "Beghouled Menu", "Zombotany Menu" -> new MeanwhileMatchView();
             default -> null;
         };
     }

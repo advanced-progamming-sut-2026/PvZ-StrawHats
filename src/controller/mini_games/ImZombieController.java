@@ -19,16 +19,27 @@ public class ImZombieController extends Menu {
 
     @Override
     public void handleCommand(String text){
-        
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
 
         if (Regex.IZOMBIE_PLACE_ZOMBIE.getMatcherRaw(text).matches()) {
             handlePlace(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
-            game.tick(0.1);
+            advanceTime(text);
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+            exitMenu();
+            return;
         } else {
             GeneralPrinter.print("Unknown command in I, Zombie.");
         }
         reportOutcome();
+    }
+
+    private void advanceTime(String text) {
+        var matcher = Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text);
+        matcher.matches();
+        int ticks = Math.min(6000, Integer.parseInt(matcher.group("ticks")));
+        for (int i = 0; i < ticks; i++) game.tick(0.1);
     }
 
     private void handlePlace(String text) {
@@ -56,6 +67,9 @@ public class ImZombieController extends Menu {
 
     @Override
     public String showMenu() {
-        return "I, Zombie: place zombie -t <alias> -r <row> | advance time -t <n> ticks";
+        return "[ I, Zombie Menu ]\nCommands:\n"
+                + "  place zombie -t <alias> -r <row>\n"
+                + "  advance time -t <n> ticks\n"
+                + "  menu exit | menu show current";
     }
 }

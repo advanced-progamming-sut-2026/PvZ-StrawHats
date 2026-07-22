@@ -33,7 +33,7 @@ public class LawnMower {
             return false;
         }
 
-        GeneralPrinter.print("The lawn mower in row " + rowNumber + " is triggered and killed these zombies:");
+        GeneralPrinter.print("The lawn mower in row " + (rowNumber + 1) + " is triggered and killed these zombies:");
         if (zombiesInRow != null) {
             for (Zombie zombie : zombiesInRow) {
                 if (zombie != null && zombie.isAlive()) {

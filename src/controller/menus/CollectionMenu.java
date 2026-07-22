@@ -144,5 +144,19 @@ public class CollectionMenu extends Menu {
         App.currentMenu = new GameMenu();
     }
 
+    @Override
+    public String showMenu() {
+        return "[ Collection Menu ]\nCommands:\n"
+                + "  menu collection show-plants\n"
+                + "  menu collection show-all-plants\n"
+                + "  menu collection show-zombies\n"
+                + "  menu collection show-all-zombies\n"
+                + "  menu collection show-plant -p <plant_name>\n"
+                + "  menu collection show-zombie -z <zombie_name>\n"
+                + "  menu collection upgrade-plant -p <plant_name>\n"
+                + "  menu collection purchase-plant -p <plant_name>\n"
+                + "  menu exit | menu show current";
+    }
+
 
 }

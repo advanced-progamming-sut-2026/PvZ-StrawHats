@@ -27,11 +27,21 @@ public class BeghouledController extends Menu {
         } else if (Regex.BEGHOULED_UPGRADE.getMatcherRaw(text).matches()) {
             handleUpgrade(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
-            game.tick(0.1);
+            advanceTime(text);
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+            exitMenu();
+            return;
         } else {
             GeneralPrinter.print("Unknown command in Beghouled.");
         }
         reportOutcome();
+    }
+
+    private void advanceTime(String text) {
+        var matcher = Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text);
+        matcher.matches();
+        int ticks = Math.min(6000, Integer.parseInt(matcher.group("ticks")));
+        for (int i = 0; i < ticks; i++) game.tick(0.1);
     }
 
     private void handleSwap(String text) {
@@ -75,6 +85,10 @@ public class BeghouledController extends Menu {
 
     @Override
     public String showMenu() {
-        return "Beghouled: swap -l (x,y) -l (x,y) | upgrade -t <plant> | advance time -t <n> ticks";
+        return "[ Beghouled Menu ]\nCommands:\n"
+                + "  swap -l (x,y) -l (x,y)\n"
+                + "  upgrade -t <plant>\n"
+                + "  advance time -t <n> ticks\n"
+                + "  menu exit | menu show current";
     }
 }

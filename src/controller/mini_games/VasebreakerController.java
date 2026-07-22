@@ -28,11 +28,21 @@ public class VasebreakerController extends Menu {
         } else if (Regex.VASEBREAKER_COLLECT_SEED.getMatcherRaw(text).matches()) {
             handleCollect(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
-            game.tick(0.1);
+            advanceTime(text);
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+            exitMenu();
+            return;
         } else {
             GeneralPrinter.print("Unknown command in Vasebreaker.");
         }
         reportOutcome();
+    }
+
+    private void advanceTime(String text) {
+        var matcher = Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text);
+        matcher.matches();
+        int ticks = Math.min(6000, Integer.parseInt(matcher.group("ticks")));
+        for (int i = 0; i < ticks; i++) game.tick(0.1);
     }
 
     private void handleBreak(String text) {
@@ -70,6 +80,10 @@ public class VasebreakerController extends Menu {
 
     @Override
     public String showMenu() {
-        return "Vasebreaker: break vase -l (x,y) | collect seed -l (x,y) | advance time -t <n> ticks";
+        return "[ Vasebreaker Menu ]\nCommands:\n"
+                + "  break vase -l (x,y)\n"
+                + "  collect seed -l (x,y)\n"
+                + "  advance time -t <n> ticks\n"
+                + "  menu exit | menu show current";
     }
 }

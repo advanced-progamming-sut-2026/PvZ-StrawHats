@@ -5,6 +5,8 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import service.GameClock;
+import view.GeneralPrinter;
 
 import java.util.Random;
 
@@ -43,21 +45,21 @@ public class GroundSun extends GroundItem {
         }
     }
 
-    private static final double FALL_SECONDS = 3.0;
+    private static final double FALL_SECONDS = 5.0;
 
     private final SunDropType dropType;
     private final int sunValue;
     private double fallSecondsRemaining;
 
     public GroundSun(Position position, int sunValue) {
-        super(ItemType.SUN, position, 15, 0.6);
+        super(ItemType.SUN, position, 0, 0.6);
         this.dropType = SunDropType.REGULAR;
         this.sunValue = sunValue;
         this.fallSecondsRemaining = 0;
     }
 
     private GroundSun(Position position, SunDropType dropType) {
-        super(ItemType.SUN, position, 12, 0.6);
+        super(ItemType.SUN, position, 20, 0.6);
         this.dropType = dropType;
         this.sunValue = dropType.getValue();
         this.fallSecondsRemaining = FALL_SECONDS;
@@ -69,14 +71,22 @@ public class GroundSun extends GroundItem {
 
     @Override
     public void tick() {
+        boolean wasFalling = isFalling();
         super.tick();
-        if (fallSecondsRemaining > 0) {
-            fallSecondsRemaining = Math.max(0, fallSecondsRemaining - service.GameClock.SECONDS_PER_TICK);
+        if (wasFalling) {
+            fallSecondsRemaining = GameClock.countDown(fallSecondsRemaining, GameClock.SECONDS_PER_TICK);
+            if (!isFalling() && isAlive()) {
+                Position position = getPosition();
+                if (position != null) {
+                    GeneralPrinter.print("Sun reached the ground at position ("
+                            + ((int) position.x() + 1) + ", " + ((int) position.y() + 1) + ").");
+                }
+            }
         }
     }
 
     public boolean isFalling() {
-        return fallSecondsRemaining > 0;
+        return !GameClock.isZero(fallSecondsRemaining);
     }
 
     @Override

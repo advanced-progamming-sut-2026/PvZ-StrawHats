@@ -24,11 +24,21 @@ public class ZombotanyController extends Menu {
 
 
         if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
-            game.tick(0.1);
+            advanceTime(text);
+        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+            exitMenu();
+            return;
         } else {
             GeneralPrinter.print("Unknown command in Zombotany.");
         }
         reportOutcome();
+    }
+
+    private void advanceTime(String text) {
+        var matcher = Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text);
+        matcher.matches();
+        int ticks = Math.min(6000, Integer.parseInt(matcher.group("ticks")));
+        for (int i = 0; i < ticks; i++) game.tick(0.1);
     }
 
     private void reportOutcome() {
@@ -46,6 +56,8 @@ public class ZombotanyController extends Menu {
 
     @Override
     public String showMenu() {
-        return "Zombotany: plant/collect commands work as in a normal level | advance time -t <n> ticks";
+        return "[ Zombotany Menu ]\nCommands:\n"
+                + "  advance time -t <n> ticks\n"
+                + "  menu exit | menu show current";
     }
 }

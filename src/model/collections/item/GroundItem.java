@@ -4,6 +4,7 @@ import model.collections.Item;
 import model.match_mechanisms.vector.Position;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import service.GameClock;
 
 public abstract class GroundItem extends Item {
     private final ItemType itemType;
@@ -39,7 +40,7 @@ public abstract class GroundItem extends Item {
     @Override
     public void tick() {
         aliveSeconds += service.GameClock.SECONDS_PER_TICK;
-        if (!collected && lifetimeSeconds > 0 && aliveSeconds >= lifetimeSeconds) {
+        if (!collected && lifetimeSeconds > 0 && GameClock.hasReached(aliveSeconds, lifetimeSeconds)) {
             setAlive(false);
         }
     }

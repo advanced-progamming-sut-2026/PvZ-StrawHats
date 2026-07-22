@@ -63,6 +63,10 @@ public class GreenhouseMenu extends Menu {
     @Override
     public void handleCommand(String text) {
         try {
+            if (Regex.ENTER_SHOP.getMatcherRaw(text).matches()) {
+                App.currentMenu = new StoreMenu();
+                return;
+            }
             super.handleCommand(text);
             if (isGeneralCmd) return;
             handleGreenhouseCommand(text);
@@ -73,11 +77,9 @@ public class GreenhouseMenu extends Menu {
 
     private void handleGreenhouseCommand(String text) {
         UserState state = User.currentUser.userState;
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
 
         if (Regex.SHOW_GREENHOUSE.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
+            GeneralPrinter.print(Greenhouse.getInstance().renderStatus());
         } else if (Regex.PLANT_POT_AT.getMatcherRaw(text).matches()) {
             Matcher m = Regex.PLANT_POT_AT.getMatcherRaw(text);
             m.matches();
@@ -106,8 +108,6 @@ public class GreenhouseMenu extends Menu {
             } else {
                 GeneralPrinter.print(pot.getPotController().grow(state));
             }
-        } else if (Regex.ENTER_SHOP.getMatcherRaw(text).matches()) {
-            App.currentMenu = new StoreMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else {
@@ -122,7 +122,15 @@ public class GreenhouseMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return Greenhouse.getInstance().renderStatus();
+        return "[ Greenhouse Menu ]\n"
+                + Greenhouse.getInstance().renderStatus() + "\n"
+                + "Commands:\n"
+                + "  show greenhouse\n"
+                + "  plant pot at (<x>, <y>)\n"
+                + "  collect (<x>, <y>)\n"
+                + "  grow (<x>, <y>)\n"
+                + "  enter shop\n"
+                + "  menu exit | menu show current";
     }
 
 

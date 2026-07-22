@@ -86,6 +86,7 @@ public class AfterMenu extends Menu {
     @Override
     public String showMenu() {
         return (won ? "YOU WIN!" : "The zombie ate your brain; LOSER !!!") +
-                "\nReward: +" + coinsAwarded + " coins, +1 seed packet (" + seedPacketPlantName + ")";
+                "\nReward: +" + coinsAwarded + " coins, +1 seed packet (" + seedPacketPlantName + ")" +
+                "\nCommands:\n  menu exit | menu show current";
     }
 }

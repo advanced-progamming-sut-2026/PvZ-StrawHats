@@ -10,6 +10,7 @@ import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.match.main.levels.special_levels.LockedPlantsLevel;
+import model.match.main.levels.special_levels.PlantWhatYouGetLevel;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
@@ -161,7 +162,7 @@ public class BeforeMenu extends Menu {
         }
         GameSession session = GameSession.getInstance();
         session.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
-        session.startWaves();
+        if (!(level instanceof PlantWhatYouGetLevel)) session.startWaves();
         App.currentMenu = new MeanwhileMenu();
     }
 
@@ -188,6 +189,15 @@ public class BeforeMenu extends Menu {
     public String showMenu() {
         Level level = currentLevel();
         String levelName = level != null ? level.getName() : "unknown";
-        return "Stage: " + levelName + " | Loadout: " + selectedPlants + " (" + selectedPlants.size() + "/" + PLANT_SLOTS + ")";
+        return "[ Plant Loadout ]\n"
+                + "Stage: " + levelName + " | Selected: " + selectedPlants + " (" + selectedPlants.size() + "/" + PLANT_SLOTS + ")\n"
+                + "Commands:\n"
+                + "  show all plants\n"
+                + "  show available plants\n"
+                + "  add plant -t <type>\n"
+                + "  remove plant -t <type>\n"
+                + "  boost plant -t <type>\n"
+                + "  start game\n"
+                + "  menu exit | menu show current";
     }
 }
