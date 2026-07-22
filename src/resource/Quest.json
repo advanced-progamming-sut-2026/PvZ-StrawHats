@@ -1,10 +1,11 @@
 [
   {
-    "id": "q_daily_sun_collector",
+    "id": "q1",
     "title": "Daily Sun Collector",
     "type": "DAILY",
     "priority": "MEDIUM",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Collect a set amount of sun before the day resets. Reward scales with how much sun you actually gathered.",
     "criteria": [
       {
         "type": "COLLECT_SUN",
@@ -14,384 +15,274 @@
         }
       }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 30,
-      "formula": "sun_amount / 100"
-    }
+    "reward": { "rewardType": "COIN", "amount": 30, "formula": "sun_amount / 100" }
   },
   {
-    "id": "q_chapter_hunter",
+    "id": "q2",
     "title": "Chapter Hunter",
-    "type": "CHALLENGE",
+    "type": "MAIN",
     "priority": "HIGH",
     "expiresAfterSeconds": null,
+    "questDescription": "Defeat 50 zombies while playing within a single randomly-assigned chapter (world).",
     "criteria": [
       {
         "type": "KILL_ZOMBIES_IN_CHAPTER",
         "target": 50,
         "params": {
-          "chapter": "any"
+          "chapter": "Egypt",
+          "variableOptions": ["Egypt", "Frostbite Caves", "Big Wave Beach", "Dark Ages"],
+          "variableParam": "chapter"
         }
       }
     ],
-    "reward": {
-      "rewardType": "SEED_PACK",
-      "amount": 10,
-      "formula": ""
-    }
+    "reward": { "rewardType": "SEED_PACK", "amount": 10, "formula": "" }
   },
   {
-    "id": "q_pro_plant_user",
+    "id": "q3",
     "title": "Professional Plant User",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Kill 10 zombies using nothing but offensive plants (no lawn mowers, no environmental deaths).",
     "criteria": [
       {
         "type": "KILL_ZOMBIES_WITH_SPECIFIC_PLANT",
         "target": 10,
-        "params": {
-          "plantType": "any_offensive"
-        }
+        "params": { "plantType": "any_offensive" }
       }
     ],
-    "reward": {
-      "rewardType": "SEED_PACK",
-      "amount": 1,
-      "formula": "random_new_plant"
-    }
+    "reward": { "rewardType": "SEED_PACK", "amount": 1, "formula": "random_new_plant" }
   },
   {
-    "id": "q_only_cactus",
+    "id": "q4",
     "title": "Only Cactus",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Kill 10 zombies using Cactus and only Cactus - any kill by a different plant resets your progress back to zero.",
     "criteria": [
       {
         "type": "KILL_ZOMBIES_WITH_SPECIFIC_PLANT",
         "target": 10,
-        "params": {
-          "plantType": "cactus"
-        }
+        "params": { "plantType": "cactus" }
       }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 20,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 20, "formula": "" }
   },
   {
-    "id": "q_efficient_herbivore",
+    "id": "q5",
     "title": "Efficient Herbivore",
-    "type": "CHALLENGE",
+    "type": "MAIN",
     "priority": "HIGH",
     "expiresAfterSeconds": null,
+    "questDescription": "Win a level without losing more than n plants. Reward shrinks the more plants you were allowed to lose.",
     "criteria": [
       {
         "type": "WIN_LEVEL_MAX_PLANTS_LOST",
         "target": 1,
         "params": {
           "maxPlantsLost": 2,
-          "variableOptions": [0, 1, 2, 3, 4, 5]
+          "variableOptions": [0, 1, 2, 3, 4, 5],
+          "variableParam": "maxPlantsLost"
         }
       }
     ],
-    "reward": {
-      "rewardType": "SEED_PACK",
-      "amount": 18,
-      "formula": "20 - n"
-    }
+    "reward": { "rewardType": "SEED_PACK", "amount": 18, "formula": "20 - n" }
   },
   {
-    "id": "q_defense_master",
+    "id": "q6",
     "title": "Defense Master",
     "type": "EPIC",
     "priority": "CRITICAL",
     "expiresAfterSeconds": null,
+    "questDescription": "Finish a level with exactly zero sun left in the bank.",
     "criteria": [
       {
         "type": "WIN_LEVEL_EXACT_SUN_LEFT",
         "target": 1,
-        "params": {
-          "exactSunLeft": 0
-        }
+        "params": { "exactSunLeft": 0 }
       }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 200,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 200, "formula": "" }
   },
   {
-    "id": "q_quick_reflexes",
+    "id": "q7",
     "title": "Quick Reflexes",
-    "type": "CHALLENGE",
+    "type": "MAIN",
     "priority": "MEDIUM",
     "expiresAfterSeconds": null,
+    "questDescription": "Kill 10 zombies within 30 seconds of the first zombie wave starting.",
     "criteria": [
       {
-        "type": "USE_EXPLOSIVE_PLANTS",
-        "target": 5,
-        "params": {}
+        "type": "KILL_ZOMBIES_TIME_LIMIT",
+        "target": 10,
+        "params": { "maxElapsedSeconds": 30 }
       }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 500,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 500, "formula": "" }
   },
   {
-    "id": "q_pro_destroyer",
+    "id": "q8",
     "title": "Professional Destroyer",
     "type": "DAILY",
     "priority": "LOW",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Use 3 explosive plants within a single level.",
     "criteria": [
-      {
-        "type": "USE_EXPLOSIVE_PLANTS",
-        "target": 3,
-        "params": {}
-      }
+      { "type": "USE_EXPLOSIVE_PLANTS", "target": 3, "params": {} }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 100,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 100, "formula": "" }
   },
   {
-    "id": "q_symmetry",
+    "id": "q9",
     "title": "Symmetry",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level whose final garden layout is symmetric top-to-bottom.",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_SYMMETRIC",
-        "target": 1,
-        "params": {
-          "requireSymmetric": true
-        }
-      }
+      { "type": "WIN_LEVEL_SYMMETRIC", "target": 1, "params": { "requireSymmetric": true } }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 500,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 500, "formula": "" }
   },
   {
-    "id": "q_family_slaughter",
+    "id": "q10",
     "title": "Family Slaughter",
     "type": "DAILY",
     "priority": "MEDIUM",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Kill 10 zombies using only plants from a randomly-assigned plant family - a kill from any other family resets your progress.",
     "criteria": [
       {
-        "type": "KILL_ZOMBIES_WITH_SPECIFIC_PLANT",
-        "target": 25,
+        "type": "KILL_ZOMBIES_EXCLUSIVE_FAMILY",
+        "target": 10,
         "params": {
-          "plantType": "any_offensive"
+          "familyType": "Pea",
+          "variableOptions": ["Pea", "Ice", "Fire", "Poison", "Magic", "Water", "Shroom", "Melee", "Explosive", "Sun"],
+          "variableParam": "familyType"
         }
       }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 1000,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 1000, "formula": "" }
   },
   {
-    "id": "q_restricted_growth",
+    "id": "q11",
     "title": "Restricted Growth",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level without ever planting a single plant from a randomly-assigned forbidden plant family.",
     "criteria": [
       {
-        "type": "WIN_LEVEL_MAX_PLANTS_LOST",
+        "type": "WIN_LEVEL_FORBIDDEN_FAMILY",
         "target": 1,
         "params": {
-          "maxPlantsLost": 3
+          "familyType": "Ice",
+          "variableOptions": ["Pea", "Ice", "Fire", "Poison", "Magic", "Water", "Shroom", "Melee", "Explosive", "Sun"],
+          "variableParam": "familyType"
         }
       }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 100,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 100, "formula": "" }
   },
   {
-    "id": "q_night_or_morning",
+    "id": "q12",
     "title": "Night or Morning",
     "type": "EPIC",
     "priority": "HIGH",
     "expiresAfterSeconds": null,
+    "questDescription": "Finish a day level using only night plants (mushrooms).",
     "criteria": [
       {
-        "type": "WIN_LEVEL_SYMMETRIC",
+        "type": "WIN_DAY_LEVEL_WITH_NIGHT_PLANTS",
         "target": 1,
-        "params": {
-          "requireSymmetric": true
-        }
+        "params": { "isDayLevel": true, "onlyNightPlants": true }
       }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 20,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 20, "formula": "" }
   },
   {
-    "id": "q_streak_master",
+    "id": "q13",
     "title": "Streak Master",
     "type": "DAILY",
     "priority": "MEDIUM",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win 5 levels in a row while playing at the maximum difficulty setting. Losing, or winning below max difficulty, resets the streak.",
     "criteria": [
-      {
-        "type": "KILL_ZOMBIES_IN_CHAPTER",
-        "target": 50,
-        "params": {
-          "chapter": "any"
-        }
-      }
+      { "type": "WIN_CONSECUTIVE_LEVELS_MAX_DIFFICULTY", "target": 5, "params": {} }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 5000,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 5000, "formula": "" }
   },
   {
-    "id": "q_almost_victorious",
+    "id": "q14",
     "title": "Almost Victorious",
     "type": "DAILY",
     "priority": "MEDIUM",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Kill 10 zombies in the first column of a row whose lawn mower has already been used.",
     "criteria": [
-      {
-        "type": "USE_EXPLOSIVE_PLANTS",
-        "target": 5,
-        "params": {}
-      }
+      { "type": "KILL_ZOMBIES_FIRST_COLUMN_NO_LAWNMOWER", "target": 10, "params": {} }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 300,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 300, "formula": "" }
   },
   {
-    "id": "q_asymmetry_challenge",
+    "id": "q15",
     "title": "Asymmetry Challenge",
     "type": "DAILY",
     "priority": "MEDIUM",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level whose garden has no symmetry at all (the middle row doesn't count).",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_ASYMMETRIC",
-        "target": 1,
-        "params": {
-          "excludeMiddleRow": true
-        }
-      }
+      { "type": "WIN_LEVEL_ASYMMETRIC", "target": 1, "params": { "excludeMiddleRow": true } }
     ],
-    "reward": {
-      "rewardType": "COIN",
-      "amount": 800,
-      "formula": ""
-    }
+    "reward": { "rewardType": "COIN", "amount": 800, "formula": "" }
   },
   {
-    "id": "q_cloudy_day",
+    "id": "q16",
     "title": "Cloudy Day",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level using no more than 3 sun-producing plants.",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_MAX_SUN_PRODUCERS",
-        "target": 1,
-        "params": {
-          "maxSunProducers": 3
-        }
-      }
+      { "type": "WIN_LEVEL_MAX_SUN_PRODUCERS", "target": 1, "params": { "maxSunProducers": 3 } }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 10,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 10, "formula": "" }
   },
   {
-    "id": "q_one_column_less",
+    "id": "q17",
     "title": "One Column Less",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level while a randomly-assigned column has no plant in it at all.",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_EMPTY_COLUMN",
-        "target": 1,
-        "params": {
-          "targetColumnIndex": "n"
-        }
-      }
+      { "type": "WIN_LEVEL_EMPTY_COLUMN", "target": 1, "params": { "targetColumnIndex": "n" } }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 10,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 10, "formula": "" }
   },
   {
-    "id": "q_defenseless_row",
+    "id": "q18",
     "title": "Defenseless Row",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level while a randomly-assigned row has no plant in it at all.",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_EMPTY_ROW",
-        "target": 1,
-        "params": {
-          "targetRowIndex": "n"
-        }
-      }
+      { "type": "WIN_LEVEL_EMPTY_ROW", "target": 1, "params": { "targetRowIndex": "n" } }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 20,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 20, "formula": "" }
   },
   {
-    "id": "q_defenseless_cross",
+    "id": "q19",
     "title": "Defenseless Cross",
     "type": "DAILY",
     "priority": "HIGH",
     "expiresAfterSeconds": 86400,
+    "questDescription": "Win a level while a randomly-assigned row AND column are both completely empty of plants.",
     "criteria": [
-      {
-        "type": "WIN_LEVEL_EMPTY_ROW_AND_COLUMN",
-        "target": 1,
-        "params": {
-          "targetRowIndex": "n",
-          "targetColumnIndex": "n"
-        }
-      }
+      { "type": "WIN_LEVEL_EMPTY_ROW_AND_COLUMN", "target": 1, "params": { "targetRowIndex": "n", "targetColumnIndex": "n" } }
     ],
-    "reward": {
-      "rewardType": "GEM",
-      "amount": 25,
-      "formula": ""
-    }
+    "reward": { "rewardType": "GEM", "amount": 25, "formula": "" }
   }
 ]

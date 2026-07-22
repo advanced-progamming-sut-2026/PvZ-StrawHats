@@ -60,6 +60,9 @@ public enum Regex {
     TRAVEL_LOG_PAGE(
             "^\\s*travel\\s+log\\s+page\\s+(?<pagename>\\S+)\\s*$"
     ),
+    TRAVEL_LOG_COLLECT(
+            "^\\s*travel\\s+log\\s+collect\\s+-q\\s+(?<questid>\\S+)\\s*$"
+    ),
 
     // profile menu
     MENU_PROFILE_CHANGE_USERNAME(

@@ -24,6 +24,7 @@ public class QuestManager {
 
     public static void updateProgress(String criteriaType, int amount, Map<String, Object> context) {
         if (User.currentUser == null) return;
+        boolean changed = false;
         for (GameQuest quest : QuestLoader.getAllQuests()) {
             if (quest.isCompleted()) {
                 continue;
@@ -33,9 +34,15 @@ public class QuestManager {
                     if (matchesParams(criterion.getParams(), context)) {
                         quest.setProgress(quest.getProgress() + amount);
                         checkCompletion(quest);
+                        changed = true;
                     }
                 }
             }
+        }
+        // Persist every progress change immediately (not only on completion) so
+        // progress survives even if the player quits before finishing a quest.
+        if (changed) {
+            QuestLoader.saveActiveQuestsProgress();
         }
     }
 
@@ -179,8 +186,48 @@ public class QuestManager {
             }
         }
         quest.setCompleted(true);
+    }
+
+    public static String collectReward(String questId) {
+        if (User.currentUser == null) {
+            return "Error: no user logged in.";
+        }
+        GameQuest quest = findQuestById(questId);
+        if (quest == null) {
+            return "Error: no such quest.";
+        }
+        if (!quest.isCompleted()) {
+            return "Error: quest not completed yet, you can not receive that.";
+        }
+        if (quest.isRewardCollected()) {
+            return "Error: reward for \"" + quest.getTitle() + "\" was already achieved.";
+        }
+
         rewardUser(quest);
+        quest.setRewardCollected(true);
         QuestLoader.saveActiveQuestsProgress();
+        return quest.getTitle() + " achieved.";
+    }
+
+    public static GameQuest findQuestById(String questId) {
+        if (questId == null) return null;
+        for (GameQuest quest : QuestLoader.getAllQuests()) {
+            if (quest.getId() != null && quest.getId().equalsIgnoreCase(questId)) {
+                return quest;
+            }
+        }
+        return null;
+    }
+
+    /** Highest criterion target for a quest; used to render its progress bar. */
+    public static int getDisplayTarget(GameQuest quest) {
+        int target = 1;
+        if (quest.getCriteria() != null) {
+            for (QuestCriterion criterion : quest.getCriteria()) {
+                target = Math.max(target, criterion.getTarget());
+            }
+        }
+        return target;
     }
 
     private static void rewardUser(GameQuest quest) {

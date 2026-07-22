@@ -12,6 +12,9 @@ public class GameQuest extends Quest {
     private QuestReward reward;
     private long assignedAtEpochSecond;
 
+    /** True once the (already-completed) quest's reward has actually been collected by the player. */
+    private boolean rewardCollected;
+
     public String getId() {
         return id;
     }
@@ -79,5 +82,13 @@ public class GameQuest extends Quest {
     public boolean isExpired(long nowEpochSecond) {
         if (expiresAfterSeconds == null) return false;
         return nowEpochSecond - assignedAtEpochSecond >= expiresAfterSeconds;
+    }
+
+    public boolean isRewardCollected() {
+        return rewardCollected;
+    }
+
+    public void setRewardCollected(boolean rewardCollected) {
+        this.rewardCollected = rewardCollected;
     }
 }
