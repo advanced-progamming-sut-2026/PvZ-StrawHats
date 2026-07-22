@@ -8,7 +8,6 @@ import model.pitches.Cell;
 import model.pitches.obstacles.Obstacle;
 import model.utils.GameSession;
 
-import java.lang.reflect.Field;
 import java.util.Comparator;
 
 public class ZombieTargeting {
@@ -37,15 +36,7 @@ public class ZombieTargeting {
     }
 
     private static boolean isPlantIncapacitated(Plant plant) {
-        if (plant == null) return false;
-        try {
-            Field stateField = Plant.class.getDeclaredField("state");
-            stateField.setAccessible(true);
-            Object stateValue = stateField.get(plant);
-            return stateValue != null && "INCAPACITATED".equals(stateValue.toString());
-        } catch (Exception e) {
-            return false;
-        }
+        return plant != null && plant.getPlantState() == Plant.PlantState.INCAPACITATED;
     }
 
     private static Item findPlantSideTarget(Zombie self, GameSession session) {

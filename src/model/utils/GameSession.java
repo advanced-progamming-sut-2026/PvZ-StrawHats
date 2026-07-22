@@ -12,6 +12,8 @@ import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
 import model.pitches.Environment;
 import model.pitches.LawnMower;
+import model.pitches.Tile;
+import model.pitches.TileType;
 import model.projectile.Projectile;
 import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
@@ -504,6 +506,16 @@ public class GameSession {
         return true;
     }
 
+    public Plant digPlantAt(int row, int col) {
+        Cell cell = environment.getCell(row, col);
+        if (cell == null || !cell.hasPlant()) return null;
+
+        Plant plant = cell.getPlant();
+        cell.setPlant(null);
+        plants.remove(plant);
+        return plant;
+    }
+
     private Plant findPlantAt(int row, int col) {
         Cell cell = environment.getCell(row, col);
         return (cell != null && cell.hasPlant()) ? cell.getPlant() : null;
@@ -513,11 +525,24 @@ public class GameSession {
         StringBuilder sb = new StringBuilder();
         for (int r = 0; r < environment.getRows(); r++) {
             for (int c = 0; c < environment.getCols(); c++) {
-                sb.append(findPlantAt(r, c) != null ? "P" : ".");
+                sb.append(mapSymbolFor(environment.getCell(r, c)));
             }
             sb.append("\n");
         }
+        sb.append("(P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
         return sb.toString().trim();
+    }
+
+    private char mapSymbolFor(Cell cell) {
+        if (cell == null) return '?';
+        boolean hasZombie = !cell.getZombies().isEmpty();
+        boolean hasPlant = cell.hasPlant();
+        if (hasZombie && hasPlant) return 'E';
+        if (hasZombie) return 'Z';
+        if (hasPlant) return 'P';
+        if (cell.getObstacle() != null) return 'X';
+        if (cell.getTile() != null && cell.getTile().getType() == TileType.Slippery) return '~';
+        return '.';
     }
 
     public String renderPlantsStatus() {
@@ -533,15 +558,51 @@ public class GameSession {
     }
 
     public String renderTileStatus(int row, int col) {
-        Plant plant = findPlantAt(row, col);
+        Cell cell = environment.getCell(row, col);
         StringBuilder sb = new StringBuilder();
-        sb.append("tile (").append(col).append(", ").append(row).append("): ");
+        sb.append("tile (").append(col + 1).append(", ").append(row + 1).append("): ");
 
-        if (plant != null) {
-            sb.append("plant=").append(plant.getName()).append(" hp=").append(plant.getHP());
-        } else {
-            sb.append("empty");
+        if (cell == null) {
+            sb.append("out of bounds");
+            return sb.toString();
         }
+
+        List<String> parts = new ArrayList<>();
+
+        if (cell.hasPlant()) {
+            Plant plant = cell.getPlant();
+            parts.add("plant=" + plant.getName() + " hp=" + plant.getHP() + " level=" + plant.getLevel());
+        } else {
+            parts.add("no plant");
+        }
+
+        if (cell.getObstacle() != null) {
+            parts.add("obstacle=" + cell.getObstacle().getName());
+        }
+
+        if (cell.getTile() != null) {
+            Tile tile = cell.getTile();
+            String terrain = tile.getType().toString();
+            if (tile.getSlipperyDirection() != null) {
+                terrain += " (" + tile.getSlipperyDirection() + ")";
+            }
+            parts.add("terrain=" + terrain);
+        }
+
+        if (cell.getStructure() != null) {
+            parts.add("structure=" + cell.getStructure().getClass().getSimpleName());
+        }
+
+        if (level != null && level.getSeason() != null && level.getSeason().hasTide()
+                && col >= environment.getCols() - level.getCurrentTideColumn()) {
+            parts.add("flooded (tide)");
+        }
+
+        if (!cell.getZombies().isEmpty()) {
+            parts.add("zombies=" + cell.getZombies().size());
+        }
+
+        sb.append(String.join(", ", parts));
         return sb.toString();
     }
 

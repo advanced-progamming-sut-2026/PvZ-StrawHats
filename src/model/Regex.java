@@ -144,6 +144,9 @@ public enum Regex {
     REMOVE_PLANT_AT(
             "^\\s*remove\\s+plant\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
     ),
+    DIG_PLANT_AT(
+            "^\\s*dig\\s+plant\\s+at\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
+    ),
     COLLECT_ITEM(
             "^\\s*collect\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
     ),

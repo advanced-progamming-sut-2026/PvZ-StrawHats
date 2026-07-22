@@ -46,6 +46,10 @@ public class MeanwhileMenu extends Menu {
             Matcher m = Regex.REMOVE_PLANT_AT.getMatcherRaw(text);
             m.matches();
             removePlantAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
+        } else if (Regex.DIG_PLANT_AT.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.DIG_PLANT_AT.getMatcherRaw(text);
+            m.matches();
+            digPlantAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
         } else if (Regex.COLLECT_ITEM.getMatcherRaw(text).matches()) {
             Matcher m = Regex.COLLECT_ITEM.getMatcherRaw(text);
             m.matches();
@@ -130,6 +134,16 @@ public class MeanwhileMenu extends Menu {
         GeneralPrinter.print(removed ? "Plant removed." : "Error: no plant there.");
     }
 
+    private void digPlantAt(int x, int y) {
+        Plant dug = GameSession.getInstance().digPlantAt(y - 1, x - 1);
+        if (dug == null) {
+            GeneralPrinter.print("Error: no plant there.");
+        } else {
+            User.currentUser.userState.addSeedPackets(dug.getId(), 1);
+            GeneralPrinter.print("Dug up " + dug.getName() + " at (" + x + "," + y + "); seed packet returned to inventory.");
+        }
+    }
+
     private void collectAt(int x, int y) {
         List<GroundItem> collected = GameSession.getInstance()
                 .collectItemsNear(new Position(x - 1, y - 1));
@@ -202,7 +216,7 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return "Paused - Options: plant -t <name> at (x,y) | remove plant at (x,y) | collect (x,y) | "
+        return "Paused - Options: plant -t <name> at (x,y) | remove plant at (x,y) | dig plant at (x,y) | collect (x,y) | "
                 + "use food at (x,y) / feed plant -l (x,y) | show sun amount | cheat add -n <count> suns | "
                 + "cheat add-plant-food | show garden | show tile (x,y) | wait <seconds> | resume | restart | menu exit";
     }
