@@ -123,7 +123,7 @@ public class GameSession {
 
         if (wavesStarted) {
             skySunTimer += deltaTimeSeconds;
-            if (skySunTimer >= SKY_SUN_INTERVAL) {
+            if (skySunTimer >= getEffectiveSkySunInterval()) {
                 skySunTimer = 0;
                 int col = ITEM_RANDOM.nextInt(environment.getCols());
                 int row = ITEM_RANDOM.nextInt(environment.getRows());
@@ -165,6 +165,11 @@ public class GameSession {
                 QuestManager.notifyLevelWon(this);
             }
         }
+    }
+
+    private double getEffectiveSkySunInterval() {
+        if (difficultyLevel <= 0) return SKY_SUN_INTERVAL;
+        return SKY_SUN_INTERVAL * (difficultyLevel / 3.0);
     }
 
     private void recordLevelSpecificDeaths() {
@@ -389,6 +394,8 @@ public class GameSession {
 
     private void announceCollection(GroundItem item, UserState state) {
         switch (item.getItemType()) {
+            case SUN -> GeneralPrinter.print("You collected a sun; you have " + getSunCount() + " sun now.");
+            case PLANT_FOOD -> GeneralPrinter.print("The glowing zombie dropped a plant food; you have " + getPlantFoodCount() + " plant foods now.");
             case COIN -> GeneralPrinter.print("A zombie dropped a coin; you have " + state.coins + " coins now.");
             case DIAMOND -> GeneralPrinter.print("A zombie dropped a diamond; you have " + state.diamonds + " diamonds now.");
             case SEED_PACK -> {
@@ -436,12 +443,16 @@ public class GameSession {
         return true;
     }
 
+    private static final int MAX_PLANT_FOOD = 3;
+
     public int getPlantFoodCount() {
         return plantFoodCount;
     }
 
-    public void addPlantFood() {
+    public boolean addPlantFood() {
+        if (plantFoodCount >= MAX_PLANT_FOOD) return false;
         plantFoodCount++;
+        return true;
     }
 
     public boolean spendPlantFood() {

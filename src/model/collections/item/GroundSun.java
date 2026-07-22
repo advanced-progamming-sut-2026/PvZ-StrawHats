@@ -43,19 +43,24 @@ public class GroundSun extends GroundItem {
         }
     }
 
+    private static final double FALL_SECONDS = 3.0;
+
     private final SunDropType dropType;
     private final int sunValue;
+    private double fallSecondsRemaining;
 
     public GroundSun(Position position, int sunValue) {
         super(ItemType.SUN, position, 15, 0.6);
         this.dropType = SunDropType.REGULAR;
         this.sunValue = sunValue;
+        this.fallSecondsRemaining = 0;
     }
 
     private GroundSun(Position position, SunDropType dropType) {
         super(ItemType.SUN, position, 12, 0.6);
         this.dropType = dropType;
         this.sunValue = dropType.getValue();
+        this.fallSecondsRemaining = FALL_SECONDS;
     }
 
     public static GroundSun fallFromSky(Position position) {
@@ -63,10 +68,23 @@ public class GroundSun extends GroundItem {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (fallSecondsRemaining > 0) {
+            fallSecondsRemaining = Math.max(0, fallSecondsRemaining - service.GameClock.SECONDS_PER_TICK);
+        }
+    }
+
+    public boolean isFalling() {
+        return fallSecondsRemaining > 0;
+    }
+
+    @Override
     public void applyRewards(GameSession session, UserState state) {
-        session.addSun(sunValue);
-        if (dropType == SunDropType.RADIOACTIVE) {
+        if (dropType == SunDropType.RADIOACTIVE && isFalling()) {
             explodeRadioactive(session);
+        } else {
+            session.addSun(sunValue);
         }
     }
 

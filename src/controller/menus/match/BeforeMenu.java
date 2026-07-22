@@ -108,14 +108,20 @@ public class BeforeMenu extends Menu {
         }
     }
 
+    private static final int BOOST_COST_DIAMONDS = 2;
+
     private void boostPlant(String plantName) {
         UserState state = User.currentUser.userState;
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
             throw new GameException("no such plant.");
-        } else if (!state.grantBoost(config.id)) {
+        } else if (state.hasBoost(config.id)) {
             throw new GameException("plant already boosted.");
+        } else if (state.diamonds < BOOST_COST_DIAMONDS) {
+            throw new GameException("not enough diamonds.");
         } else {
+            state.diamonds -= BOOST_COST_DIAMONDS;
+            state.grantBoost(config.id);
             GeneralPrinter.print(config.name + " boosted for this match.");
         }
     }
@@ -134,6 +140,7 @@ public class BeforeMenu extends Menu {
             }
         }
         GameSession session = GameSession.getInstance();
+        session.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
         session.setWaves(level.getWaves());
         session.addSun(level.getInitialSun());
         session.startWaves();

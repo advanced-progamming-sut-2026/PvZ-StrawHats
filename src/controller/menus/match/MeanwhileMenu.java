@@ -54,6 +54,26 @@ public class MeanwhileMenu extends Menu {
             Matcher m = Regex.USE_PLANT_FOOD.getMatcherRaw(text);
             m.matches();
             useFoodAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
+        } else if (Regex.FEED_PLANT_FIELD.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.FEED_PLANT_FIELD.getMatcherRaw(text);
+            m.matches();
+            useFoodAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
+        } else if (Regex.SHOW_SUN_AMOUNT.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print("Sun: " + GameSession.getInstance().getSunCount());
+        } else if (Regex.COLLECT_SUN.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.COLLECT_SUN.getMatcherRaw(text);
+            m.matches();
+            collectAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
+        } else if (Regex.CHEAT_ADD_SUNS.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.CHEAT_ADD_SUNS.getMatcherRaw(text);
+            m.matches();
+            GameSession.getInstance().addSun(Integer.parseInt(m.group("count")));
+            GeneralPrinter.print("Cheated in " + m.group("count") + " sun. Sun: " + GameSession.getInstance().getSunCount());
+        } else if (Regex.CHEAT_ADD_PLANT_FOOD.getMatcherRaw(text).matches()) {
+            boolean added = GameSession.getInstance().addPlantFood();
+            GeneralPrinter.print(added
+                    ? "Cheated in 1 plant food. Plant food: " + GameSession.getInstance().getPlantFoodCount()
+                    : "Plant food storage is already full (3).");
         } else if (Regex.SHOW_GARDEN.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(GameSession.getInstance().renderMap());
             GeneralPrinter.print(GameSession.getInstance().renderPlantsStatus());
@@ -93,14 +113,14 @@ public class MeanwhileMenu extends Menu {
         int level = state.getPlantLevel(config.id);
         Plant plant = PlantFactory.createPlant(config.id, level, new Position(col, row));
 
-        if (state.consumeBoost(config.id)) {
-            plant.setHP((int) Math.round(plant.getHP() * 1.5));
-            plant.setDamage((int) Math.round(plant.getDamage() * 1.5));
-        }
+        boolean boosted = state.consumeBoost(config.id);
 
         if (!session.plantAt(row, col, plant)) {
             throw new GameException("that tile is occupied or out of bounds.");
         } else {
+            if (boosted) {
+                plant.activatePlant(session);
+            }
             GeneralPrinter.print(config.name + " planted at (" + x + "," + y + ").");
         }
     }
@@ -182,6 +202,8 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return "Paused - Options: plant -t <name> at (x,y) | remove plant at (x,y) | collect (x,y) | use food at (x,y) | show garden | show tile (x,y) | wait <seconds> | resume | restart | menu exit";
+        return "Paused - Options: plant -t <name> at (x,y) | remove plant at (x,y) | collect (x,y) | "
+                + "use food at (x,y) / feed plant -l (x,y) | show sun amount | cheat add -n <count> suns | "
+                + "cheat add-plant-food | show garden | show tile (x,y) | wait <seconds> | resume | restart | menu exit";
     }
 }
