@@ -73,6 +73,8 @@ public class GreenhouseMenu extends Menu {
 
     private void handleGreenhouseCommand(String text) {
         UserState state = User.currentUser.userState;
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
 
         if (Regex.SHOW_GREENHOUSE.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(showMenu());
