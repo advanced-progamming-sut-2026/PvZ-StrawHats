@@ -12,6 +12,7 @@ import model.match.main.levels.Level;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.List;
 import java.util.Random;
@@ -34,7 +35,7 @@ public class AfterMenu extends Menu {
         if (!rewardGranted) {
             grantReward();
             rewardGranted = true;
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         }
     }
 
@@ -78,7 +79,7 @@ public class AfterMenu extends Menu {
         if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 

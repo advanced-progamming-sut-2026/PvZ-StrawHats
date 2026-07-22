@@ -15,7 +15,7 @@ public class AppView {
         while (true) {
             MenuView currentView = resolveView(App.currentMenu.getName());
             if (currentView == null) {
-                System.out.println("Unknown menu state, exiting.");
+                GeneralPrinter.print("Unknown menu state, exiting.");
                 break;
             }
 

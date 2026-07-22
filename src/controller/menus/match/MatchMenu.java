@@ -6,6 +6,7 @@ import model.App;
 import model.Regex;
 import model.match.main.levels.Level;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 public class MatchMenu extends Menu {
     public static Level selectedLevel;
@@ -32,7 +33,7 @@ public class MatchMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else {
-            System.out.println("Not Valid. Type 'menu show current' to see the commands available here.");
+            GeneralPrinter.print("Not Valid. Type 'menu show current' to see the commands available here.");
         }
     }
 

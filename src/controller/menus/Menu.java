@@ -32,9 +32,10 @@ public abstract class Menu {
             case "login" -> App.currentMenu = new LoginMenu();
             case "collection" -> App.currentMenu = new CollectionMenu();
             case "travellog" -> App.currentMenu = new TravelLogMenu();
-            case "network" -> App.currentMenu = new NetworkMenu();
+            case "network" -> App.currentMenu = new LeaderboardMenu();
             default -> GeneralPrinter.print("Error: no such menu.");
         }
+        System.out.println("Menu changed to: " + menuKey + " menu");
     }
     public void handleCommand(String text){
         if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){

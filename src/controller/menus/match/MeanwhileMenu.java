@@ -13,6 +13,7 @@ import model.match_mechanisms.vector.Position;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -28,11 +29,10 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
-        String text = text.trim().toLowerCase();
         if (text.equals("pause")) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else if (text.equals("resume")) {
-            System.out.println("Resuming match...");
+            GeneralPrinter.print("Resuming match...");
         } else if (text.equals("restart")) {
             restartMatch();
         } else if (text.startsWith("end game")) {
@@ -54,14 +54,14 @@ public class MeanwhileMenu extends Menu {
             m.matches();
             useFoodAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
         } else if (Regex.SHOW_GARDEN.getMatcherRaw(text).matches()) {
-            System.out.println(GameSession.getInstance().renderMap());
-            System.out.println(GameSession.getInstance().renderPlantsStatus());
+            GeneralPrinter.print(GameSession.getInstance().renderMap());
+            GeneralPrinter.print(GameSession.getInstance().renderPlantsStatus());
         } else if (Regex.SHOW_TILE.getMatcherRaw(text).matches()) {
             Matcher m = Regex.SHOW_TILE.getMatcherRaw(text);
             m.matches();
             int x = Integer.parseInt(m.group("x"));
             int y = Integer.parseInt(m.group("y"));
-            System.out.println(GameSession.getInstance().renderTileStatus(y - 1, x - 1));
+            GeneralPrinter.print(GameSession.getInstance().renderTileStatus(y - 1, x - 1));
         } else if (Regex.WAIT_SECONDS.getMatcherRaw(text).matches()) {
             Matcher m = Regex.WAIT_SECONDS.getMatcherRaw(text);
             m.matches();
@@ -69,9 +69,9 @@ public class MeanwhileMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 
@@ -81,11 +81,11 @@ public class MeanwhileMenu extends Menu {
 
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
-            System.out.println("Error: plant not available.");
+            GeneralPrinter.print("Error: plant not available.");
             return;
         }
         if (!BeforeMenu.selectedPlants.contains(config.name)) {
-            System.out.println("Error: plant not in this match's loadout.");
+            GeneralPrinter.print("Error: plant not in this match's loadout.");
             return;
         }
 
@@ -100,24 +100,24 @@ public class MeanwhileMenu extends Menu {
         }
 
         if (!session.plantAt(row, col, plant)) {
-            System.out.println("Error: that tile is occupied or out of bounds.");
+            GeneralPrinter.print("Error: that tile is occupied or out of bounds.");
         } else {
-            System.out.println(config.name + " planted at (" + x + "," + y + ").");
+            GeneralPrinter.print(config.name + " planted at (" + x + "," + y + ").");
         }
     }
 
     private void removePlantAt(int x, int y) {
         boolean removed = GameSession.getInstance().removePlantAt(y - 1, x - 1);
-        System.out.println(removed ? "Plant removed." : "Error: no plant there.");
+        GeneralPrinter.print(removed ? "Plant removed." : "Error: no plant there.");
     }
 
     private void collectAt(int x, int y) {
         List<GroundItem> collected = GameSession.getInstance()
                 .collectItemsNear(new Position(x - 1, y - 1));
         if (collected.isEmpty()) {
-            System.out.println("Nothing to collect there.");
+            GeneralPrinter.print("Nothing to collect there.");
         } else {
-            System.out.println("Collected " + collected.size() + " item(s).");
+            GeneralPrinter.print("Collected " + collected.size() + " item(s).");
         }
     }
 
@@ -133,12 +133,12 @@ public class MeanwhileMenu extends Menu {
             }
         }
         if (plant == null) {
-            System.out.println("Error: no plant there.");
+            GeneralPrinter.print("Error: no plant there.");
         } else if (!session.spendPlantFood()) {
-            System.out.println("Error: no plant food available.");
+            GeneralPrinter.print("Error: no plant food available.");
         } else {
             plant.activatePlant(session);
-            System.out.println("Plant food used on " + plant.getName() + ".");
+            GeneralPrinter.print("Plant food used on " + plant.getName() + ".");
         }
     }
 
@@ -154,20 +154,20 @@ public class MeanwhileMenu extends Menu {
         } else if (session.isGameWon()) {
             finishMatch("win");
         } else {
-            System.out.println("Time passes... (" + seconds + "s)");
+            GeneralPrinter.print("Time passes... (" + seconds + "s)");
         }
     }
 
     private void restartMatch() {
         GameSession session = GameSession.getInstance();
         if (session.getLevel() == null) {
-            System.out.println("Error: no active match.");
+            GeneralPrinter.print("Error: no active match.");
             return;
         }
         GameSession fresh = new GameSession(session.getRows(), session.getCols());
         fresh.setLevel(session.getLevel());
         fresh.startWaves();
-        System.out.println("Match restarted.");
+        GeneralPrinter.print("Match restarted.");
     }
 
     private void finishMatch(String result) {
