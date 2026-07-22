@@ -30,7 +30,7 @@ public enum Regex {
             "^\\s*menu\\s+enter\\s+chapter\\s+-c\\s+(?<chaptername>\\S+)\\s*$"
     ),
     MENU_GREENHOUSE(
-            "^\\s*menu\\s+enter\\s+greenhouse\\s*$"
+            "^\\s*menu\\s+greenhouse\\s*$"
     ),
     MENU_TRAVEL_LOG(
             "^\\s*menu\\s+travel-log\\s*$"

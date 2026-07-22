@@ -10,7 +10,7 @@ import view.GeneralPrinter;
 import java.util.regex.Matcher;
 
 public abstract class Menu {
-    protected boolean isGeneralCmd = false;
+    protected boolean isGeneralCmd;
 
     public void changeMenu(String text) {
         String menuKey;
@@ -39,6 +39,7 @@ public abstract class Menu {
         System.out.println("Menu changed to: " + menuKey + " menu");
     }
     public void handleCommand(String text){
+        isGeneralCmd = false;
         if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){
             isGeneralCmd = true;
             changeMenu(text);
