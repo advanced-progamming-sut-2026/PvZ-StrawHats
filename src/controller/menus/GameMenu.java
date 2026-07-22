@@ -25,6 +25,9 @@ public class GameMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+        
         if (Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text);
             matcher.matches();
@@ -57,25 +60,12 @@ public class GameMenu extends Menu {
                 User.currentUser.userState.diamonds += amount;
             }
 
-        } else if (Regex.MENU_ENTER.getMatcherRaw(text).matches()) {
-            Matcher matcher = Regex.MENU_ENTER.getMatcherRaw(text);
-            matcher.matches();
-            String menuName = matcher.group("menuname");
+        }
 
-            String normalizedName = menuName.trim().toLowerCase().replace("menu", "").trim();
-            if (normalizedName.equals("collection")) {
-                App.currentMenu = new CollectionMenu();
-            } else {
-                changeMenu(text);
-            }
-
-        } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
+        else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
 
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
-
-        } else {
+        }else {
             GeneralPrinter.print("Not Valid");
         }
     }
