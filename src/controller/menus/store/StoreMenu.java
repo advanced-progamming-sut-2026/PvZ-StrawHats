@@ -25,13 +25,10 @@ public class StoreMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
-        try {
-            super.handleCommand(text);
-            if (isGeneralCmd) return;
-            handleStoreCommand(text);
-        } catch (Exception e) {
-            GeneralPrinter.print("Error: could not process that command (" + e.getMessage() + ").");
-        }
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+        handleStoreCommand(text);
+
     }
 
     private void handleStoreCommand(String text) {

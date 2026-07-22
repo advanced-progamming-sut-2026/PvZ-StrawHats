@@ -45,7 +45,7 @@ public abstract class Menu {
             isGeneralCmd = true;
             GeneralPrinter.print(showMenu());
         }
-    };
+    }
 
     
 

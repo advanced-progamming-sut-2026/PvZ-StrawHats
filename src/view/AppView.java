@@ -1,6 +1,7 @@
 package view;
 
 import model.App;
+import model.game_exceptions.GameException;
 import view.menus.*;
 import view.menus.collection_view.CollectionMenuView;
 import view.menus.while_match.AfterMatchView;
@@ -18,8 +19,13 @@ public class AppView {
                 GeneralPrinter.print("Unknown menu state, exiting.");
                 break;
             }
-
-            currentView.getInput();
+            try {
+                currentView.getInput();
+            } catch (GameException e) {
+                GeneralPrinter.print("[Error] "+e.getMessage());
+            } catch (Exception e) {
+                GeneralPrinter.print(e.getMessage());
+            }
 
         }
     }
