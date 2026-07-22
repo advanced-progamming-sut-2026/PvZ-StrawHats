@@ -26,28 +26,22 @@ import java.util.Map;
 public class LevelLoader {
     private static final Gson gson = new Gson();
 
-    /**
-     * Load all levels from a JSON resource file.
-     * @return list of Level objects
-     */
-    public static List<Level> loadLevels(String resourcePath) {
-        var is = LevelLoader.class.getResourceAsStream(resourcePath);
-        if (is == null) throw new IllegalArgumentException("Resource not found: " + resourcePath);
-
-        Type listType = new TypeToken<List<JsonObject>>() {}.getType();
-        List<JsonObject> rawLevels = gson.fromJson(new InputStreamReader(is), listType);
-        List<Level> levels = new ArrayList<>();
-        for (JsonObject raw : rawLevels) {
-            levels.add(parseLevel(raw));
+    public static List<Level> loadLevels(String resourcePath) throws java.io.IOException {
+        try (var is = new java.io.FileInputStream(resourcePath)) {
+            Type listType = new TypeToken<List<JsonObject>>() {}.getType();
+            List<JsonObject> rawLevels = gson.fromJson(new InputStreamReader(is), listType);
+            List<Level> levels = new ArrayList<>();
+            for (JsonObject raw : rawLevels) {
+                levels.add(parseLevel(raw));
+            }
+            return levels;
         }
-        return levels;
     }
 
     private static Level parseLevel(JsonObject raw) {
         String type = raw.get("type").getAsString();
         Level level;
 
-        // Instantiate the correct concrete level class
         switch (type) {
             case "normal":          level = new NormalLevel(); break;
             case "conveyor":        level = new ConveyorBeltLevel(); break;
@@ -63,11 +57,9 @@ public class LevelLoader {
             default: throw new IllegalArgumentException("Unknown level type: " + type);
         }
 
-        // ---- Common fields ----
         level.setId(raw.get("id").getAsInt());
         level.setName(raw.get("name").getAsString());
 
-        // Season – use the factory to get the concrete Season instance
         String seasonName = raw.get("season").getAsString();
         level.setSeason(SeasonFactory.create(seasonName));
 
@@ -75,21 +67,18 @@ public class LevelLoader {
         level.setCols(raw.has("cols") ? raw.get("cols").getAsInt() : 9);
         level.setInitialSun(raw.has("initialSun") ? raw.get("initialSun").getAsInt() : 150);
 
-        // Available plants (list of strings)
         List<String> availablePlants = new ArrayList<>();
         if (raw.has("availablePlants")) {
             raw.get("availablePlants").getAsJsonArray().forEach(e -> availablePlants.add(e.getAsString()));
         }
         level.setAvailablePlants(availablePlants);
 
-        // Forced plants (list of strings)
         List<String> forcedPlants = new ArrayList<>();
         if (raw.has("forcedPlants")) {
             raw.get("forcedPlants").getAsJsonArray().forEach(e -> forcedPlants.add(e.getAsString()));
         }
         level.setForcedPlants(forcedPlants);
 
-        // ---- Waves ----
         if (raw.has("waves")) {
             JsonArray waveArray = raw.get("waves").getAsJsonArray();
             List<ZombieWave> waves = new ArrayList<>();
@@ -100,7 +89,6 @@ public class LevelLoader {
                 List<Zombie> zombies = new ArrayList<>();
                 for (var zt : zombieTypes) {
                     Zombie z = ZombieFactory.create(zt.getAsString(),9, 0);
-                    // Placeholder position; will be set properly when spawning
                     z.setPosition(new Position(9, 0));
                     zombies.add(z);
                 }
@@ -109,9 +97,7 @@ public class LevelLoader {
             level.setWaves(waves);
         }
 
-        // ---- Special level specific fields ----
         if (level instanceof ConveyorBeltLevel) {
-            // If you have a list of plant types that appear on the conveyor
             List<Plant> conveyorPlants = new ArrayList<>();
             if (raw.has("conveyorPlants")) {
                 raw.get("conveyorPlants").getAsJsonArray().forEach(e -> {
@@ -123,7 +109,7 @@ public class LevelLoader {
                             break;
                         }
                     }
-                    if (plantId == null) return; // unknown plant name in JSON, skip instead of crashing the whole level load
+                    if (plantId == null) return;
                     Plant p = PlantFactory.createPlant(plantId, 1, new Position(9, 0));
                     conveyorPlants.add(p);
                 });
@@ -171,11 +157,7 @@ public class LevelLoader {
         } else if (level instanceof BossLevel) {
             String bossType = raw.get("bossType").getAsString();
             ((BossLevel) level).setBossZombie(ZombieFactory.create(bossType, 9, 0));
-        } else if (level instanceof PlantWhatYouGetLevel) {
-            int primarySun = raw.has("primarySun") ? raw.get("primarySun").getAsInt() : 0;
-            ((PlantWhatYouGetLevel) level).setPrimarySun(primarySun);
         }
-        // NightOps, Introduction, Normal have no extra fields.
 
         return level;
     }

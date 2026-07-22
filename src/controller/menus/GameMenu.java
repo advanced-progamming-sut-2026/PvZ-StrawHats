@@ -9,7 +9,6 @@ import model.match.main.season.SeasonFactory;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
-import model.utils.GameSession;
 import view.GeneralPrinter;
 
 import java.util.Comparator;
@@ -91,8 +90,7 @@ public class GameMenu extends Menu {
 
         List<Level> allLevels;
         try {
-            GameSession.getInstance().setDifficultyLevel(User.currentUser.userState.difficultyLevel);
-            allLevels = LevelLoader.loadLevels("/Levels.json");
+            allLevels = LevelLoader.loadLevels("resource/Levels.json");
         } catch (Exception e) {
             GeneralPrinter.print("Error: could not load levels.");
             return;

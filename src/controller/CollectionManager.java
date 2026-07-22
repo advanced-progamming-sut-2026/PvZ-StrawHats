@@ -42,7 +42,7 @@ public class CollectionManager {
         Set<String> seen = new HashSet<>();
         List<Level> levels;
         try {
-            levels = LevelLoader.loadLevels("src/resource/Levels.json");
+            levels = LevelLoader.loadLevels("resource/Levels.json");
         } catch (Exception e) {
             return seen;
         }
@@ -78,10 +78,19 @@ public class CollectionManager {
     }
 
     public String formatZombie(Zombie zombie) {
+        String attackType = zombie.getAttackBehavior() != null
+                ? zombie.getAttackBehavior().getClass().getSimpleName() : "None";
+        String defenseType = zombie.getDefenseBehavior() != null
+                ? zombie.getDefenseBehavior().getClass().getSimpleName() : "None";
+        double speed = zombie.getSpeed() != null ? Math.abs(zombie.getSpeed().x()) : 0;
+
         return "Name: " + zombie.getName() +
-                " | Type: " + zombie.getRace() +
-                " | Family: " + zombie.getRace() +
-                " | HP: " + zombie.getMaxHp();
+                " | Race: " + zombie.getRace() +
+                " | Attack: " + attackType +
+                " | Defense: " + defenseType +
+                " | HP: " + zombie.getMaxHp() +
+                " | Speed: " + String.format("%.2f", speed) +
+                " | Eat DPS: " + zombie.getEatDps();
     }
 
     public boolean purchasePlant(UserState state, PlantJsonParser.PlantConfig config) {

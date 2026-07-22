@@ -19,17 +19,12 @@ public class LeaderboardMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
-
-
-
-
-
+    public void handleCommand(String text) {
         if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        }  else {
+        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(showMenu());
+        } else {
             GeneralPrinter.print("Not Valid");
         }
     }
@@ -43,7 +38,7 @@ public class LeaderboardMenu extends Menu {
     public String showMenu() {
         List<Level> allLevels;
         try {
-            allLevels = LevelLoader.loadLevels("src/resource/Levels.json");
+            allLevels = LevelLoader.loadLevels("resource/Levels.json");
         } catch (Exception e) {
             return "Error: could not load levels.";
         }

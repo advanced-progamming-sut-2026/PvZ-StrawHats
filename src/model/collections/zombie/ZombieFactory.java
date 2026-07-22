@@ -35,8 +35,7 @@ public class ZombieFactory {
 
     @SuppressWarnings("unchecked")
     private static void loadZombies() {
-        try (var is = openResource("src/resource/Zombie.json")) {
-            if (is == null) return;
+        try (var is = new java.io.FileInputStream("resource/Zombie.json")) {
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
             if (entries == null) return;
@@ -49,13 +48,14 @@ public class ZombieFactory {
                     blueprints.put(alias, objdata);
                 }
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            System.out.println("Could not load Zombie.json: " + e.getMessage());
+        }
     }
 
     @SuppressWarnings("unchecked")
     private static void loadArmorData() {
-        try (var is = openResource("src/resource/ArmorTypeData.json")) {
-            if (is == null) return;
+        try (var is = new java.io.FileInputStream("resource/ArmorTypeData.json")) {
             Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
             List<Map<String, Object>> entries = new Gson().fromJson(new java.io.InputStreamReader(is), listType);
             if (entries == null) return;
@@ -69,7 +69,9 @@ public class ZombieFactory {
                     armorBaseHp.put(alias, baseHp);
                 }
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            System.out.println("Could not load ArmorTypeData.json: " + e.getMessage());
+        }
     }
 
     private static java.io.InputStream openResource(String resourcePath) throws IOException {
