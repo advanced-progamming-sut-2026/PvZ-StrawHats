@@ -27,9 +27,6 @@ public class CollectionMenu extends Menu {
         if (isGeneralCmd) return;
 
 
-
-
-
         UserState state = User.currentUser.userState;
 
         if (Regex.MENU_COLLECTION_SHOW_ALL_PLANTS.getMatcherRaw(text).matches()) {

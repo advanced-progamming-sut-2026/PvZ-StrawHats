@@ -80,28 +80,28 @@ public enum Regex {
 
     // collection
     MENU_COLLECTION_SHOW_PLANTS(
-            "^\\s*menu\\s+collection\\s+showplants\\s*$"
+            "^\\s*menu\\s+collection\\s+show-plants\\s*$"
     ),
     MENU_COLLECTION_SHOW_ALL_PLANTS(
-            "^\\s*menu\\s+collection\\s+show-allplants\\s*$"
+            "^\\s*menu\\s+collection\\s+show-all-plants\\s*$"
     ),
     MENU_COLLECTION_SHOW_ZOMBIES(
-            "^\\s*menu\\s+collection\\s+showzombies\\s*$"
+            "^\\s*menu\\s+collection\\s+show-zombies\\s*$"
     ),
     MENU_COLLECTION_SHOW_ALL_ZOMBIES(
             "^\\s*menu\\s+collection\\s+show-all-zombies\\s*$"
     ),
     MENU_COLLECTION_SHOW_PLANT(
-            "^\\s*menu\\s+collection\\s+showplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
+            "^\\s*menu\\s+collection\\s+show-plant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
     MENU_COLLECTION_SHOW_ZOMBIE(
             "^\\s*menu\\s+collection\\s+show-zombie\\s+-z\\s+(?<zombiename>.+?)\\s*$"
     ),
     MENU_COLLECTION_UPGRADE_PLANT(
-            "^\\s*menu\\s+collection\\s+upgradeplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
+            "^\\s*menu\\s+collection\\s+upgrade-plant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
     MENU_COLLECTION_PURCHASE_PLANT(
-            "^\\s*menu\\s+collection\\s+purchaseplant\\s+-p\\s+(?<plantname>.+?)\\s*$"
+            "^\\s*menu\\s+collection\\s+purchase-plant\\s+-p\\s+(?<plantname>.+?)\\s*$"
     ),
 
     // green house
@@ -163,7 +163,7 @@ public enum Regex {
             "^\\s*enter\\s+shop\\s*$"
     ),
     SHOPPING_LIST(
-            "^\\s*shopping\\s+list\\s*$"
+            "^\\s*shop\\s+list\\s*$"
     ),
     SHOP_DAILY(
             "^\\s*shop\\s+daily\\s*$"
@@ -191,7 +191,7 @@ public enum Regex {
             "^\\s*show\\s+sun\\s+amount\\s*$"
     ),
     SHOW_PLANT_STATUS(
-            "^\\s*show\\s+plant\\s+status\\s*$"
+            "^\\s*show\\s+plants\\s+status\\s*$"
     ),
     SHOW_TILE_STATUS(
             "^\\s*show\\s+tile\\s+status\\s+-l\\s*\\(\\s*(?<x>\\d+)\\s*,\\s*(?<y>\\d+)\\s*\\)\\s*$"
