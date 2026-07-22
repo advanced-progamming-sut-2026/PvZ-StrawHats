@@ -30,7 +30,7 @@ public enum Regex {
             "^\\s*menu\\s+enter\\s+chapter\\s+-c\\s+(?<chaptername>\\S+)\\s*$"
     ),
     MENU_GREENHOUSE(
-            "^\\s*menu\\s+greenhouse\\s*$"
+            "^\\s*menu\\s+enter\\s+greenhouse\\s*$"
     ),
     MENU_TRAVEL_LOG(
             "^\\s*menu\\s+travel-log\\s*$"
@@ -160,7 +160,7 @@ public enum Regex {
             "^\\s*wait\\s+(?<seconds>\\d+)\\s*$"
     ),
     ENTER_SHOP(
-            "^\\s*enter\\s+shop\\s*$"
+            "^\\s*menu\\s+enter\\s+shop\\s*$"
     ),
     SHOPPING_LIST(
             "^\\s*shop\\s+list\\s*$"

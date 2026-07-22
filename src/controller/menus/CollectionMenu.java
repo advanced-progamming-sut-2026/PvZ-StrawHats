@@ -121,8 +121,19 @@ public class CollectionMenu extends Menu {
             throw new GameException("no such plant.");
         } else if (!state.isPlantUnlocked(config.id)) {
             throw new GameException("plant is locked.");
+        }
+
+        int currentLevel = state.getPlantLevel(config.id);
+        int coinCost = currentLevel * 500;
+        int packetsNeeded = currentLevel;
+        int packetsOwned = state.seedPacketInventory.getOrDefault(config.id, 0);
+
+        if (state.coins < coinCost) {
+            throw new GameException("not enough coins (" + state.coins + "/" + coinCost + ").");
+        } else if (packetsOwned < packetsNeeded) {
+            throw new GameException("not enough " + config.name + " seed packets (" + packetsOwned + "/" + packetsNeeded + "). Buy some from the store.");
         } else if (!manager.upgradePlant(state, config)) {
-            throw new GameException("not enough coins or seed packets.");
+            throw new GameException("upgrade failed.");
         } else {
             GeneralPrinter.print("Plant upgraded: " + config.name + " -> level " + state.getPlantLevel(config.id));
         }
@@ -133,5 +144,5 @@ public class CollectionMenu extends Menu {
         App.currentMenu = new GameMenu();
     }
 
-    
+
 }
