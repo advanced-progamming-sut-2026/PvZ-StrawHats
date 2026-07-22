@@ -1,6 +1,7 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import model.Regex;
 import model.match.mini_games.Beghouled;
 import view.GeneralPrinter;
 
@@ -21,13 +22,11 @@ public class BeghouledController extends Menu {
         super.handleCommand(text);
         if (isGeneralCmd) return;
 
-        String trimmed = text.trim();
-
-        if (trimmed.matches("swap -l \\(\\d+,\\s*\\d+\\) -l \\(\\d+,\\s*\\d+\\)")) {
-            handleSwap(trimmed);
-        } else if (trimmed.matches("upgrade -t \\S+")) {
-            handleUpgrade(trimmed);
-        } else if (trimmed.equals("advance time -t 1 ticks")) {
+        if (Regex.BEGHOULED_SWAP.getMatcherRaw(text).matches()) {
+            handleSwap(text);
+        } else if (Regex.BEGHOULED_UPGRADE.getMatcherRaw(text).matches()) {
+            handleUpgrade(text);
+        } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             game.tick(0.1);
         } else {
             GeneralPrinter.print("Unknown command in Beghouled.");

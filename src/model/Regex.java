@@ -227,6 +227,29 @@ public enum Regex {
             "^\\s*release\\s+the\\s+nuke\\s*$"
     ),
 
+    // mini-games
+    MINIGAME_ADVANCE_TIME(
+            "^\\s*advance\\s+time\\s+-t\\s+1\\s+ticks\\s*$"
+    ),
+    BEGHOULED_SWAP(
+            "^\\s*swap\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s*$"
+    ),
+    BEGHOULED_UPGRADE(
+            "^\\s*upgrade\\s+-t\\s+\\S+\\s*$"
+    ),
+    IZOMBIE_PLACE_ZOMBIE(
+            "^\\s*place\\s+zombie\\s+-t\\s+\\S+\\s+-r\\s+\\d+\\s*$"
+    ),
+    VASEBREAKER_BREAK_VASE(
+            "^\\s*break\\s+vase\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s*$"
+    ),
+    VASEBREAKER_COLLECT_SEED(
+            "^\\s*collect\\s+seed\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s*$"
+    ),
+    WALLNUT_PLANT_NUT(
+            "^\\s*plant\\s+nut\\s+-l\\s*\\(\\d+,\\s*\\d+\\)\\s*$"
+    ),
+
     MENU_EXIT(
             "^\\s*menu\\s+exit\\s*$"
     );

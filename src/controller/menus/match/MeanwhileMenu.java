@@ -28,15 +28,15 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
-        String trimmed = text.trim().toLowerCase();
-        if (trimmed.equals("pause")) {
+        String text = text.trim().toLowerCase();
+        if (text.equals("pause")) {
             System.out.println(showMenu());
-        } else if (trimmed.equals("resume")) {
+        } else if (text.equals("resume")) {
             System.out.println("Resuming match...");
-        } else if (trimmed.equals("restart")) {
+        } else if (text.equals("restart")) {
             restartMatch();
-        } else if (trimmed.startsWith("end game")) {
-            finishMatch(trimmed.replace("end game", "").replace("-r", "").trim());
+        } else if (text.startsWith("end game")) {
+            finishMatch(text.replace("end game", "").replace("-r", "").trim());
         } else if (Regex.PLANT_AT.getMatcherRaw(text).matches()) {
             Matcher m = Regex.PLANT_AT.getMatcherRaw(text);
             m.matches();

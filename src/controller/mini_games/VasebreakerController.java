@@ -1,6 +1,7 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import model.Regex;
 import model.match.mini_games.vasebreaker.Vasebreaker;
 import view.GeneralPrinter;
 
@@ -22,16 +23,11 @@ public class VasebreakerController extends Menu {
         if (isGeneralCmd) return;
 
 
-
-
-
-        String trimmed = text.trim();
-
-        if (trimmed.matches("break vase -l \\(\\d+,\\s*\\d+\\)")) {
-            handleBreak(trimmed);
-        } else if (trimmed.matches("collect seed -l \\(\\d+,\\s*\\d+\\)")) {
-            handleCollect(trimmed);
-        } else if (trimmed.equals("advance time -t 1 ticks")) {
+        if (Regex.VASEBREAKER_BREAK_VASE.getMatcherRaw(text).matches()) {
+            handleBreak(text);
+        } else if (Regex.VASEBREAKER_COLLECT_SEED.getMatcherRaw(text).matches()) {
+            handleCollect(text);
+        } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             game.tick(0.1);
         } else {
             GeneralPrinter.print("Unknown command in Vasebreaker.");
