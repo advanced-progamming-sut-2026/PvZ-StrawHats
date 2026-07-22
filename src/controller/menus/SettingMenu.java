@@ -20,6 +20,7 @@ public class SettingMenu extends Menu {
 
     @Override
     public void handleCommand(String text){
+        this.isGeneralCmd = false;
         super.handleCommand(text);
         if (isGeneralCmd) return;
 
