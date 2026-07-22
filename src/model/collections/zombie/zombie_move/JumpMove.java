@@ -85,8 +85,5 @@ public class JumpMove implements MoveBehavior {
             zombie.setPosition(nextPos);
         }
 
-        if (zombie.getPosition().x() < 0) {
-            session.onZombieReachedEnd();
-        }
     }
 }

@@ -108,10 +108,16 @@ public class QuestLoader {
                     if (params == null) continue;
 
                     if (params.containsKey("variableOptions")) {
-                        List<Double> options = (List<Double>) params.get("variableOptions");
-                        if (options != null && !options.isEmpty()) {
-                            int selectedTarget = options.get(random.nextInt(options.size())).intValue();
-                            criterion.setTarget(selectedTarget);
+                        Object rawOptions = params.get("variableOptions");
+                        if (rawOptions instanceof List<?> options && !options.isEmpty()) {
+                            Object selectedOption = options.get(random.nextInt(options.size()));
+                            Object variableParam = params.get("variableParam");
+
+                            if (variableParam instanceof String paramName) {
+                                params.put(paramName, selectedOption);
+                            } else if (selectedOption instanceof Number number) {
+                                criterion.setTarget(number.intValue());
+                            }
                         }
                     }
 

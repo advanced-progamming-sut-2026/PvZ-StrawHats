@@ -2,6 +2,8 @@ package model.match.main.levels.special_levels;
 
 import model.match.main.levels.Level;
 import model.match_mechanisms.vector.Position;
+import model.collections.plant.Plant;
+import model.collections.plant.PlantFactory;
 import model.pitches.Cell;
 import model.utils.GameSession;
 
@@ -12,6 +14,30 @@ import java.util.Set;
 public class SaveOurSeedsLevel extends Level {
     private Map<Position, String> seedPositions; // (row, col) → plant type
     private final Set<Position> confirmedPlanted = new HashSet<>();
+
+    @Override
+    public void initSpecial(GameSession session) {
+        confirmedPlanted.clear();
+        if (session == null || seedPositions == null) return;
+
+        for (Map.Entry<Position, String> entry : seedPositions.entrySet()) {
+            Position position = entry.getKey();
+            Integer plantId = PlantFactory.getBlueprints().values().stream()
+                    .filter(config -> config.name.equalsIgnoreCase(entry.getValue()))
+                    .map(config -> config.id)
+                    .findFirst()
+                    .orElse(null);
+            if (plantId == null) {
+                throw new IllegalStateException("Unknown guarded plant: " + entry.getValue());
+            }
+
+            Plant plant = PlantFactory.createPlant(plantId, 1, position);
+            if (!session.plantAt((int) position.y(), (int) position.x(), plant)) {
+                throw new IllegalStateException("Could not place guarded plant at " + position);
+            }
+            confirmedPlanted.add(position);
+        }
+    }
 
     /**
      * Instant loss the moment a zombie manages to eat one of the guarded plants.

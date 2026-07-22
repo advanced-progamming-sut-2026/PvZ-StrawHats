@@ -57,9 +57,6 @@ public class ProspectorMove implements MoveBehavior {
                     }
                 }
 
-                if (nextPos.x() < 0) {
-                    session.onZombieReachedEnd();
-                }
             }
 
             case AIRBORNE_LAUNCH -> {

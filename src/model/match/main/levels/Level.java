@@ -73,11 +73,19 @@ public abstract class Level {
         return false;
     }
 
+    /** Default victory: every configured wave spawned and no live zombies remain. */
+    public boolean checkWinCondition(GameSession session) {
+        return session != null
+                && session.isWavesStarted()
+                && session.allWavesSpawned()
+                && session.getZombies().isEmpty();
+    }
+
     /**
      * Whether sun should keep falling from the sky on this level.
      * Night Ops and Plant What You Get turn this off.
      */
     public boolean isSkySunEnabled() {
-        return true;
+        return season == null || !season.isNight();
     }
 }

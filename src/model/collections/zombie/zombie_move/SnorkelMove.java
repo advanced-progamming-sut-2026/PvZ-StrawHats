@@ -18,7 +18,9 @@ public class SnorkelMove implements MoveBehavior {
         zombie.setPosition(new Position(nextX, pos.y()));
 
         var level = session.getLevel();
-        boolean inWaterSection = (level != null) && nextX >= level.getCurrentTideColumn();
+        boolean inWaterSection = level != null
+                && level.getCurrentTideColumn() > 0
+                && nextX >= session.getEnvironment().getCols() - level.getCurrentTideColumn();
         boolean isEating = zombie.getZombieState() == ZombieState.EATING;
 
         if (inWaterSection && !isEating) {
@@ -27,8 +29,5 @@ public class SnorkelMove implements MoveBehavior {
             zombie.setVulnerabilityState(VulnerabilityType.FULLY_VULNERABLE);
         }
 
-        if (zombie.getPosition().x() < 0) {
-            session.onZombieReachedEnd();
-        }
     }
 }

@@ -9,11 +9,15 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.collections.item.GroundItem;
+import model.collections.zombie.Zombie;
+import model.collections.zombie.ZombieFactory;
 import model.game_exceptions.GameException;
+import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.match_mechanisms.vector.Position;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import model.utils.LevelLoader;
 import view.GeneralPrinter;
 
 import java.util.List;
@@ -36,14 +40,20 @@ public class MeanwhileMenu extends Menu {
             GeneralPrinter.print("Resuming match...");
         } else if (text.equals("restart")) {
             restartMatch();
-        } else if (text.startsWith("end game")) {
-            finishMatch(text.replace("end game", "").replace("-r", "").trim());
-        } else if (Regex.PLANT_AT.getMatcherRaw(text).matches()) {
-            Matcher m = Regex.PLANT_AT.getMatcherRaw(text);
+        } else if (text.toLowerCase().startsWith("end game")) {
+            requestEndGame(text);
+        } else if (Regex.PLANT_AT.getMatcherRaw(text).matches()
+                || Regex.PLANT_ON_FIELD.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.PLANT_AT.getMatcherRaw(text).matches()
+                    ? Regex.PLANT_AT.getMatcherRaw(text)
+                    : Regex.PLANT_ON_FIELD.getMatcherRaw(text);
             m.matches();
             plantAt(m.group("type"), Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
-        } else if (Regex.REMOVE_PLANT_AT.getMatcherRaw(text).matches()) {
-            Matcher m = Regex.REMOVE_PLANT_AT.getMatcherRaw(text);
+        } else if (Regex.REMOVE_PLANT_AT.getMatcherRaw(text).matches()
+                || Regex.PLUCK_PLANT_FIELD.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.REMOVE_PLANT_AT.getMatcherRaw(text).matches()
+                    ? Regex.REMOVE_PLANT_AT.getMatcherRaw(text)
+                    : Regex.PLUCK_PLANT_FIELD.getMatcherRaw(text);
             m.matches();
             removePlantAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
         } else if (Regex.DIG_PLANT_AT.getMatcherRaw(text).matches()) {
@@ -64,6 +74,8 @@ public class MeanwhileMenu extends Menu {
             useFoodAt(Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
         } else if (Regex.SHOW_SUN_AMOUNT.getMatcherRaw(text).matches()) {
             GeneralPrinter.print("Sun: " + GameSession.getInstance().getSunCount());
+        } else if (Regex.SHOW_PLANT_FOOD_AMOUNT.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print("Plant food: " + GameSession.getInstance().getPlantFoodCount());
         } else if (Regex.COLLECT_SUN.getMatcherRaw(text).matches()) {
             Matcher m = Regex.COLLECT_SUN.getMatcherRaw(text);
             m.matches();
@@ -78,11 +90,29 @@ public class MeanwhileMenu extends Menu {
             GeneralPrinter.print(added
                     ? "Cheated in 1 plant food. Plant food: " + GameSession.getInstance().getPlantFoodCount()
                     : "Plant food storage is already full (3).");
-        } else if (Regex.SHOW_GARDEN.getMatcherRaw(text).matches()) {
+        } else if (Regex.CHEAT_REMOVE_COOLDOWN.getMatcherRaw(text).matches()) {
+            GameSession.getInstance().removeAllCooldowns();
+            GeneralPrinter.print("All plant cooldowns were removed.");
+        } else if (Regex.CHEAT_SPAWN_ZOMBIE.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.CHEAT_SPAWN_ZOMBIE.getMatcherRaw(text);
+            m.matches();
+            spawnZombie(m.group("type"), Integer.parseInt(m.group("x")), Integer.parseInt(m.group("y")));
+        } else if (Regex.RELEASE_THE_NUKE.getMatcherRaw(text).matches()) {
+            GameSession.getInstance().killAllZombies();
+            GeneralPrinter.print("All zombies were removed.");
+        } else if (Regex.SHOW_GARDEN.getMatcherRaw(text).matches()
+                || Regex.SHOW_MAP.getMatcherRaw(text).matches()) {
             GeneralPrinter.print(GameSession.getInstance().renderMap());
             GeneralPrinter.print(GameSession.getInstance().renderPlantsStatus());
-        } else if (Regex.SHOW_TILE.getMatcherRaw(text).matches()) {
-            Matcher m = Regex.SHOW_TILE.getMatcherRaw(text);
+        } else if (Regex.SHOW_PLANT_STATUS.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(GameSession.getInstance().renderPlantsStatus());
+        } else if (Regex.ZOMBIES_INFO.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(GameSession.getInstance().renderZombiesInfo());
+        } else if (Regex.SHOW_TILE.getMatcherRaw(text).matches()
+                || Regex.SHOW_TILE_STATUS.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.SHOW_TILE.getMatcherRaw(text).matches()
+                    ? Regex.SHOW_TILE.getMatcherRaw(text)
+                    : Regex.SHOW_TILE_STATUS.getMatcherRaw(text);
             m.matches();
             int x = Integer.parseInt(m.group("x"));
             int y = Integer.parseInt(m.group("y"));
@@ -91,6 +121,10 @@ public class MeanwhileMenu extends Menu {
             Matcher m = Regex.WAIT_SECONDS.getMatcherRaw(text);
             m.matches();
             waitSeconds(Integer.parseInt(m.group("seconds")));
+        } else if (Regex.ADVANCE_TIME.getMatcherRaw(text).matches()) {
+            Matcher m = Regex.ADVANCE_TIME.getMatcherRaw(text);
+            m.matches();
+            advanceTicks(Integer.parseInt(m.group("ticks")));
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
@@ -103,6 +137,20 @@ public class MeanwhileMenu extends Menu {
     private void plantAt(String plantName, int x, int y) {
         GameSession session = GameSession.getInstance();
         UserState state = User.currentUser.userState;
+
+        if (session.getLevel() instanceof ConveyorBeltLevel conveyor) {
+            Plant offered = conveyor.getCurrentPlant();
+            if (offered == null) throw new GameException("the conveyor is empty; advance time for the next plant.");
+            if (!offered.getName().equalsIgnoreCase(plantName)) {
+                throw new GameException("the conveyor currently offers " + offered.getName() + ".");
+            }
+            if (!session.plantAt(y - 1, x - 1, offered)) {
+                throw new GameException("that tile is occupied, blocked, or out of bounds.");
+            }
+            conveyor.takeCurrentPlant();
+            GeneralPrinter.print(offered.getName() + " planted from the conveyor at (" + x + "," + y + ").");
+            return;
+        }
 
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
@@ -117,15 +165,25 @@ public class MeanwhileMenu extends Menu {
         int level = state.getPlantLevel(config.id);
         Plant plant = PlantFactory.createPlant(config.id, level, new Position(col, row));
 
-        boolean boosted = state.consumeBoost(config.id);
+        if (!session.isPlantReady(config.id)) {
+            throw new GameException(config.name + " is recharging for "
+                    + String.format("%.1f", session.getPlantCooldown(config.id)) + " more seconds.");
+        }
+        if (session.getSunCount() < plant.getCost()) {
+            throw new GameException("not enough sun; " + config.name + " costs " + plant.getCost() + ".");
+        }
 
         if (!session.plantAt(row, col, plant)) {
-            throw new GameException("that tile is occupied or out of bounds.");
+            throw new GameException("that tile is occupied, blocked, or out of bounds.");
         } else {
+            session.spendSun(plant.getCost());
+            session.startPlantCooldown(config.id, plant.getRecharge());
+            boolean boosted = state.consumeBoost(config.id);
             if (boosted) {
                 plant.activatePlant(session);
             }
-            GeneralPrinter.print(config.name + " planted at (" + x + "," + y + ").");
+            GeneralPrinter.print(config.name + " planted at (" + x + "," + y + "). Sun: "
+                    + session.getSunCount() + ".");
         }
     }
 
@@ -176,9 +234,14 @@ public class MeanwhileMenu extends Menu {
     }
 
     private void waitSeconds(int seconds) {
-        GameSession session = GameSession.getInstance();
         int ticks = Math.min(seconds, 60) * 10;
-        for (int i = 0; i < ticks; i++) {
+        advanceTicks(ticks);
+    }
+
+    private void advanceTicks(int ticks) {
+        GameSession session = GameSession.getInstance();
+        int safeTicks = Math.min(Math.max(ticks, 0), 6000);
+        for (int i = 0; i < safeTicks; i++) {
             session.tick();
             if (session.isGameOver() || session.isGameWon()) break;
         }
@@ -187,7 +250,23 @@ public class MeanwhileMenu extends Menu {
         } else if (session.isGameWon()) {
             finishMatch("win");
         } else {
-            GeneralPrinter.print("Time passes... (" + seconds + "s)");
+            GeneralPrinter.print("Time passes... (" + safeTicks + " ticks)");
+        }
+    }
+
+    private void spawnZombie(String alias, int x, int y) {
+        GameSession session = GameSession.getInstance();
+        int row = y - 1;
+        int col = x - 1;
+        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) {
+            throw new GameException("zombie position is out of bounds.");
+        }
+        try {
+            Zombie zombie = ZombieFactory.create(alias, row, col);
+            session.spawnZombie(zombie);
+            GeneralPrinter.print(zombie.getName() + " spawned at (" + x + "," + y + ").");
+        } catch (IllegalArgumentException e) {
+            throw new GameException("no such zombie.");
         }
     }
 
@@ -197,10 +276,27 @@ public class MeanwhileMenu extends Menu {
             throw new GameException("no active match.");
 
         }
-        GameSession fresh = new GameSession(session.getRows(), session.getCols());
-        fresh.setLevel(session.getLevel());
-        fresh.startWaves();
-        GeneralPrinter.print("Match restarted.");
+        try {
+            var freshLevel = LevelLoader.loadLevelById(session.getLevel().getId());
+            MatchMenu.selectedLevel = freshLevel;
+            GameSession fresh = new GameSession(freshLevel.getRows(), freshLevel.getCols());
+            fresh.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
+            fresh.setLevel(freshLevel);
+            fresh.startWaves();
+            GeneralPrinter.print("Match restarted.");
+        } catch (Exception e) {
+            throw new GameException("could not restart the level.");
+        }
+    }
+
+    private void requestEndGame(String text) {
+        GameSession session = GameSession.getInstance();
+        String result = text.replaceFirst("(?i)^\\s*end\\s+game", "")
+                .replaceFirst("(?i)^\\s*-r\\s*", "").trim();
+        if (result.equalsIgnoreCase("win") && !session.isGameWon()) {
+            throw new GameException("the match has not been won yet.");
+        }
+        finishMatch(result.equalsIgnoreCase("win") ? "win" : "lose");
     }
 
     private void finishMatch(String result) {
@@ -216,8 +312,14 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return "Paused - Options: plant -t <name> at (x,y) | remove plant at (x,y) | dig plant at (x,y) | collect (x,y) | "
-                + "use food at (x,y) / feed plant -l (x,y) | show sun amount | cheat add -n <count> suns | "
-                + "cheat add-plant-food | show garden | show tile (x,y) | wait <seconds> | resume | restart | menu exit";
+        String conveyorOffer = "";
+        if (GameSession.getInstance().getLevel() instanceof ConveyorBeltLevel conveyor) {
+            conveyorOffer = " | conveyor: "
+                    + (conveyor.getCurrentPlant() == null ? "waiting" : conveyor.getCurrentPlant().getName());
+        }
+        return "Paused" + conveyorOffer + " - Options: plant -t <name> at (x,y) | remove/dig plant at (x,y) | "
+                + "collect (x,y) | use food at (x,y) | show sun amount | show plant-food amount | show garden | "
+                + "show tile (x,y) | zombies info | wait <seconds> | advance time -t <ticks> ticks | "
+                + "resume | restart | end game | menu exit";
     }
 }

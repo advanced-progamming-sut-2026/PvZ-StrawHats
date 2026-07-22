@@ -7,6 +7,8 @@ import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match.main.levels.Level;
+import model.match.main.season.travellog.egypt.Egypt;
+import model.match.main.season.travellog.egypt.SandStorm;
 import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
@@ -68,6 +70,7 @@ public class GameSession {
     private boolean gameWon = false;
     private int difficultyLevel;
     private int plantsLostThisMatch = 0;
+    private final Map<Integer, Double> plantCooldowns = new HashMap<>();
 
     private double skySunTimer = 0;
 
@@ -87,6 +90,11 @@ public class GameSession {
         return instance;
     }
 
+    /** Returns the active session without creating one as a side effect. */
+    public static GameSession peekInstance() {
+        return instance;
+    }
+
     public void setGridSize(int rows, int cols) {
         this.environment = new Environment(rows, cols);
         this.lawnMowers = new LawnMower[rows];
@@ -97,8 +105,13 @@ public class GameSession {
     }
 
     public void tick() {
+        if (gameOver || gameWon) return;
+
         clock.tick();
         double deltaTimeSeconds = GameClock.SECONDS_PER_TICK;
+
+        plantCooldowns.replaceAll((plantId, remaining) -> Math.max(0, remaining - deltaTimeSeconds));
+        plantCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
 
         if (level != null) {
             level.updateTide(deltaTimeSeconds, this);
@@ -125,13 +138,16 @@ public class GameSession {
 
         if (wavesStarted) tickWaveScheduler(deltaTimeSeconds);
 
-        if (wavesStarted) {
+        if (wavesStarted && (level == null || level.isSkySunEnabled())) {
             skySunTimer += deltaTimeSeconds;
             if (skySunTimer >= getEffectiveSkySunInterval()) {
                 skySunTimer = 0;
                 int col = ITEM_RANDOM.nextInt(environment.getCols());
                 int row = ITEM_RANDOM.nextInt(environment.getRows());
-                items.add(GroundSun.fallFromSky(new Position(col, row)));
+                GroundSun sun = GroundSun.fallFromSky(new Position(col, row));
+                items.add(sun);
+                GeneralPrinter.print("A " + sun.getDropType().name().toLowerCase()
+                        + " sun fell from the sky at (" + (col + 1) + ", " + (row + 1) + ").");
             }
         }
 
@@ -163,7 +179,10 @@ public class GameSession {
             gameOver = true;
         }
 
-        if (wavesStarted && allWavesSpawned() && zombies.isEmpty() && !gameOver) {
+        boolean levelWon = level != null
+                ? level.checkWinCondition(this)
+                : wavesStarted && allWavesSpawned() && zombies.isEmpty();
+        if (levelWon && !gameOver) {
             if (!gameWon) {
                 gameWon = true;
                 QuestManager.notifyLevelWon(this);
@@ -261,12 +280,21 @@ public class GameSession {
         }
         previousWaveMultiplier = multiplier;
 
+        if (level != null && level.getSeason() != null) {
+            level.getSeason().onWaveStart(this, nextWaveIndex);
+        }
+
         currentWaveZombies = new ArrayList<>();
         int totalHp = 0;
 
-        for (Zombie zombie : wave.getWaveZombies()) {
+        for (Zombie template : wave.getWaveZombies()) {
             int lane = ITEM_RANDOM.nextInt(getRows());
-            zombie.setPosition(new Position(getCols(), lane));
+            Zombie zombie = ZombieFactory.create(template.getAlias(), lane, getCols());
+            int spawnColumn = getCols();
+            if (wave.isFinalWave() && level != null && level.getSeason() instanceof Egypt) {
+                spawnColumn = Math.max(0, getCols() - SandStorm.sandstorm());
+            }
+            zombie.setPosition(new Position(spawnColumn, lane));
 
             Position speed = zombie.getSpeed();
             if (speed != null) {
@@ -421,6 +449,7 @@ public class GameSession {
         ZombieFactory.init();
         nextWaveIndex = 0;
         waveTimer = 0;
+        skySunTimer = 0;
         wavesStarted = true;
     }
 
@@ -478,11 +507,24 @@ public class GameSession {
 
     public void removeAllCooldowns() {
         plants.forEach(p -> p.setInternalTimer(0));
+        plantCooldowns.clear();
+    }
+
+    public boolean isPlantReady(int plantId) {
+        return plantCooldowns.getOrDefault(plantId, 0.0) <= 0;
+    }
+
+    public double getPlantCooldown(int plantId) {
+        return plantCooldowns.getOrDefault(plantId, 0.0);
+    }
+
+    public void startPlantCooldown(int plantId, double seconds) {
+        if (seconds > 0) plantCooldowns.put(plantId, seconds);
     }
 
     public boolean plantAt(int row, int col, Plant plant) {
         Cell cell = environment.getCell(row, col);
-        if (cell == null || cell.hasPlant() || plant == null) return false;
+        if (cell == null || cell.hasPlant() || cell.getObstacle() != null || plant == null) return false;
 
         cell.setPlant(plant);
         plant.setPosition(new Position(col, row));
@@ -653,7 +695,22 @@ public class GameSession {
     public void setLevel(Level level) {
         this.level = level;
         if (level != null) {
-            addSun(level.getInitialSun());
+            setGridSize(level.getRows(), level.getCols());
+            plants.clear();
+            zombies.clear();
+            items.clear();
+            groundItems.clear();
+            projectiles.clear();
+            zombieProjectiles.clear();
+            plantCooldowns.clear();
+            clock.reset();
+            gameOver = false;
+            gameWon = false;
+            wavesStarted = false;
+            plantsLostThisMatch = 0;
+            plantFoodCount = 0;
+            sunCount = level.getInitialSun();
+            setWaves(level.getWaves());
             level.initSpecial(this);
             if (level.getSeason() != null) {
                 level.getSeason().placeSeasonObstacles(this);

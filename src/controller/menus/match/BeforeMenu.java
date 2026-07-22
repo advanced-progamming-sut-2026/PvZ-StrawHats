@@ -8,6 +8,8 @@ import model.Regex;
 import model.collections.plant.PlantJsonParser;
 import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
+import model.match.main.levels.special_levels.ConveyorBeltLevel;
+import model.match.main.levels.special_levels.LockedPlantsLevel;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
@@ -76,6 +78,16 @@ public class BeforeMenu extends Menu {
             throw new GameException("no level loaded.");
 
         }
+        if (level instanceof ConveyorBeltLevel conveyor) {
+            if (conveyor.getConveyorPlants() == null || conveyor.getConveyorPlants().isEmpty()) {
+                GeneralPrinter.print("No conveyor plants configured.");
+                return;
+            }
+            conveyor.getConveyorPlants().stream().map(plant -> plant.getName()).distinct()
+                    .forEach(GeneralPrinter::print);
+            return;
+        }
+
         UserState state = User.currentUser.userState;
         for (String name : level.getAvailablePlants()) {
             PlantJsonParser.PlantConfig config = manager.findPlant(name);
@@ -90,6 +102,8 @@ public class BeforeMenu extends Menu {
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
             throw new GameException("plant not available.");
+        } else if (!isAllowedInCurrentLevel(config.name)) {
+            throw new GameException("plant is locked for this stage.");
         } else if (selectedPlants.contains(config.name)) {
             throw new GameException("plant already selected.");
         } else if (selectedPlants.size() >= PLANT_SLOTS) {
@@ -134,17 +148,35 @@ public class BeforeMenu extends Menu {
         }
         if (level.getForcedPlants() != null) {
             for (String forced : level.getForcedPlants()) {
-                if (!selectedPlants.contains(forced)) {
+                if (selectedPlants.stream().noneMatch(name -> name.equalsIgnoreCase(forced))) {
+                    if (selectedPlants.size() >= PLANT_SLOTS) {
+                        throw new GameException("forced plants do not fit in the loadout.");
+                    }
                     selectedPlants.add(forced);
                 }
             }
         }
+        if (!(level instanceof ConveyorBeltLevel) && selectedPlants.isEmpty()) {
+            throw new GameException("select at least one plant before starting.");
+        }
         GameSession session = GameSession.getInstance();
         session.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
-        session.setWaves(level.getWaves());
-        session.addSun(level.getInitialSun());
         session.startWaves();
         App.currentMenu = new MeanwhileMenu();
+    }
+
+    private boolean isAllowedInCurrentLevel(String plantName) {
+        Level level = currentLevel();
+        if (level == null) return false;
+        if (level instanceof LockedPlantsLevel lockedLevel) {
+            return !lockedLevel.isPlantLocked(plantName);
+        }
+        return containsIgnoreCase(level.getAvailablePlants(), plantName)
+                || containsIgnoreCase(level.getForcedPlants(), plantName);
+    }
+
+    private boolean containsIgnoreCase(List<String> values, String target) {
+        return values != null && values.stream().anyMatch(value -> value.equalsIgnoreCase(target));
     }
 
     @Override

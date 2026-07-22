@@ -30,7 +30,8 @@ public class TimedWarLevel extends Level {
         return timeLimit != null && timeLimit.isZero() && zombiesKilledSoFar < zombiesToKill;
     }
 
-    public boolean isWon() {
+    @Override
+    public boolean checkWinCondition(GameSession session) {
         return zombiesKilledSoFar >= zombiesToKill;
     }
 

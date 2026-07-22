@@ -181,7 +181,7 @@
     "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Lily Pad"],
     "forcedPlants": [],
     "timeLimitSeconds": 90,
-    "zombiesToKill": 12,
+    "zombiesToKill": 6,
     "waves": [
       { "delay": 5, "zombies": ["ZombieBeachSnorkel", "ZombieBeachSnorkel"] },
       { "delay": 20, "zombies": ["ZombieBeachFisherman", "ZombieBeachFisherman"] },

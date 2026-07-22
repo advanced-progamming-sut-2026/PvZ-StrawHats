@@ -25,8 +25,5 @@ public class NormalWalk implements MoveBehavior {
 
         zombie.setPosition(nextPos);
 
-        if (nextPos.x() < 0) {
-            session.onZombieReachedEnd();
-        }
     }
 }

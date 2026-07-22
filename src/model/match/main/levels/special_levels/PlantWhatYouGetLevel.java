@@ -9,7 +9,6 @@ public class PlantWhatYouGetLevel extends Level {
     @Override
     public void initSpecial(GameSession session) {
         handleBanSunflower();
-        session.addSun(primarySun);
     }
 
     @Override

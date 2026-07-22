@@ -27,7 +27,16 @@ public enum Regex {
 
     // main menu
     MENU_ENTER_CHAPTER(
-            "^\\s*menu\\s+enter\\s+chapter\\s+-c\\s+(?<chaptername>\\S+)\\s*$"
+            "^\\s*menu\\s+enter\\s+chapter\\s+-c\\s+(?<chaptername>.+?)\\s*$"
+    ),
+    MENU_SHOW_CHAPTERS(
+            "^\\s*menu\\s+show\\s+chapters\\s*$"
+    ),
+    MENU_SHOW_STAGES(
+            "^\\s*(?:menu\\s+)?show\\s+stages\\s*$"
+    ),
+    MENU_SELECT_STAGE(
+            "^\\s*(?:menu\\s+)?select\\s+stage\\s+-s\\s+(?<stage>\\d+)\\s*$"
     ),
     MENU_GREENHOUSE(
             "^\\s*menu\\s+greenhouse\\s*$"
@@ -195,6 +204,9 @@ public enum Regex {
     ),
     SHOW_SUN_AMOUNT(
             "^\\s*show\\s+sun\\s+amount\\s*$"
+    ),
+    SHOW_PLANT_FOOD_AMOUNT(
+            "^\\s*show\\s+plant(?:-|\\s+)food\\s+amount\\s*$"
     ),
     SHOW_PLANT_STATUS(
             "^\\s*show\\s+plants\\s+status\\s*$"

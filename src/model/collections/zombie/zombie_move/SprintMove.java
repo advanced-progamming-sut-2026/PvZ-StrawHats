@@ -39,9 +39,6 @@ public class SprintMove implements MoveBehavior {
 
         zombie.setPosition(nextPos);
 
-        if (zombie.getPosition().x() < 0) {
-            session.onZombieReachedEnd();
-        }
     }
 
     protected double getActiveSpeedX(Zombie zombie) {

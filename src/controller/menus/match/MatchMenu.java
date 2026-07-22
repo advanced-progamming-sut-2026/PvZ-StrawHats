@@ -5,11 +5,28 @@ import controller.menus.Menu;
 import model.App;
 import model.Regex;
 import model.match.main.levels.Level;
+import model.match.main.levels.special_levels.ConveyorBeltLevel;
+import model.collections.plant.Plant;
+import model.collections.plant.PlantJsonParser;
+import model.user_data.User;
+import model.utils.LevelProgression;
 import model.utils.GameSession;
 import view.GeneralPrinter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MatchMenu extends Menu {
     public static Level selectedLevel;
+    private static List<Level> allLevels = new ArrayList<>();
+    private static List<Level> chapterLevels = new ArrayList<>();
+
+    public static void configureChapter(List<Level> everyLevel, List<Level> unlockedChapterLevels,
+                                        Level recommendedLevel) {
+        allLevels = new ArrayList<>(everyLevel);
+        chapterLevels = new ArrayList<>(unlockedChapterLevels);
+        selectedLevel = recommendedLevel;
+    }
 
     @Override
     public String getName() {
@@ -25,9 +42,20 @@ public class MatchMenu extends Menu {
 
 
 
-        if (Regex.START_GAME.getMatcherRaw(text).matches()) {
+        if (Regex.MENU_SHOW_STAGES.getMatcherRaw(text).matches()) {
+            GeneralPrinter.print(formatStageList());
+        } else if (Regex.MENU_SELECT_STAGE.getMatcherRaw(text).matches()) {
+            var matcher = Regex.MENU_SELECT_STAGE.getMatcherRaw(text);
+            matcher.matches();
+            selectStage(Integer.parseInt(matcher.group("stage")));
+        } else if (Regex.START_GAME.getMatcherRaw(text).matches()) {
+            if (selectedLevel == null) {
+                throw new model.game_exceptions.GameException("select a stage first.");
+            }
             GameSession session = new GameSession(selectedLevel.getRows(), selectedLevel.getCols());
+            session.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
             session.setLevel(selectedLevel);
+            unlockStagePlants(selectedLevel);
             BeforeMenu.selectedPlants.clear();
             App.currentMenu = new BeforeMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
@@ -37,6 +65,48 @@ public class MatchMenu extends Menu {
         }
     }
 
+    private void selectStage(int value) {
+        Level chosen = chapterLevels.stream().filter(level -> level.getId() == value).findFirst().orElse(null);
+        if (chosen == null && value >= 1 && value <= chapterLevels.size()) {
+            chosen = chapterLevels.get(value - 1);
+        }
+        if (chosen == null) {
+            throw new model.game_exceptions.GameException("stage is locked or does not exist.");
+        }
+        selectedLevel = chosen;
+        GeneralPrinter.print("Selected " + chosen.getName() + ".");
+    }
+
+    private void unlockStagePlants(Level level) {
+        List<String> plantNames = new ArrayList<>();
+        if (level.getAvailablePlants() != null) plantNames.addAll(level.getAvailablePlants());
+        if (level.getForcedPlants() != null) plantNames.addAll(level.getForcedPlants());
+        if (level instanceof ConveyorBeltLevel conveyor && conveyor.getConveyorPlants() != null) {
+            for (Plant plant : conveyor.getConveyorPlants()) plantNames.add(plant.getName());
+        }
+
+        for (PlantJsonParser.PlantConfig config : model.collections.plant.PlantFactory.getBlueprints().values()) {
+            if (plantNames.stream().anyMatch(name -> name.equalsIgnoreCase(config.name))) {
+                User.currentUser.userState.unlockPlant(config.id);
+            }
+        }
+    }
+
+    private static String formatStageList() {
+        if (chapterLevels.isEmpty()) return "No unlocked stages in this chapter.";
+        StringBuilder result = new StringBuilder("Unlocked stages:");
+        for (int i = 0; i < chapterLevels.size(); i++) {
+            Level level = chapterLevels.get(i);
+            boolean completed = LevelProgression.isCompleted(allLevels,
+                    User.currentUser.userState.lastLevel, level);
+            result.append("\n  ").append(i + 1).append(") ")
+                    .append(level.getName()).append(" [id ").append(level.getId()).append("] - ")
+                    .append(completed ? "Completed" : "Available");
+            if (selectedLevel != null && selectedLevel.getId() == level.getId()) result.append(" (selected)");
+        }
+        return result.toString();
+    }
+
     @Override
     public void exitMenu() {
         App.currentMenu = new GameMenu();
@@ -44,10 +114,13 @@ public class MatchMenu extends Menu {
 
     @Override
     public String showMenu() {
+        if (selectedLevel == null) return "No stage selected.";
         StringBuilder sb = new StringBuilder();
         sb.append("Chapter: ").append(selectedLevel.getSeason().getName())
                 .append(" | Stage: ").append(selectedLevel.getName()).append("\n");
         sb.append("Commands:\n");
+        sb.append("  show stages\n");
+        sb.append("  select stage -s <stage_number_or_id>\n");
         sb.append("  start game   (choose your plant loadout for this stage)\n");
         sb.append("  menu exit\n");
         sb.append("  menu show current");

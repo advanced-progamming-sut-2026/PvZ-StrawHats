@@ -1,6 +1,7 @@
 package model.match.main.levels.special_levels;
 
 import model.collections.plant.Plant;
+import model.collections.plant.PlantFactory;
 import model.match.main.levels.Level;
 import model.utils.GameSession;
 
@@ -38,7 +39,8 @@ public class ConveyorBeltLevel extends Level {
 
     private void offerNextPlant() {
         if (conveyorPlants == null || conveyorPlants.isEmpty()) return;
-        currentPlant = conveyorPlants.get(RAND.nextInt(conveyorPlants.size()));
+        Plant template = conveyorPlants.get(RAND.nextInt(conveyorPlants.size()));
+        currentPlant = PlantFactory.createPlant(template.getId(), template.getLevel(), template.getPosition());
     }
 
     public Plant getCurrentPlant() {

@@ -18,6 +18,7 @@ import model.match_mechanisms.vector.Position;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,10 +27,18 @@ import java.util.Map;
 public class LevelLoader {
     private static final Gson gson = new Gson();
 
+    public static List<Level> loadLevels() throws java.io.IOException {
+        return loadLevels("Levels.json");
+    }
+
     public static List<Level> loadLevels(String resourcePath) throws java.io.IOException {
-        try (var is = new java.io.FileInputStream(resourcePath)) {
+        try (var is = ResourceResolver.open(resourcePath)) {
+            if (is == null) {
+                throw new java.io.FileNotFoundException("Could not find " + resourcePath);
+            }
             Type listType = new TypeToken<List<JsonObject>>() {}.getType();
-            List<JsonObject> rawLevels = gson.fromJson(new InputStreamReader(is), listType);
+            List<JsonObject> rawLevels = gson.fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), listType);
+            if (rawLevels == null) return new ArrayList<>();
             List<Level> levels = new ArrayList<>();
             for (JsonObject raw : rawLevels) {
                 levels.add(parseLevel(raw));
@@ -65,7 +74,10 @@ public class LevelLoader {
 
         level.setRows(raw.has("rows") ? raw.get("rows").getAsInt() : 5);
         level.setCols(raw.has("cols") ? raw.get("cols").getAsInt() : 9);
-        level.setInitialSun(raw.has("initialSun") ? raw.get("initialSun").getAsInt() : 150);
+        int initialSun = raw.has("initialSun")
+                ? raw.get("initialSun").getAsInt()
+                : raw.has("primarySun") ? raw.get("primarySun").getAsInt() : 150;
+        level.setInitialSun(initialSun);
 
         List<String> availablePlants = new ArrayList<>();
         if (raw.has("availablePlants")) {
@@ -88,13 +100,15 @@ public class LevelLoader {
                 JsonArray zombieTypes = w.get("zombies").getAsJsonArray();
                 List<Zombie> zombies = new ArrayList<>();
                 for (var zt : zombieTypes) {
-                    Zombie z = ZombieFactory.create(zt.getAsString(),9, 0);
-                    z.setPosition(new Position(9, 0));
+                    Zombie z = ZombieFactory.create(zt.getAsString(), 0, level.getCols());
+                    z.setPosition(new Position(level.getCols(), 0));
                     zombies.add(z);
                 }
                 waves.add(new ZombieWave(delay, zombies));
             }
             level.setWaves(waves);
+        } else {
+            level.setWaves(new ArrayList<>());
         }
 
         if (level instanceof ConveyorBeltLevel) {
@@ -156,9 +170,23 @@ public class LevelLoader {
             ((LoveYourPlantsLevel) level).setMaxPlantLoss(maxLoss);
         } else if (level instanceof BossLevel) {
             String bossType = raw.get("bossType").getAsString();
-            ((BossLevel) level).setBossZombie(ZombieFactory.create(bossType, 9, 0));
+            Zombie boss = ZombieFactory.create(bossType, 0, level.getCols());
+            ((BossLevel) level).setBossZombie(boss);
+            level.getWaves().add(new ZombieWave(5, List.of(boss)));
+        }
+
+        for (ZombieWave wave : level.getWaves()) wave.setFinalWave(false);
+        if (!level.getWaves().isEmpty()) {
+            level.getWaves().get(level.getWaves().size() - 1).setFinalWave(true);
         }
 
         return level;
+    }
+
+    public static Level loadLevelById(int levelId) throws java.io.IOException {
+        return loadLevels().stream()
+                .filter(level -> level.getId() == levelId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown level id: " + levelId));
     }
 }

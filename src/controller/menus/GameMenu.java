@@ -10,9 +10,9 @@ import model.match.main.season.SeasonFactory;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
+import model.utils.LevelProgression;
 import view.GeneralPrinter;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -25,15 +25,21 @@ public class GameMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
-        
+        if (Regex.MENU_SHOW_CHAPTERS.getMatcherRaw(text).matches()) {
+            showChapters();
+            return;
+        }
         if (Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text).matches()) {
             Matcher matcher = Regex.MENU_ENTER_CHAPTER.getMatcherRaw(text);
             matcher.matches();
             enterChapter(matcher.group("chaptername"));
+            return;
+        }
 
-        } else if (Regex.MENU_TRAVEL_LOG.getMatcherRaw(text).matches()) {
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+        
+        if (Regex.MENU_TRAVEL_LOG.getMatcherRaw(text).matches()) {
             App.currentMenu = new TravelLogMenu();
 
         } else if (Regex.MENU_COIN_WALLET.getMatcherRaw(text).matches()) {
@@ -80,37 +86,41 @@ public class GameMenu extends Menu {
 
         List<Level> allLevels;
         try {
-            allLevels = LevelLoader.loadLevels("resource/Levels.json");
+            allLevels = LevelProgression.sorted(LevelLoader.loadLevels());
         } catch (Exception e) {
             throw new GameException("could not load levels.");
         }
-        allLevels.sort(Comparator.comparingInt(Level::getId));
-
         UserState state = User.currentUser.userState;
-        int unlockedIndex = 0;
-        for (int i = 0; i < allLevels.size(); i++) {
-            if (allLevels.get(i).getId() == state.lastLevel) {
-                unlockedIndex = i + 1;
-                break;
-            }
-        }
+        List<Level> chapterLevels = allLevels.stream()
+                .filter(level -> level.getSeason().getName().equalsIgnoreCase(season.getName()))
+                .filter(level -> LevelProgression.isUnlocked(allLevels, state.lastLevel, level))
+                .toList();
 
-        Level target = null;
-        for (int i = 0; i < allLevels.size(); i++) {
-            Level lvl = allLevels.get(i);
-            if (!lvl.getSeason().getName().equalsIgnoreCase(season.getName())) continue;
-            if (i > unlockedIndex) break;
-            if (lvl.getId() > state.lastLevel) {
-                target = lvl;
-                break;
-            }
-        }
-
-        if (target == null) {
+        if (chapterLevels.isEmpty()) {
             throw new GameException("chapter is locked.");
-        } else {
-            controller.menus.match.MatchMenu.selectedLevel = target;
-            App.currentMenu = new controller.menus.match.MatchMenu();
+        }
+
+        Level target = chapterLevels.stream()
+                .filter(level -> !LevelProgression.isCompleted(allLevels, state.lastLevel, level))
+                .findFirst()
+                .orElse(chapterLevels.get(chapterLevels.size() - 1));
+
+        controller.menus.match.MatchMenu.configureChapter(allLevels, chapterLevels, target);
+        App.currentMenu = new controller.menus.match.MatchMenu();
+    }
+
+    private void showChapters() {
+        try {
+            List<Level> allLevels = LevelProgression.sorted(LevelLoader.loadLevels());
+            for (String chapter : List.of("Egypt", "Frostbite Caves", "Big Wave Beach", "Dark Ages")) {
+                boolean unlocked = allLevels.stream()
+                        .filter(level -> level.getSeason().getName().equalsIgnoreCase(chapter))
+                        .anyMatch(level -> LevelProgression.isUnlocked(allLevels,
+                                User.currentUser.userState.lastLevel, level));
+                GeneralPrinter.print(chapter + " - " + (unlocked ? "Unlocked" : "Locked"));
+            }
+        } catch (Exception e) {
+            throw new GameException("could not load levels.");
         }
     }
 
@@ -121,6 +131,11 @@ public class GameMenu extends Menu {
 
     @Override
     public String showMenu() {
-        return getName();
+        return "[ Game Menu ]\n"
+                + "Commands:\n"
+                + "  menu show chapters\n"
+                + "  menu enter chapter -c <chapter_name>\n"
+                + "  menu travel-log | menu leaderboard | menu greenhouse\n"
+                + "  menu coin-wallet | menu gem-wallet | menu exit";
     }
 }

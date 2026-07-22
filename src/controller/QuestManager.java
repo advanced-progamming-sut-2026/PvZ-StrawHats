@@ -133,7 +133,7 @@ public class QuestManager {
             String key = entry.getKey();
             Object requiredValue = entry.getValue();
 
-            if (key.equals("variableOptions")) {
+            if (key.equals("variableOptions") || key.equals("variableParam")) {
                 continue;
             }
 

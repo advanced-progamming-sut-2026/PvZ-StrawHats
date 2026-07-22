@@ -6,6 +6,7 @@ import model.collections.armour.PlantArmour;
 import model.collections.plant.actstrategy.*;
 import model.collections.plant.plantfood.*;
 import model.match_mechanisms.vector.Position;
+import model.utils.ResourceResolver;
 import view.GeneralPrinter;
 
 import java.io.InputStream;
@@ -24,22 +25,15 @@ public class PlantFactory {
         loaded = true;
     }
 
-    private static final String[] PLANTS_JSON_CANDIDATES = {
-            "src/resource/Plants.json",
-            "resource/Plants.json"
-    };
-
     public static void autoInit() {
         if (loaded) return;
-        for (String path : PLANTS_JSON_CANDIDATES) {
-            java.io.File file = new java.io.File(path);
-            if (!file.exists()) continue;
-            try (java.io.InputStream is = new java.io.FileInputStream(file)) {
+        try (java.io.InputStream is = ResourceResolver.open("Plants.json")) {
+            if (is != null) {
                 init(is);
                 return;
-            } catch (java.io.IOException e) {
-                GeneralPrinter.print("Could not load " + path + ": " + e.getMessage());
             }
+        } catch (java.io.IOException e) {
+            GeneralPrinter.print("Could not load Plants.json: " + e.getMessage());
         }
         GeneralPrinter.print("Could not find Plants.json in any known location.");
     }

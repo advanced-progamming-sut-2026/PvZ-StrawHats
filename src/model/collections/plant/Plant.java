@@ -64,7 +64,7 @@ public abstract class Plant extends Item implements Pluck, Attack {
     }
 
     public Position getLocation() {
-        return (Position) super.getPosition();
+        return super.getPosition();
     }
 
     @Override

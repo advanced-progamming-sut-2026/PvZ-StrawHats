@@ -55,9 +55,6 @@ public class PusherMove implements MoveBehavior {
 
         zombie.setPosition(new Position(targetZombieX, pos.y()));
 
-        if (zombie.getPosition().x() < 0) {
-            session.onZombieReachedEnd();
-        }
     }
 
     private List<GridObstacleMapping> detectPushableStructures(Cell[] row, Position pos) {

@@ -13,11 +13,15 @@ public class LockedPlantsLevel extends Level {
      * explicitly locked, or it simply isn't in the available/forced lists.
      */
     public boolean isPlantLocked(String plantAlias) {
-        if (lockedPlants != null && lockedPlants.contains(plantAlias)) return true;
-        if (alwaysAvailable != null && alwaysAvailable.contains(plantAlias)) return false;
-        boolean inAvailable = getAvailablePlants() != null && getAvailablePlants().contains(plantAlias);
-        boolean inForced = getForcedPlants() != null && getForcedPlants().contains(plantAlias);
+        if (containsIgnoreCase(lockedPlants, plantAlias)) return true;
+        if (containsIgnoreCase(alwaysAvailable, plantAlias)) return false;
+        boolean inAvailable = containsIgnoreCase(getAvailablePlants(), plantAlias);
+        boolean inForced = containsIgnoreCase(getForcedPlants(), plantAlias);
         return !inAvailable && !inForced;
+    }
+
+    private boolean containsIgnoreCase(List<String> values, String target) {
+        return values != null && values.stream().anyMatch(value -> value.equalsIgnoreCase(target));
     }
 
     public List<String> getLockedPlants() { return lockedPlants; }
