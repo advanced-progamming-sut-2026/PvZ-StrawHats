@@ -9,6 +9,7 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.collections.item.GroundItem;
+import model.game_exceptions.GameException;
 import model.match_mechanisms.vector.Position;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -81,12 +82,10 @@ public class MeanwhileMenu extends Menu {
 
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
-            GeneralPrinter.print("Error: plant not available.");
-            return;
+            throw new GameException("plant not available.");
         }
         if (!BeforeMenu.selectedPlants.contains(config.name)) {
-            GeneralPrinter.print("Error: plant not in this match's loadout.");
-            return;
+            throw new GameException("plant not in this match's loadout.");
         }
 
         int row = y - 1;
@@ -100,7 +99,7 @@ public class MeanwhileMenu extends Menu {
         }
 
         if (!session.plantAt(row, col, plant)) {
-            GeneralPrinter.print("Error: that tile is occupied or out of bounds.");
+            throw new GameException("that tile is occupied or out of bounds.");
         } else {
             GeneralPrinter.print(config.name + " planted at (" + x + "," + y + ").");
         }
@@ -133,9 +132,9 @@ public class MeanwhileMenu extends Menu {
             }
         }
         if (plant == null) {
-            GeneralPrinter.print("Error: no plant there.");
+            throw new GameException("no plant there.");
         } else if (!session.spendPlantFood()) {
-            GeneralPrinter.print("Error: no plant food available.");
+            throw new GameException("no plant food available.");
         } else {
             plant.activatePlant(session);
             GeneralPrinter.print("Plant food used on " + plant.getName() + ".");
@@ -161,8 +160,8 @@ public class MeanwhileMenu extends Menu {
     private void restartMatch() {
         GameSession session = GameSession.getInstance();
         if (session.getLevel() == null) {
-            GeneralPrinter.print("Error: no active match.");
-            return;
+            throw new GameException("no active match.");
+
         }
         GameSession fresh = new GameSession(session.getRows(), session.getCols());
         fresh.setLevel(session.getLevel());

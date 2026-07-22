@@ -6,6 +6,7 @@ import model.App;
 import model.Regex;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
+import model.game_exceptions.GameException;
 import model.greenhouse.store.Store;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -46,7 +47,7 @@ public class StoreMenu extends Menu {
             String plantTypeName = m.group("planttype");
             Integer plantTypeId = plantTypeName == null ? null : resolvePlantId(plantTypeName);
             if (plantTypeName != null && plantTypeId == null) {
-                GeneralPrinter.print("Error: unknown plant type '" + plantTypeName + "'.");
+                throw new GameException("unknown plant type '" + plantTypeName + "'.");
             } else {
                 GeneralPrinter.print(STORE.buy(state, itemId, count, plantTypeId));
             }

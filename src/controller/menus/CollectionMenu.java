@@ -6,6 +6,7 @@ import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;
 import model.collections.zombie.Zombie;
+import model.game_exceptions.GameException;
 import model.user_data.User;
 import model.user_data.UserState;
 import view.GeneralPrinter;
@@ -78,8 +79,7 @@ public class CollectionMenu extends Menu {
     private void showOnePlant(UserState state, String plantName) {
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
-            GeneralPrinter.print("Error: no such plant.");
-            return;
+            throw new GameException("no such plant.");
         }
         boolean unlocked = state.isPlantUnlocked(config.id);
         GeneralPrinter.print(manager.formatPlant(config, unlocked, state.getPlantLevel(config.id)));
@@ -99,8 +99,7 @@ public class CollectionMenu extends Menu {
 
     private void showOneZombie(UserState state, String zombieName) {
         if (!manager.getSeenZombieAliases(state).contains(zombieName)) {
-            GeneralPrinter.print("Error: zombie not found or not yet observed.");
-            return;
+            throw new GameException("zombie not found or not yet observed.");
         }
         Zombie zombie = manager.findZombie(zombieName);
         GeneralPrinter.print(manager.formatZombie(zombie));
@@ -109,11 +108,11 @@ public class CollectionMenu extends Menu {
     private void purchasePlant(UserState state, String plantName) {
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
-            GeneralPrinter.print("Error: no such plant.");
+            throw new GameException("no such plant.");
         } else if (state.isPlantUnlocked(config.id)) {
-            GeneralPrinter.print("Error: plant already unlocked.");
+            throw new GameException("plant already unlocked.");
         } else if (!manager.purchasePlant(state, config)) {
-            GeneralPrinter.print("Error: not enough coins.");
+            throw new GameException("not enough coins.");
         } else {
             GeneralPrinter.print("Plant purchased: " + config.name);
         }
@@ -122,11 +121,11 @@ public class CollectionMenu extends Menu {
     private void upgradePlant(UserState state, String plantName) {
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
-            GeneralPrinter.print("Error: no such plant.");
+            throw new GameException("no such plant.");
         } else if (!state.isPlantUnlocked(config.id)) {
-            GeneralPrinter.print("Error: plant is locked.");
+            throw new GameException("plant is locked.");
         } else if (!manager.upgradePlant(state, config)) {
-            GeneralPrinter.print("Error: not enough coins or seed packets.");
+            throw new GameException("not enough coins or seed packets.");
         } else {
             GeneralPrinter.print("Plant upgraded: " + config.name + " -> level " + state.getPlantLevel(config.id));
         }

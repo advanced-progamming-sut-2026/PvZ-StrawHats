@@ -6,6 +6,7 @@ import controller.menus.Menu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;
+import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -72,8 +73,8 @@ public class BeforeMenu extends Menu {
     private void showAvailablePlants() {
         Level level = currentLevel();
         if (level == null || level.getAvailablePlants() == null) {
-            GeneralPrinter.print("Error: no level loaded.");
-            return;
+            throw new GameException("no level loaded.");
+
         }
         UserState state = User.currentUser.userState;
         for (String name : level.getAvailablePlants()) {
@@ -88,11 +89,11 @@ public class BeforeMenu extends Menu {
         UserState state = User.currentUser.userState;
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
-            GeneralPrinter.print("Error: plant not available.");
+            throw new GameException("plant not available.");
         } else if (selectedPlants.contains(config.name)) {
-            GeneralPrinter.print("Error: plant already selected.");
+            throw new GameException("plant already selected.");
         } else if (selectedPlants.size() >= PLANT_SLOTS) {
-            GeneralPrinter.print("Error: no free plant slots.");
+            throw new GameException("no free plant slots.");
         } else {
             selectedPlants.add(config.name);
             GeneralPrinter.print(config.name + " added to loadout.");
@@ -103,7 +104,7 @@ public class BeforeMenu extends Menu {
         if (selectedPlants.removeIf(name -> name.equalsIgnoreCase(plantName))) {
             GeneralPrinter.print(plantName + " removed from loadout.");
         } else {
-            GeneralPrinter.print("Error: plant not in loadout.");
+            throw new GameException("plant not in loadout.");
         }
     }
 
@@ -111,9 +112,9 @@ public class BeforeMenu extends Menu {
         UserState state = User.currentUser.userState;
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
-            GeneralPrinter.print("Error: no such plant.");
+            throw new GameException("no such plant.");
         } else if (!state.grantBoost(config.id)) {
-            GeneralPrinter.print("Error: plant already boosted.");
+            throw new GameException("plant already boosted.");
         } else {
             GeneralPrinter.print(config.name + " boosted for this match.");
         }
@@ -122,8 +123,8 @@ public class BeforeMenu extends Menu {
     private void startMatch() {
         Level level = currentLevel();
         if (level == null) {
-            GeneralPrinter.print("Error: no level loaded.");
-            return;
+            throw new GameException("no level loaded.");
+
         }
         if (level.getForcedPlants() != null) {
             for (String forced : level.getForcedPlants()) {

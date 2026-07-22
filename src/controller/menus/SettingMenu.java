@@ -2,6 +2,7 @@ package controller.menus;
 
 import model.App;
 import model.Regex;
+import model.game_exceptions.GameException;
 import model.user_data.User;
 import view.GeneralPrinter;
 
@@ -44,13 +45,13 @@ public class SettingMenu extends Menu {
         try {
             level = Integer.parseInt(rawLevel);
         } catch (NumberFormatException e) {
-            GeneralPrinter.print("Error: difficulty level must be a whole number between " + MIN_DIFFICULTY + " and " + MAX_DIFFICULTY + ".");
-            return;
+            throw new GameException("difficulty level must be a whole number between " + MIN_DIFFICULTY + " and " + MAX_DIFFICULTY + ".");
+
         }
 
         if (level < MIN_DIFFICULTY || level > MAX_DIFFICULTY) {
-            GeneralPrinter.print("Error: difficulty level must be between " + MIN_DIFFICULTY + " and " + MAX_DIFFICULTY + ".");
-            return;
+            throw new GameException("difficulty level must be between " + MIN_DIFFICULTY + " and " + MAX_DIFFICULTY + ".");
+
         }
 
         User.currentUser.userState.difficultyLevel = level;

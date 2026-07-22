@@ -3,6 +3,7 @@ package controller.menus;
 import controller.menus.greenhouse.GreenhouseMenu;
 import model.App;
 import model.Regex;
+import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.match.main.season.Season;
 import model.match.main.season.SeasonFactory;
@@ -85,8 +86,7 @@ public class GameMenu extends Menu {
         try {
             season = SeasonFactory.create(chapterName);
         } catch (IllegalArgumentException e) {
-            GeneralPrinter.print("Error: no such chapter.");
-            return;
+            throw new GameException("no such chapter.");
         }
 
         List<Level> allLevels;
@@ -94,8 +94,7 @@ public class GameMenu extends Menu {
             GameSession.getInstance().setDifficultyLevel(User.currentUser.userState.difficultyLevel);
             allLevels = LevelLoader.loadLevels("/Levels.json");
         } catch (Exception e) {
-            GeneralPrinter.print("Error: could not load levels.");
-            return;
+            throw new GameException("could not load levels.");
         }
         allLevels.sort(Comparator.comparingInt(Level::getId));
 
@@ -120,7 +119,7 @@ public class GameMenu extends Menu {
         }
 
         if (target == null) {
-            GeneralPrinter.print("Error: chapter is locked.");
+            throw new GameException("chapter is locked.");
         } else {
             controller.menus.match.MatchMenu.selectedLevel = target;
             App.currentMenu = new controller.menus.match.MatchMenu();

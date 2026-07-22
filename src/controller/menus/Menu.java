@@ -4,6 +4,7 @@ import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import model.App;
 import model.Regex;
+import model.game_exceptions.GameException;
 import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
@@ -33,7 +34,7 @@ public abstract class Menu {
             case "collection" -> App.currentMenu = new CollectionMenu();
             case "travellog" -> App.currentMenu = new TravelLogMenu();
             case "network" -> App.currentMenu = new LeaderboardMenu();
-            default -> GeneralPrinter.print("Error: no such menu.");
+            default -> throw new GameException("no such menu.");
         }
         System.out.println("Menu changed to: " + menuKey + " menu");
     }
