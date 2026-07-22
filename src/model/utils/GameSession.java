@@ -18,6 +18,7 @@ import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
 import controller.QuestManager;
+import view.GeneralPrinter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,10 @@ public class GameSession {
     private int nextWaveIndex = 0;
     private double waveTimer = 0;
     private boolean wavesStarted = false;
+
+    private List<Zombie> currentWaveZombies = new ArrayList<>();
+    private int currentWaveStartingHp = 0;
+    private double previousWaveMultiplier = 1.0;
 
     private int sunCount;
     private int plantFoodCount;
@@ -210,23 +215,65 @@ public class GameSession {
         waveTimer += deltaTimeSeconds;
         ZombieWave nextWave = waves.get(nextWaveIndex);
 
-        if (waveTimer >= nextWave.getDelay()) {
-            spawnWave(nextWave);
-            if (level != null && level.getSeason() != null) {
-                level.getSeason().onWaveStart(this, nextWaveIndex);
-            }
-            nextWaveIndex++;
-            waveTimer = 0;
-        }
+        if (waveTimer < nextWave.getDelay()) return;
+        if (!previousWaveMostlyCleared()) return;
+
+        spawnWave(nextWave);
+        nextWaveIndex++;
+        waveTimer = 0;
+    }
+
+    private boolean previousWaveMostlyCleared() {
+        if (currentWaveZombies.isEmpty()) return true;
+        int remainingHp = currentWaveZombies.stream()
+                .filter(Zombie::isAlive)
+                .mapToInt(Zombie::getHp)
+                .sum();
+        return remainingHp <= currentWaveStartingHp * 0.25;
     }
 
     private void spawnWave(ZombieWave wave) {
         if (wave.getWaveZombies() == null) return;
-        for (Zombie zombie : wave.getWaveZombies()) {
-            int row = ITEM_RANDOM.nextInt(environment.getRows());
-            zombie.setPosition(new Position(environment.getCols(), row));
-            spawnZombie(zombie);
+
+        int waveNumber = nextWaveIndex + 1;
+        double multiplier;
+        if (wave.isFinalWave()) {
+            multiplier = previousWaveMultiplier * 2.0;
+            GeneralPrinter.print("The final wave has come.");
+        } else {
+            multiplier = (waveNumber == 1) ? 1.0 : previousWaveMultiplier * 1.25;
+            GeneralPrinter.print("Wave " + waveNumber + " started.");
         }
+        previousWaveMultiplier = multiplier;
+
+        currentWaveZombies = new ArrayList<>();
+        int totalHp = 0;
+
+        for (Zombie zombie : wave.getWaveZombies()) {
+            int lane = ITEM_RANDOM.nextInt(getRows());
+            zombie.setPosition(new Position(getCols(), lane));
+
+            Position speed = zombie.getSpeed();
+            if (speed != null) {
+                zombie.setSpeed(new Position(-Math.abs(speed.x()), 0));
+            }
+
+            if (multiplier != 1.0) {
+                zombie.setMaxHp((int) Math.round(zombie.getMaxHp() * multiplier));
+                zombie.setHp(zombie.getMaxHp());
+                zombie.setEatDps(zombie.getEatDps() * multiplier);
+            }
+
+            int cost = ZombieFactory.getZombieCost(zombie.getAlias());
+            GeneralPrinter.print("Zombie " + zombie.getName() + " spawned at wave " + waveNumber
+                    + " in lane " + lane + " which cost " + cost + ".");
+
+            spawnZombie(zombie);
+            currentWaveZombies.add(zombie);
+            totalHp += zombie.getHp();
+        }
+
+        currentWaveStartingHp = totalHp;
     }
 
     public boolean allWavesSpawned() {
@@ -288,6 +335,9 @@ public class GameSession {
         Position dropPosition = zombie.getPosition();
         if (dropPosition == null) return;
 
+        GeneralPrinter.print("Zombie of type " + zombie.getName() + " is dead at ("
+                + (int) Math.round(dropPosition.x()) + ", " + (int) Math.round(dropPosition.y()) + ")");
+
         items.add(new GroundCoin(dropPosition, GroundCoin.CoinTier.rollRandom()));
 
         if (ITEM_RANDOM.nextInt(100) < 10) {
@@ -331,9 +381,23 @@ public class GameSession {
                     && groundItem.isNear(target)) {
                 groundItem.collect(this, state);
                 collectedItems.add(groundItem);
+                announceCollection(groundItem, state);
             }
         }
         return collectedItems;
+    }
+
+    private void announceCollection(GroundItem item, UserState state) {
+        switch (item.getItemType()) {
+            case COIN -> GeneralPrinter.print("A zombie dropped a coin; you have " + state.coins + " coins now.");
+            case DIAMOND -> GeneralPrinter.print("A zombie dropped a diamond; you have " + state.diamonds + " diamonds now.");
+            case SEED_PACK -> {
+                int totalPots = state.seedPacketInventory.values().stream().mapToInt(Integer::intValue).sum();
+                GeneralPrinter.print("A zombie dropped a pot; you have " + totalPots + " pots now.");
+            }
+            default -> {
+            }
+        }
     }
 
     public void startWaves() {
