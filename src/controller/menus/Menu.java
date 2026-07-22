@@ -4,6 +4,7 @@ import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import model.App;
 import model.Regex;
+import model.game_exceptions.GameException;
 import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
@@ -32,9 +33,10 @@ public abstract class Menu {
             case "login" -> App.currentMenu = new LoginMenu();
             case "collection" -> App.currentMenu = new CollectionMenu();
             case "travellog" -> App.currentMenu = new TravelLogMenu();
-            case "network" -> App.currentMenu = new NetworkMenu();
-            default -> GeneralPrinter.print("Error: no such menu.");
+            case "network" -> App.currentMenu = new LeaderboardMenu();
+            default -> throw new GameException("no such menu.");
         }
+        System.out.println("Menu changed to: " + menuKey + " menu");
     }
     public void handleCommand(String text){
         if (Regex.MENU_ENTER.getMatcherRaw(text).matches()){
@@ -44,7 +46,7 @@ public abstract class Menu {
             isGeneralCmd = true;
             GeneralPrinter.print(showMenu());
         }
-    };
+    }
 
     
 

@@ -6,6 +6,7 @@ import model.App;
 import model.Regex;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
+import model.game_exceptions.GameException;
 import model.greenhouse.store.Store;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -24,12 +25,14 @@ public class StoreMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
+    public void handleCommand(String text) {
         super.handleCommand(text);
         if (isGeneralCmd) return;
+        handleStoreCommand(text);
 
+    }
 
-
+    private void handleStoreCommand(String text) {
         UserState state = User.currentUser.userState;
 
         if (Regex.SHOPPING_LIST.getMatcherRaw(text).matches()) {
@@ -44,13 +47,13 @@ public class StoreMenu extends Menu {
             String plantTypeName = m.group("planttype");
             Integer plantTypeId = plantTypeName == null ? null : resolvePlantId(plantTypeName);
             if (plantTypeName != null && plantTypeId == null) {
-                GeneralPrinter.print("Error: unknown plant type '" + plantTypeName + "'.");
+                throw new GameException("unknown plant type '" + plantTypeName + "'.");
             } else {
                 GeneralPrinter.print(STORE.buy(state, itemId, count, plantTypeId));
             }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        }  else {
+        } else {
             GeneralPrinter.print("Not Valid");
         }
     }

@@ -6,10 +6,12 @@ import controller.menus.Menu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;
+import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +53,9 @@ public class BeforeMenu extends Menu {
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
         } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            System.out.println(showMenu());
+            GeneralPrinter.print(showMenu());
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 
@@ -64,21 +66,21 @@ public class BeforeMenu extends Menu {
     private void showAllPlants() {
         UserState state = User.currentUser.userState;
         for (PlantJsonParser.PlantConfig config : manager.getUnlockedPlants(state)) {
-            System.out.println(manager.formatPlant(config, true, state.getPlantLevel(config.id)));
+            GeneralPrinter.print(manager.formatPlant(config, true, state.getPlantLevel(config.id)));
         }
     }
 
     private void showAvailablePlants() {
         Level level = currentLevel();
         if (level == null || level.getAvailablePlants() == null) {
-            System.out.println("Error: no level loaded.");
-            return;
+            throw new GameException("no level loaded.");
+
         }
         UserState state = User.currentUser.userState;
         for (String name : level.getAvailablePlants()) {
             PlantJsonParser.PlantConfig config = manager.findPlant(name);
             if (config != null && state.isPlantUnlocked(config.id)) {
-                System.out.println(manager.formatPlant(config, true, state.getPlantLevel(config.id)));
+                GeneralPrinter.print(manager.formatPlant(config, true, state.getPlantLevel(config.id)));
             }
         }
     }
@@ -87,22 +89,22 @@ public class BeforeMenu extends Menu {
         UserState state = User.currentUser.userState;
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null || !state.isPlantUnlocked(config.id)) {
-            System.out.println("Error: plant not available.");
+            throw new GameException("plant not available.");
         } else if (selectedPlants.contains(config.name)) {
-            System.out.println("Error: plant already selected.");
+            throw new GameException("plant already selected.");
         } else if (selectedPlants.size() >= PLANT_SLOTS) {
-            System.out.println("Error: no free plant slots.");
+            throw new GameException("no free plant slots.");
         } else {
             selectedPlants.add(config.name);
-            System.out.println(config.name + " added to loadout.");
+            GeneralPrinter.print(config.name + " added to loadout.");
         }
     }
 
     private void removePlant(String plantName) {
         if (selectedPlants.removeIf(name -> name.equalsIgnoreCase(plantName))) {
-            System.out.println(plantName + " removed from loadout.");
+            GeneralPrinter.print(plantName + " removed from loadout.");
         } else {
-            System.out.println("Error: plant not in loadout.");
+            throw new GameException("plant not in loadout.");
         }
     }
 
@@ -110,19 +112,19 @@ public class BeforeMenu extends Menu {
         UserState state = User.currentUser.userState;
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
         if (config == null) {
-            System.out.println("Error: no such plant.");
+            throw new GameException("no such plant.");
         } else if (!state.grantBoost(config.id)) {
-            System.out.println("Error: plant already boosted.");
+            throw new GameException("plant already boosted.");
         } else {
-            System.out.println(config.name + " boosted for this match.");
+            GeneralPrinter.print(config.name + " boosted for this match.");
         }
     }
 
     private void startMatch() {
         Level level = currentLevel();
         if (level == null) {
-            System.out.println("Error: no level loaded.");
-            return;
+            throw new GameException("no level loaded.");
+
         }
         if (level.getForcedPlants() != null) {
             for (String forced : level.getForcedPlants()) {

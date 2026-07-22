@@ -2,6 +2,7 @@ package view.menus.while_match;
 
 import controller.menus.match.MeanwhileMenu;
 import model.Regex;
+import view.GeneralPrinter;
 import view.menus.MenuView;
 
 import java.util.regex.Pattern;
@@ -27,7 +28,7 @@ public class MeanwhileMatchView extends MenuView {
                 || Regex.CHEAT_SPAWN_ZOMBIE.getMatcherRaw(text).matches() || Regex.RELEASE_THE_NUKE.getMatcherRaw(text).matches()) {
             new MeanwhileMenu().handleCommand(text);
         } else {
-            System.out.println("Not Valid");
+            GeneralPrinter.print("Not Valid");
         }
     }
 }

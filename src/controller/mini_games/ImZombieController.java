@@ -1,6 +1,7 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import model.Regex;
 import model.match.mini_games.izombie.IZombie;
 import view.GeneralPrinter;
 
@@ -18,11 +19,11 @@ public class ImZombieController extends Menu {
 
     @Override
     public void handleCommand(String text){
-        String trimmed = text.trim();
+        
 
-        if (trimmed.matches("place zombie -t \\S+ -r \\d+")) {
-            handlePlace(trimmed);
-        } else if (trimmed.equals("advance time -t 1 ticks")) {
+        if (Regex.IZOMBIE_PLACE_ZOMBIE.getMatcherRaw(text).matches()) {
+            handlePlace(text);
+        } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             game.tick(0.1);
         } else {
             GeneralPrinter.print("Unknown command in I, Zombie.");

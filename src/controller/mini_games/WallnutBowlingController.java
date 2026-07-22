@@ -1,6 +1,7 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import model.Regex;
 import model.match.mini_games.wallnutbowlling.WallnutBowling;
 import view.GeneralPrinter;
 
@@ -22,14 +23,9 @@ public class WallnutBowlingController extends Menu {
         if (isGeneralCmd) return;
 
 
-
-
-
-        String trimmed = text.trim();
-
-        if (trimmed.matches("plant nut -l \\(\\d+,\\s*\\d+\\)")) {
-            handlePlant(trimmed);
-        } else if (trimmed.equals("advance time -t 1 ticks")) {
+        if (Regex.WALLNUT_PLANT_NUT.getMatcherRaw(text).matches()) {
+            handlePlant(text);
+        } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             game.tick(0.1);
         } else {
             GeneralPrinter.print("Unknown command in Wallnut Bowling.");

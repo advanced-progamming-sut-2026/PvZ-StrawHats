@@ -8,6 +8,7 @@ import model.Regex;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantFoodType;
 import model.collections.plant.PlantJsonParser;
+import model.game_exceptions.GameException;
 import model.greenhouse.*;
 import model.user_data.User;
 import model.user_data.UserState;
@@ -23,11 +24,11 @@ public class GreenhouseMenu extends Menu {
 
     public void plantPotPlant(Pot pot) {
         if (pot == null) {
-            GeneralPrinter.print("Error: no such pot.");
+            throw new GameException("no such pot.");
         } else if (pot.isLocked()) {
-            GeneralPrinter.print("Error: that pot is locked.");
+            throw new GameException("that pot is locked.");
         } else if (pot.getPotPlant() != null) {
-            GeneralPrinter.print("Error: that pot is already occupied.");
+            throw new GameException("that pot is already occupied.");
         } else {
             PotPlant potPlant;
             Random random = new Random();
@@ -50,6 +51,7 @@ public class GreenhouseMenu extends Menu {
             }
             pot.setPotPlant(potPlant);
             GeneralPrinter.print("Planted " + potPlant.getPlantName() + " at (" + pot.getCol() + "," + pot.getRow() + ").");
+            User.save();
         }
     }
 
@@ -59,14 +61,17 @@ public class GreenhouseMenu extends Menu {
     }
 
     @Override
-    public void handleCommand(String text){
-        super.handleCommand(text);
-        if (isGeneralCmd) return;
+    public void handleCommand(String text) {
+        try {
+            super.handleCommand(text);
+            if (isGeneralCmd) return;
+            handleGreenhouseCommand(text);
+        } catch (Exception e) {
+            throw new GameException("could not process that command (" + e.getMessage() + ").");
+        }
+    }
 
-
-
-
-
+    private void handleGreenhouseCommand(String text) {
         UserState state = User.currentUser.userState;
 
         if (Regex.SHOW_GREENHOUSE.getMatcherRaw(text).matches()) {
@@ -84,7 +89,7 @@ public class GreenhouseMenu extends Menu {
             int y = Integer.parseInt(m.group("y"));
             Pot pot = Greenhouse.getInstance().getPot(x, y);
             if (pot == null) {
-                GeneralPrinter.print("Error: no such pot.");
+                throw new GameException("no such pot.");
             } else {
                 GeneralPrinter.print(pot.getPotController().collect(state));
             }
@@ -95,7 +100,7 @@ public class GreenhouseMenu extends Menu {
             int y = Integer.parseInt(m.group("y"));
             Pot pot = Greenhouse.getInstance().getPot(x, y);
             if (pot == null) {
-                GeneralPrinter.print("Error: no such pot.");
+                throw new GameException("no such pot.");
             } else {
                 GeneralPrinter.print(pot.getPotController().grow(state));
             }
@@ -103,7 +108,7 @@ public class GreenhouseMenu extends Menu {
             App.currentMenu = new StoreMenu();
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        }  else {
+        } else {
             GeneralPrinter.print("Not Valid");
         }
     }

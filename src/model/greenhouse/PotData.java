@@ -6,6 +6,8 @@ public class PotData {
 
     public Integer plantId;
 
+    public boolean isMarigold;
+
     public long plantedAtMillis;
 
 }
