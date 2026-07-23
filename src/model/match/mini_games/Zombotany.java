@@ -3,24 +3,15 @@ package model.match.mini_games;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
+import model.collections.item.GroundItem;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.*;
 
-/**
- * A normal level (same plant selection, sun, waves, win/loss as usual)
- * except some zombies borrow a plant's ability. Those zombies are otherwise
- * ordinary; their special behavior is driven entirely from here rather than
- * from Zombie itself.
- *
- * Note: the "peashooter zombie" shot is applied as an instant, cooldown-gated
- * hit on the nearest plant in its row rather than a separately animated
- * Projectile, for simplicity — the targeting rule (nearest plant ahead of it,
- * same row) matches a normal Peashooter's.
- */
 public class Zombotany extends MiniGameMode {
     private static final Random RAND = new Random();
 
@@ -32,6 +23,7 @@ public class Zombotany extends MiniGameMode {
     private static final double PEASHOOTER_COOLDOWN_SECONDS = 1.5;
     private static final int PEASHOOTER_DAMAGE = 20;
     private static final double JALAPENO_FUSE_SECONDS = 10.0;
+    private static final double JALAPENO_SPEED_MULTIPLIER = 1.8;
     private static final double SQUASH_TOUCH_DISTANCE = 0.4;
     private static final int SQUASH_SPEED_MULTIPLIER = 3;
     private static final int INITIAL_SUN = 500;
@@ -43,6 +35,9 @@ public class Zombotany extends MiniGameMode {
     );
     private final Map<Zombie, Double> peashooterCooldowns = new HashMap<>();
     private final Map<Zombie, Double> jalapenoFuses = new HashMap<>();
+    private final Set<Zombie> announcedZombies =
+            Collections.newSetFromMap(new IdentityHashMap<>());
+    private final List<String> eventLog = new ArrayList<>();
 
     public Zombotany(int difficulty) {
         setDifficulty(difficulty);
@@ -52,12 +47,10 @@ public class Zombotany extends MiniGameMode {
         this.session.addSun(INITIAL_SUN);
         this.session.setWaves(wavesFor(getDifficulty()));
         this.session.startWaves();
+        log("Zombotany level " + getDifficulty() + " started with "
+                + INITIAL_SUN + " sun.");
     }
 
-    /**
-     * Call once per wave/spawn batch to decide which zombies in it should be
-     * Zombotany specials instead of their normal counterparts.
-     */
     public Zombie spawnZombieForWave(int row, boolean forceSpecial) {
         String alias = forceSpecial ? pickSpecialAlias() : "ZombieDefault";
         Zombie zombie = ZombieFactory.create(alias, row, session.getEnvironment().getCols() - 1);
@@ -67,10 +60,13 @@ public class Zombotany extends MiniGameMode {
             zombie.setSpeed(zombie.getSpeed().scale(SQUASH_SPEED_MULTIPLIER));
         }
         if (alias.equals(JALAPENO_ZOMBIE)) {
+            increaseJalapenoSpeed(zombie);
             jalapenoFuses.put(zombie, JALAPENO_FUSE_SECONDS);
         }
 
         session.spawnZombie(zombie);
+        announcedZombies.add(zombie);
+        log(alias + " spawned in lane " + (row + 1) + ".");
         return zombie;
     }
 
@@ -80,8 +76,41 @@ public class Zombotany extends MiniGameMode {
     }
 
     public void tick(double deltaSeconds) {
+        Set<Plant> alivePlantsBefore = Collections.newSetFromMap(new IdentityHashMap<>());
+        session.getPlants().stream().filter(Plant::isAlive).forEach(alivePlantsBefore::add);
         session.tick();
-        // Zombotany powers are configured on the zombie blueprints and run in GameSession.
+        configureSpecialZombies();
+        for (Plant plant : alivePlantsBefore) {
+            if (!plant.isAlive()) {
+                log(plant.getName() + " was destroyed by a Zombotany zombie.");
+            }
+        }
+        forgetDeadZombies();
+    }
+
+    private void configureSpecialZombies() {
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie.getPosition() == null) continue;
+            if (isAlias(zombie, JALAPENO_ZOMBIE)) {
+                increaseJalapenoSpeed(zombie);
+                jalapenoFuses.putIfAbsent(zombie, JALAPENO_FUSE_SECONDS);
+            }
+            if (announcedZombies.add(zombie)) {
+                log(zombie.getName() + " spawned in lane "
+                        + ((int) Math.round(zombie.getPosition().y()) + 1) + ".");
+            }
+        }
+    }
+
+    private void increaseJalapenoSpeed(Zombie zombie) {
+        Position speed = zombie.getSpeed();
+        if (speed == null) return;
+        double direction = speed.x() < 0 ? -1 : 1;
+        double absoluteSpeed = Math.abs(speed.x());
+        if (absoluteSpeed < 0.185 * JALAPENO_SPEED_MULTIPLIER - 0.0001) {
+            zombie.setSpeed(new Position(direction * absoluteSpeed * JALAPENO_SPEED_MULTIPLIER,
+                    speed.y()));
+        }
     }
 
     private void tickPeashooterZombies(double deltaSeconds) {
@@ -119,6 +148,8 @@ public class Zombotany extends MiniGameMode {
             if (remaining <= 0) {
                 burnRow((int) zombie.getPosition().y());
                 zombie.setHp(0);
+                log("Jalapeno Zombie exploded in lane "
+                        + ((int) zombie.getPosition().y() + 1) + " after its fuse.");
             }
         }
     }
@@ -142,6 +173,8 @@ public class Zombotany extends MiniGameMode {
                     .ifPresent(plant -> {
                         plant.takeDamage(plant.getHP(), zombie);
                         zombie.setHp(0);
+                        log("Squash Zombie crushed " + plant.getName() + " in lane "
+                                + ((int) plant.getPosition().y() + 1) + ".");
                     });
         }
     }
@@ -172,6 +205,31 @@ public class Zombotany extends MiniGameMode {
 
     public List<String> getAvailablePlants() { return List.copyOf(availablePlants); }
     public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+    public double getJalapenoSpeedMultiplier() { return JALAPENO_SPEED_MULTIPLIER; }
+
+    public List<GroundItem> collectItemsAt(int x, int y) {
+        return session.collectItemsNear(new Position(x, y));
+    }
+
+    public void addSunCheat(int amount) {
+        if (amount <= 0) return;
+        session.addSun(amount);
+        log("Cheat added " + amount + " sun. Total: " + session.getSunCount() + ".");
+    }
+
+    public String renderZombiesInfo() {
+        return session.renderZombiesInfo();
+    }
+
+    public String renderPlantsInfo() {
+        if (session.getPlants().isEmpty()) return "no plants on the field";
+        return session.getPlants().stream()
+                .filter(Plant::isAlive)
+                .map(plant -> plant.getName() + " | hp: " + plant.getHP()
+                        + " | position: (" + ((int) plant.getPosition().x() + 1)
+                        + ", " + ((int) plant.getPosition().y() + 1) + ")")
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
 
     public boolean plantAt(String plantName, int row, int col) {
         if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return false;
@@ -187,6 +245,8 @@ public class Zombotany extends MiniGameMode {
 
         session.spendSun(plant.getCost());
         session.startPlantCooldown(config.id, plant.getRecharge());
+        log(plant.getName() + " planted at (" + (col + 1) + ", " + (row + 1)
+                + "). Sun: " + session.getSunCount() + ".");
         return true;
     }
 
@@ -200,11 +260,23 @@ public class Zombotany extends MiniGameMode {
                 .collect(java.util.stream.Collectors.joining("\n  "));
         if (plantsOnField.isEmpty()) plantsOnField = "none";
 
-        return getStageDetails()
+        StringBuilder result = new StringBuilder(getStageDetails()
                 + " | Available plants: " + availablePlants
                 + " | Zombie pool: " + zombiePool
                 + "\n" + session.renderMap()
-                + "\nPlants on the field:\n  " + plantsOnField;
+                + "\nPlants on the field:\n  " + plantsOnField
+                + "\nZombies:\n  " + renderZombiesInfo().replace("\n", "\n  "));
+        if (!eventLog.isEmpty()) {
+            result.append("\nRecent events:\n  ")
+                    .append(String.join("\n  ", eventLog));
+        }
+        return result.toString();
+    }
+
+    private void log(String message) {
+        eventLog.add(message);
+        if (eventLog.size() > 14) eventLog.remove(0);
+        GeneralPrinter.print(message);
     }
 
     private List<String> availablePlantsFor(int level) {
