@@ -6,6 +6,8 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.collections.plant.PlantTag;
+import model.collections.armour.Armour;
+import model.collections.armour.ZombieArmour;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
@@ -723,21 +725,51 @@ public class GameSession {
         if (zombies.isEmpty()) return "no zombies on the field";
         StringBuilder sb = new StringBuilder();
         for (Zombie zombie : zombies) {
+            if (!zombie.isAlive()) continue;
+
             Position position = zombie.getPosition();
-            sb.append(zombie.getName())
-                    .append(" | hp: ").append(zombie.getHp())
-                    .append("/").append(zombie.getMaxHp());
+            sb.append(zombie.getName()).append(":\n");
+
             if (position != null) {
-                sb.append(" | position: (").append(String.format("%.2f", position.x() + 1))
-                        .append(", ").append((int) Math.round(position.y()) + 1).append(")");
+                int col = (int) Math.round(position.x()) + 1;
+                int row = (int) Math.round(position.y()) + 1;
+                sb.append("position: ").append(col).append(", ").append(row).append("\n");
             }
-            if (zombie.getArmor() != null && zombie.getArmor().getHP() > 0) {
-                sb.append(" | armor: ").append(zombie.getArmor().getHP());
+
+            sb.append("health: ").append(zombie.getHp()).append("\n");
+
+            sb.append("armor:\n");
+            Armour armour = zombie.getArmor();
+            if (armour instanceof ZombieArmour zombieArmour && !zombieArmour.isDestroyed()) {
+                sb.append("  ").append(zombieArmour.getArmorType().getName())
+                        .append(": ").append(zombieArmour.getHP()).append("\n");
             }
-            sb.append(" | state: ").append(zombie.getZombieState())
-                    .append("\n");
+
+            sb.append("effects:\n");
+            if (zombie.getStatus() != Zombie.Status.NORMAL) {
+                sb.append("  ").append(statusDisplayName(zombie.getStatus()))
+                        .append(": ").append(formatDuration(zombie.getStatusRemainingSeconds())).append("\n");
+            }
         }
         return sb.toString().trim();
+    }
+
+    private static String statusDisplayName(Zombie.Status status) {
+        return switch (status) {
+            case CHILLED -> "chilled";
+            case FREEZE -> "frozen";
+            case FIRED -> "burning";
+            case POISONED -> "poisoned";
+            case BUTTER -> "buttered";
+            case HYPNOTIZED -> "hypnotized";
+            default -> status.toString().toLowerCase();
+        };
+    }
+
+    private static String formatDuration(double seconds) {
+        if (Double.isInfinite(seconds)) return "permanent";
+        if (seconds == Math.floor(seconds)) return (int) seconds + "s";
+        return String.format("%.1f", seconds) + "s";
     }
 
     public boolean isGameOver() {

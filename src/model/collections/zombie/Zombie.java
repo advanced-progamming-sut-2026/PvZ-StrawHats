@@ -46,8 +46,9 @@ public class Zombie extends Item implements Attack {
     private List<String> damageWhileSubmerged;
     private List<String> damageWhileSubmergedPlantfoodOnly;
 
-    public enum Status { NORMAL, FREEZE, FIRED, POISONED, BUTTER, HYPNOTIZED }
+    public enum Status { NORMAL, CHILLED, FREEZE, FIRED, POISONED, BUTTER, HYPNOTIZED }
     private Status status = Status.NORMAL;
+    private double statusRemainingSeconds = 0;
     private VulnerabilityType vulnerabilityState = VulnerabilityType.FULLY_VULNERABLE;
     private Faction faction = Faction.ZOMBIES;
 
@@ -192,6 +193,14 @@ public class Zombie extends Item implements Attack {
     public void tick(double deltaTimeSeconds, GameSession session) {
         if (!isAlive()) return;
 
+        if (status != Status.NORMAL && statusRemainingSeconds != Double.POSITIVE_INFINITY) {
+            statusRemainingSeconds -= deltaTimeSeconds;
+            if (statusRemainingSeconds <= 0) {
+                status = Status.NORMAL;
+                statusRemainingSeconds = 0;
+            }
+        }
+
         ZombieFactory.respawnPushedStructureIfNeeded(this);
 
         if (zombieEffectStatus != null) {
@@ -221,7 +230,10 @@ public class Zombie extends Item implements Attack {
         Position vel = getSpeed();
         if (pos == null || vel == null) return;
 
-        double speedMultiplier = (status == Status.FREEZE) ? 0.5 : (status == Status.BUTTER) ? 0 : 1.0;
+        double speedMultiplier = (status == Status.FREEZE) ? 0.5
+                : (status == Status.CHILLED) ? 0.7
+                : (status == Status.BUTTER) ? 0
+                : 1.0;
         setPosition(new Position(
                 pos.x() + vel.x() * deltaTimeSeconds * speedMultiplier,
                 pos.y() + vel.y() * deltaTimeSeconds * speedMultiplier
@@ -288,7 +300,31 @@ public class Zombie extends Item implements Attack {
     public boolean isGlowing() { return isGlowing; }
     public String getAlias() { return name; }
     public Status getStatus() { return this.status; }
-    public void setStatus(Status status) { this.status = status; }
+
+    public void setStatus(Status status) {
+        setStatus(status, defaultStatusDuration(status));
+    }
+
+    public void setStatus(Status status, double durationSeconds) {
+        this.status = status;
+        this.statusRemainingSeconds = (status == Status.NORMAL) ? 0 : durationSeconds;
+    }
+
+    public double getStatusRemainingSeconds() {
+        return statusRemainingSeconds;
+    }
+
+    private static double defaultStatusDuration(Status status) {
+        return switch (status) {
+            case CHILLED -> 4.0;
+            case FREEZE -> 2.0;
+            case FIRED -> 3.0;
+            case BUTTER -> 3.0;
+            case POISONED -> 5.0;
+            case HYPNOTIZED -> Double.POSITIVE_INFINITY;
+            default -> 0.0;
+        };
+    }
     public boolean isFacingRight() { return isFacingRight; }
     public void setFacingRight(boolean facingRight) { isFacingRight = facingRight; }
     public boolean hasPlantFood() { return hasPlantFood; }
