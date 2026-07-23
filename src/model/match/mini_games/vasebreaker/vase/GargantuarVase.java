@@ -6,27 +6,27 @@ import model.match.mini_games.vasebreaker.Vasebreaker;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 
-public class ZombieVase extends Vase {
-    private static final String ZOMBIE_ALIAS = "ZombieDefault";
+public class GargantuarVase extends Vase {
+    private static final String GARGANTUAR_ALIAS = "ZombieGargantuar";
 
-    public ZombieVase(Position position) {
+    public GargantuarVase(Position position) {
         super(position);
     }
 
     @Override
     public VaseType getVaseType() {
-        return VaseType.ZOMBIE;
+        return VaseType.GARGANTUAR;
     }
 
     @Override
     protected void onBreak(GameSession session, Vasebreaker minigame) {
-        Zombie zombie = ZombieFactory.create(ZOMBIE_ALIAS, (int) position.y(), (int) position.x());
+        Zombie zombie = ZombieFactory.create(GARGANTUAR_ALIAS, (int) position.y(), (int) position.x());
         zombie.setPosition(position);
         session.spawnZombie(zombie);
     }
 
     @Override
     public String getRevealedContents() {
-        return "Zombie vase (ZombieDefault)";
+        return "Gargantuar vase (ZombieGargantuar)";
     }
 }

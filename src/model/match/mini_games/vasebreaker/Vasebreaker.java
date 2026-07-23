@@ -2,7 +2,11 @@ package model.match.mini_games.vasebreaker;
 
 import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
+import model.collections.plant.PlantJsonParser;
+import model.collections.item.GroundItem;
+import model.collections.zombie.Zombie;
 import model.match.mini_games.MiniGameMode;
+import model.match.mini_games.vasebreaker.vase.GargantuarVase;
 import model.match.mini_games.vasebreaker.vase.PlantVase;
 import model.match.mini_games.vasebreaker.vase.RandomVase;
 import model.match.mini_games.vasebreaker.vase.Vase;
@@ -10,59 +14,80 @@ import model.match.mini_games.vasebreaker.vase.ZombieVase;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Environment;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
-/**
- * Break every vase on the lawn without letting a zombie that was hiding
- * inside one of them reach the house. No sun falls from the sky here, and
- * the player never chooses plants directly — vases are the only source of
- * both plants and zombies.
- */
 public class Vasebreaker extends MiniGameMode {
     private static final double DROPPED_SEED_LIFETIME_SECONDS = 10.0;
     private static final Random RAND = new Random();
+    private static final int[] DEFAULT_PLANTS = {1, 6, 44, 23, 30};
 
     private final GameSession session;
     private final List<Vase> vases = new ArrayList<>();
     private final List<DroppedSeedPacket> droppedPackets = new ArrayList<>();
+    private final Map<Integer, Integer> seedInventory = new LinkedHashMap<>();
+    private final List<String> eventLog = new ArrayList<>();
     private final List<String> zombiePool;
+    private final int[] unlockedPlantIds;
 
     public Vasebreaker(int difficulty, int[] unlockedPlantIds) {
         setDifficulty(difficulty);
         this.session = new GameSession(5, 9);
         configureSession(session);
         session.setSkySunEnabled(false);
+        this.unlockedPlantIds = normalisePlantIds(unlockedPlantIds);
         this.zombiePool = zombiePoolFor(getDifficulty());
-        layoutVases(unlockedPlantIds);
+        layoutVases();
+        log("Vasebreaker level " + getDifficulty() + " is ready. Break every vase.");
     }
 
-    private void layoutVases(int[] unlockedPlantIds) {
+    private int[] normalisePlantIds(int[] requested) {
+        if (requested == null || requested.length == 0) return DEFAULT_PLANTS.clone();
+
+        List<Integer> valid = new ArrayList<>();
+        Map<Integer, PlantJsonParser.PlantConfig> blueprints = PlantFactory.getBlueprints();
+        for (int id : requested) {
+            if (blueprints.containsKey(id) && !valid.contains(id)) valid.add(id);
+        }
+        if (valid.isEmpty()) return DEFAULT_PLANTS.clone();
+        return valid.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private void layoutVases() {
         int vaseCount = 6 + (getDifficulty() - 1) * 4; // 6, 10, 14
-        int gargantuarVases = getDifficulty() >= 3 ? 1 : 0;
+        int zombieVases = Math.max(1, getDifficulty());
+        // Keep one clearly identifiable giant vase on every mini-game index;
+        // later indices still become harder through extra zombie/random vases.
+        int gargantuarVases = 1;
         int plantVases = 2 + getDifficulty();
 
         Environment env = session.getEnvironment();
         List<Position> spots = candidateSpots(env);
-        java.util.Collections.shuffle(spots, RAND);
+        Collections.shuffle(spots, RAND);
 
-        int placed = 0;
-        for (Position spot : spots) {
-            if (placed >= vaseCount) break;
-            vases.add(nextVase(placed, plantVases, gargantuarVases, spot, unlockedPlantIds));
-            placed++;
+        for (int index = 0; index < vaseCount; index++) {
+            Position spot = spots.get(index);
+            if (index < zombieVases) {
+                vases.add(new ZombieVase(spot));
+            } else if (index < zombieVases + gargantuarVases) {
+                vases.add(new GargantuarVase(spot));
+            } else if (index < zombieVases + gargantuarVases + plantVases) {
+                vases.add(new PlantVase(spot, randomPlantId()));
+            } else {
+                vases.add(new RandomVase(spot, unlockedPlantIds, zombiePool.toArray(String[]::new)));
+            }
         }
     }
 
-    private Vase nextVase(int index, int plantVases, int gargantuarVases, Position spot, int[] unlockedPlantIds) {
-        if (index < gargantuarVases) return new ZombieVase(spot);
-        if (index < gargantuarVases + plantVases) {
-            int plantId = unlockedPlantIds[RAND.nextInt(unlockedPlantIds.length)];
-            return new PlantVase(spot, plantId);
-        }
-        return new RandomVase(spot, unlockedPlantIds, zombiePool.toArray(String[]::new));
+    private int randomPlantId() {
+        return unlockedPlantIds[RAND.nextInt(unlockedPlantIds.length)];
     }
 
     private List<Position> candidateSpots(Environment env) {
@@ -76,13 +101,47 @@ public class Vasebreaker extends MiniGameMode {
     }
 
     public boolean breakVaseAt(int row, int col) {
+        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) {
+            return false;
+        }
+
         for (Vase vase : vases) {
-            if (!vase.isBroken() && (int) vase.getPosition().y() == row && (int) vase.getPosition().x() == col) {
+            if (!vase.isBroken()
+                    && (int) vase.getPosition().y() == row
+                    && (int) vase.getPosition().x() == col) {
+                String before = vase.getDisplayName();
                 vase.breakVase(session, this);
+                String result = vase.getRevealedContents();
+                log("Broke " + before + " at (" + (col + 1) + ", " + (row + 1)
+                        + "). Result: " + result + ".");
+                announceBreakResult(vase, row, col);
                 return true;
             }
         }
         return false;
+    }
+
+    private void announceBreakResult(Vase vase, int row, int col) {
+        if (vase instanceof PlantVase || (vase instanceof RandomVase random
+                && random.getContent() == RandomVase.Content.PLANT)) {
+            DroppedSeedPacket packet = droppedPackets.stream()
+                    .filter(candidate -> !candidate.collected
+                            && (int) candidate.position.y() == row
+                            && (int) candidate.position.x() == col)
+                    .findFirst().orElse(null);
+            if (packet != null) {
+                log("A " + plantName(packet.plantId) + " seed packet dropped at ("
+                        + (col + 1) + ", " + (row + 1)
+                        + "). Collect it before it disappears.");
+            }
+        } else if (vase instanceof GargantuarVase) {
+            log("A Gargantuar appeared at (" + (col + 1) + ", " + (row + 1) + ").");
+        } else if (vase instanceof ZombieVase
+                || (vase instanceof RandomVase random && random.getContent() == RandomVase.Content.ZOMBIE)) {
+            log("A zombie appeared at (" + (col + 1) + ", " + (row + 1) + ").");
+        } else {
+            log("The vase was empty.");
+        }
     }
 
     public void dropSeedPacket(Position position, int plantId) {
@@ -90,25 +149,88 @@ public class Vasebreaker extends MiniGameMode {
     }
 
     public boolean collectSeedPacket(int row, int col) {
+        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) {
+            return false;
+        }
+
         for (DroppedSeedPacket packet : droppedPackets) {
-            if (!packet.collected && (int) packet.position.y() == row && (int) packet.position.x() == col) {
+            if (!packet.collected
+                    && (int) packet.position.y() == row
+                    && (int) packet.position.x() == col) {
                 packet.collected = true;
-                Plant plant = PlantFactory.createPlant(packet.plantId, 1, packet.position);
-                return session.plantAt(row, col, plant);
+                seedInventory.merge(packet.plantId, 1, Integer::sum);
+                log("Collected " + plantName(packet.plantId) + " seed packet from ("
+                        + (col + 1) + ", " + (row + 1) + "). Inventory: "
+                        + seedInventory.get(packet.plantId) + ".");
+                return true;
             }
         }
         return false;
     }
 
+    public boolean plantSeed(String plantName, int row, int col) {
+        Integer plantId = findPlantId(plantName);
+        if (plantId == null) return false;
+        return plantSeed(plantId, row, col);
+    }
+
+    public boolean plantSeed(int plantId, int row, int col) {
+        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) {
+            return false;
+        }
+        int amount = seedInventory.getOrDefault(plantId, 0);
+        if (amount <= 0) return false;
+
+        Plant plant = PlantFactory.createPlant(plantId, 1, new Position(col, row));
+        if (!session.plantAt(row, col, plant)) return false;
+
+        if (amount == 1) seedInventory.remove(plantId);
+        else seedInventory.put(plantId, amount - 1);
+        log("Planted " + plant.getName() + " from a seed packet at ("
+                + (col + 1) + ", " + (row + 1) + ").");
+        return true;
+    }
+
+    private Integer findPlantId(String plantName) {
+        if (plantName == null) return null;
+        String wanted = plantName.trim();
+        String normalizedWanted = wanted.toLowerCase()
+                .replace("-", "").replace("_", "").replace(" ", "");
+        return PlantFactory.getBlueprints().values().stream()
+                .filter(config -> config.name.equalsIgnoreCase(wanted)
+                        || config.name.toLowerCase().replace("-", "")
+                        .replace("_", "").replace(" ", "").equals(normalizedWanted)
+                        || String.valueOf(config.id).equals(wanted))
+                .map(config -> config.id)
+                .findFirst().orElse(null);
+    }
+
+    private String plantName(int plantId) {
+        PlantJsonParser.PlantConfig config = PlantFactory.getBlueprints().get(plantId);
+        return config == null ? "Plant#" + plantId : config.name;
+    }
+
     public void tick(double deltaSeconds) {
+        if (isWon() || isLost()) return;
         session.tick();
-        droppedPackets.forEach(packet -> packet.timeLeft -= deltaSeconds);
+        for (DroppedSeedPacket packet : droppedPackets) {
+            if (!packet.collected) packet.timeLeft -= Math.max(0, deltaSeconds);
+        }
+
+        List<DroppedSeedPacket> expired = droppedPackets.stream()
+                .filter(packet -> !packet.collected && packet.timeLeft <= 0)
+                .toList();
+        for (DroppedSeedPacket packet : expired) {
+            log("The " + plantName(packet.plantId) + " seed packet at ("
+                    + ((int) packet.position.x() + 1) + ", "
+                    + ((int) packet.position.y() + 1) + ") disappeared.");
+        }
         droppedPackets.removeIf(packet -> packet.collected || packet.timeLeft <= 0);
     }
 
     public boolean isWon() {
         return vases.stream().allMatch(Vase::isBroken)
-                && session.getZombies().stream().noneMatch(Zombie -> Zombie.isAlive())
+                && session.getZombies().stream().noneMatch(Zombie::isAlive)
                 && !session.isGameOver();
     }
 
@@ -120,6 +242,34 @@ public class Vasebreaker extends MiniGameMode {
     public List<Vase> getVases() { return vases; }
     public List<DroppedSeedPacket> getDroppedPackets() { return droppedPackets; }
     public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+    public Map<Integer, Integer> getSeedInventory() { return Map.copyOf(seedInventory); }
+
+    public List<String> getSeedInventoryNames() {
+        return seedInventory.entrySet().stream()
+                .map(entry -> plantName(entry.getKey()) + " x" + entry.getValue())
+                .toList();
+    }
+
+    public Vase getVaseAt(int row, int col) {
+        return vases.stream()
+                .filter(vase -> (int) vase.getPosition().y() == row
+                        && (int) vase.getPosition().x() == col)
+                .findFirst().orElse(null);
+    }
+
+    public String renderZombiesInfo() {
+        return session.renderZombiesInfo();
+    }
+
+    public String renderPlantsInfo() {
+        if (session.getPlants().isEmpty()) return "no plants on the field";
+        return session.getPlants().stream()
+                .filter(Plant::isAlive)
+                .map(plant -> plant.getName() + " | hp: " + plant.getHP()
+                        + " | position: (" + ((int) plant.getPosition().x() + 1)
+                        + ", " + ((int) plant.getPosition().y() + 1) + ")")
+                .collect(Collectors.joining("\n"));
+    }
 
     public String renderState() {
         int rows = session.getRows();
@@ -129,33 +279,92 @@ public class Vasebreaker extends MiniGameMode {
 
         for (Vase vase : vases) {
             if (!vase.isBroken()) {
-                board[(int) vase.getPosition().y()][(int) vase.getPosition().x()] = 'V';
+                board[(int) vase.getPosition().y()][(int) vase.getPosition().x()] = vase.getMapSymbol();
             }
         }
         for (DroppedSeedPacket packet : droppedPackets) {
-            if (!packet.collected) board[(int) packet.position.y()][(int) packet.position.x()] = 'S';
+            if (!packet.collected) {
+                board[(int) packet.position.y()][(int) packet.position.x()] = 'S';
+            }
         }
-        session.getZombies().stream().filter(zombie -> zombie.isAlive() && zombie.getPosition() != null)
-                .forEach(zombie -> {
-                    int row = (int) Math.round(zombie.getPosition().y());
-                    int col = (int) Math.round(zombie.getPosition().x());
-                    if (row >= 0 && row < rows && col >= 0 && col < cols) board[row][col] = 'Z';
-                });
+        for (Plant plant : session.getPlants()) {
+            if (plant.isAlive() && plant.getPosition() != null) {
+                int row = (int) Math.round(plant.getPosition().y());
+                int col = (int) Math.round(plant.getPosition().x());
+                if (row >= 0 && row < rows && col >= 0 && col < cols) board[row][col] = 'P';
+            }
+        }
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie.isAlive() && zombie.getPosition() != null) {
+                int row = (int) Math.round(zombie.getPosition().y());
+                int col = (int) Math.round(zombie.getPosition().x());
+                if (row >= 0 && row < rows && col >= 0 && col < cols) board[row][col] = 'Z';
+            }
+        }
 
         StringBuilder result = new StringBuilder(getStageDetails())
-                .append(" | Vases left: ").append(vases.stream().filter(vase -> !vase.isBroken()).count())
-                .append(" | Live zombies: ").append(session.getZombies().stream().filter(zombie -> zombie.isAlive()).count())
+                .append(" | Vases left: ")
+                .append(vases.stream().filter(vase -> !vase.isBroken()).count())
+                .append(" | Live zombies: ")
+                .append(session.getZombies().stream().filter(Zombie::isAlive).count())
                 .append("\n");
         for (int row = 0; row < rows; row++) {
             result.append(row + 1).append(" ").append(board[row]).append("\n");
         }
-        return result.append("(V=vase, S=seed packet, Z=zombie, .=empty)").toString();
+        result.append("(?=normal vase, P=plant seed vase, Z=zombie vase, G=Gargantuar vase, ")
+                .append("S=seed packet, .=empty)\n");
+        result.append("Vases:\n");
+        for (Vase vase : vases) {
+            if (!vase.isBroken()) {
+                result.append("  ").append(vase.getDisplayName()).append(" at (")
+                        .append((int) vase.getPosition().x() + 1).append(", ")
+                        .append((int) vase.getPosition().y() + 1).append(")\n");
+            }
+        }
+        result.append("Seeds: ")
+                .append(seedInventory.isEmpty() ? "none" : getSeedInventoryNames())
+                .append("\n");
+        result.append("Plants:\n  ").append(renderPlantsInfo().replace("\n", "\n  ")).append("\n");
+        result.append("Zombies:\n  ").append(renderZombiesInfo().replace("\n", "\n  "));
+        String items = renderGroundItems();
+        if (!items.isBlank()) result.append("\nGround items:\n  ")
+                .append(items.replace("\n", "\n  "));
+        if (!eventLog.isEmpty()) {
+            result.append("\nRecent events:\n  ")
+                    .append(String.join("\n  ", eventLog));
+        }
+        return result.toString();
+    }
+
+    private String renderGroundItems() {
+        return session.getItems().stream()
+                .filter(GroundItem.class::isInstance)
+                .map(GroundItem.class::cast)
+                .filter(item -> item.isAlive() && item.getPosition() != null)
+                .map(item -> item.getItemType().name().toLowerCase() + " at ("
+                        + ((int) Math.round(item.getPosition().x()) + 1) + ", "
+                        + ((int) Math.round(item.getPosition().y()) + 1) + ")")
+                .collect(Collectors.joining("\n"));
+    }
+
+    public String renderSeeds() {
+        if (seedInventory.isEmpty()) return "Seeds: none";
+        return "Seeds:\n" + getSeedInventoryNames().stream()
+                .map(name -> "  " + name)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private void log(String message) {
+        eventLog.add(message);
+        if (eventLog.size() > 12) eventLog.remove(0);
+        GeneralPrinter.print(message);
     }
 
     private List<String> zombiePoolFor(int level) {
         return switch (level) {
-            case 2 -> List.of("ZombieDefault", "ZombieArmor1", "ZombieArmor2", "ZombieProspector");
-            case 3 -> List.of("ZombieArmor1", "ZombieArmor2", "ZombieArmor4", "ZombieNewspaper");
+            case 2 -> List.of("ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor2");
+            case 3 -> List.of("ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor2",
+                    "ZombieNewspaper", "ZombieGargantuar");
             default -> List.of("ZombieDefault", "ZombieImp", "ZombieArmor1");
         };
     }

@@ -18,6 +18,16 @@ public class PlantVase extends Vase {
     public int getPlantId() { return plantId; }
 
     @Override
+    public VaseType getVaseType() {
+        return VaseType.PLANT_SEED;
+    }
+
+    @Override
+    public String getRevealedContents() {
+        return "Plant seed vase (plant id " + plantId + ")";
+    }
+
+    @Override
     protected void onBreak(GameSession session, Vasebreaker minigame) {
         minigame.dropSeedPacket(position, plantId);
     }

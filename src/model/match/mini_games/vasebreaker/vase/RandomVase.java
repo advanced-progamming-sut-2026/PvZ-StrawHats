@@ -40,6 +40,15 @@ public class RandomVase extends Vase {
     public Content getContent() { return content; }
 
     @Override
+    public String getRevealedContents() {
+        return switch (content) {
+            case EMPTY -> "Empty normal vase";
+            case ZOMBIE -> "Zombie hidden in normal vase";
+            case PLANT -> "Plant seed hidden in normal vase (plant id " + plantId + ")";
+        };
+    }
+
+    @Override
     protected void onBreak(GameSession session, Vasebreaker minigame) {
         switch (content) {
             case ZOMBIE -> {

@@ -5,6 +5,13 @@ import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 
 public abstract class Vase {
+    public enum VaseType {
+        NORMAL,
+        PLANT_SEED,
+        ZOMBIE,
+        GARGANTUAR
+    }
+
     protected final Position position;
     private boolean broken = false;
 
@@ -15,9 +22,30 @@ public abstract class Vase {
     public Position getPosition() { return position; }
     public boolean isBroken() { return broken; }
 
-    /**
-     * Breaks the vase (no-op if already broken) and releases whatever was inside it.
-     */
+    public VaseType getVaseType() { return VaseType.NORMAL; }
+
+    public String getDisplayName() {
+        return switch (getVaseType()) {
+            case PLANT_SEED -> "Plant seed vase";
+            case ZOMBIE -> "Zombie vase";
+            case GARGANTUAR -> "Gargantuar vase";
+            case NORMAL -> "Normal vase";
+        };
+    }
+
+    public char getMapSymbol() {
+        return switch (getVaseType()) {
+            case PLANT_SEED -> 'P';
+            case ZOMBIE -> 'Z';
+            case GARGANTUAR -> 'G';
+            case NORMAL -> '?';
+        };
+    }
+
+    public String getRevealedContents() {
+        return getDisplayName();
+    }
+
     public final void breakVase(GameSession session, Vasebreaker minigame) {
         if (broken) return;
         broken = true;
