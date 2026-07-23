@@ -20,12 +20,14 @@ import java.util.*;
 public class Beghouled extends MiniGameMode {
     private static final Random RAND = new Random();
     private static final int SUN_PER_UNIT = 50;
-    private static final double RESPAWN_WAVE_INTERVAL = 20.0;
 
     private final GameSession session;
     private final int[] boardPlantIds; // the five plant types seeded on this level's board
     private final Map<String, UpgradePath> upgradePaths;
     private final int matchesNeeded;
+    private final double respawnWaveInterval;
+    private final int zombiesPerSpawn;
+    private final List<String> zombiePool;
 
     private int matchesMade = 0;
     private double timeSinceLastWave = 0;
@@ -33,11 +35,19 @@ public class Beghouled extends MiniGameMode {
     public Beghouled(int difficulty) {
         setDifficulty(difficulty);
         this.session = new GameSession(5, 9);
-        this.boardPlantIds = plantPoolFor(difficulty);
+        configureSession(session);
+        session.setSkySunEnabled(false);
+        this.boardPlantIds = plantPoolFor(getDifficulty());
         this.upgradePaths = buildUpgradePaths();
-        this.matchesNeeded = 5 + difficulty * 3;
+        this.matchesNeeded = 5 + getDifficulty() * 3;
+        this.respawnWaveInterval = switch (getDifficulty()) {
+            case 2 -> 16.0;
+            case 3 -> 12.0;
+            default -> 20.0;
+        };
+        this.zombiesPerSpawn = getDifficulty();
+        this.zombiePool = zombiePoolFor(getDifficulty());
         seedBoard();
-        session.startWaves();
     }
 
     private int[] plantPoolFor(int difficulty) {
@@ -66,12 +76,13 @@ public class Beghouled extends MiniGameMode {
                 placeRandomPlant(row, col);
             }
         }
+        ensurePlayableBoard();
     }
 
     private void placeRandomPlant(int row, int col) {
         int plantId = boardPlantIds[RAND.nextInt(boardPlantIds.length)];
         Plant plant = PlantFactory.createPlant(plantId, 1, new Position(col, row));
-        session.getEnvironment().getCell(row, col).setPlant(plant);
+        session.plantAt(row, col, plant);
     }
 
     private boolean isCrater(int row, int col) {
@@ -154,7 +165,7 @@ public class Beghouled extends MiniGameMode {
             awardSun(group.size(), bonusUnits);
             matchesMade++;
             for (int[] cell : group) {
-                session.getEnvironment().getCell(cell[0], cell[1]).setPlant(null);
+                session.removePlantAt(cell[0], cell[1]);
             }
         }
 
@@ -309,9 +320,17 @@ public class Beghouled extends MiniGameMode {
         Environment env = session.getEnvironment();
         for (int row = 0; row < env.getRows(); row++) {
             for (int col = 0; col < env.getCols(); col++) {
-                if (!isCrater(row, col)) placeRandomPlant(row, col);
+                if (!isCrater(row, col)) {
+                    session.removePlantAt(row, col);
+                    placeRandomPlant(row, col);
+                }
             }
         }
+    }
+
+    private void ensurePlayableBoard() {
+        int attempts = 0;
+        while (!anyMoveWouldMatch() && attempts++ < 20) resetBoard();
     }
 
     public boolean upgrade(String plantName) {
@@ -324,7 +343,8 @@ public class Beghouled extends MiniGameMode {
                 Integer id = plantIdAt(row, col);
                 if (id != null && id == path.fromId) {
                     Plant upgraded = PlantFactory.createPlant(path.toId, 1, new Position(col, row));
-                    session.getEnvironment().getCell(row, col).setPlant(upgraded);
+                    session.removePlantAt(row, col);
+                    session.plantAt(row, col, upgraded);
                 }
             }
         }
@@ -332,33 +352,48 @@ public class Beghouled extends MiniGameMode {
     }
 
     public void tick(double deltaSeconds) {
-        markCratersFromDeadPlants();
+        Set<Long> occupiedBeforeTick = occupiedPlantCells();
         session.tick();
+        markCratersWherePlantsWereEaten(occupiedBeforeTick);
         timeSinceLastWave += deltaSeconds;
-        if (timeSinceLastWave >= RESPAWN_WAVE_INTERVAL) {
+        if (timeSinceLastWave >= respawnWaveInterval) {
             timeSinceLastWave = 0;
             spawnEndlessWave();
         }
     }
 
-    private void markCratersFromDeadPlants() {
+    private Set<Long> occupiedPlantCells() {
+        Set<Long> occupied = new HashSet<>();
         Environment env = session.getEnvironment();
         for (int row = 0; row < env.getRows(); row++) {
             for (int col = 0; col < env.getCols(); col++) {
                 Cell cell = env.getCell(row, col);
-                if (cell.getPlant() != null && !cell.getPlant().isAlive()) {
-                    cell.setObstacle(new Crater());
-                    cell.setPlant(null);
-                }
+                if (cell.getPlant() != null && cell.getPlant().isAlive()) occupied.add(key(row, col));
+            }
+        }
+        return occupied;
+    }
+
+    private void markCratersWherePlantsWereEaten(Set<Long> occupiedBeforeTick) {
+        Environment env = session.getEnvironment();
+        for (long position : occupiedBeforeTick) {
+            int row = (int) (position >> 32);
+            int col = (int) position;
+            Cell cell = env.getCell(row, col);
+            if (cell != null && cell.getPlant() == null && cell.getObstacle() == null) {
+                cell.setObstacle(new Crater());
             }
         }
     }
 
     private void spawnEndlessWave() {
-        int lane = RAND.nextInt(session.getEnvironment().getRows());
-        Zombie zombie = ZombieFactory.create("ZombieDefault", lane, session.getEnvironment().getCols() - 1);
-        zombie.setPosition(new Position(session.getEnvironment().getCols() - 1, lane));
-        session.spawnZombie(zombie);
+        for (int i = 0; i < zombiesPerSpawn; i++) {
+            int lane = RAND.nextInt(session.getEnvironment().getRows());
+            String alias = zombiePool.get(RAND.nextInt(zombiePool.size()));
+            Zombie zombie = ZombieFactory.create(alias, lane, session.getEnvironment().getCols() - 1);
+            zombie.setPosition(new Position(session.getEnvironment().getCols() - 1, lane));
+            session.spawnZombie(zombie);
+        }
     }
 
     public boolean isWon() {
@@ -372,6 +407,37 @@ public class Beghouled extends MiniGameMode {
     public int getMatchesMade() { return matchesMade; }
     public int getMatchesNeeded() { return matchesNeeded; }
     public GameSession getSession() { return session; }
+    public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+
+    public String renderState() {
+        StringBuilder result = new StringBuilder(getStageDetails())
+                .append(" | Matches: ").append(matchesMade).append("/").append(matchesNeeded)
+                .append(" | Sun: ").append(session.getSunCount())
+                .append(" | Next zombies in: ").append(String.format("%.1fs", Math.max(0, respawnWaveInterval - timeSinceLastWave)))
+                .append("\n");
+        Environment env = session.getEnvironment();
+        for (int row = 0; row < env.getRows(); row++) {
+            result.append(row + 1).append(" ");
+            for (int col = 0; col < env.getCols(); col++) {
+                Cell cell = env.getCell(row, col);
+                if (cell.getObstacle() != null) result.append(" XX");
+                else if (cell.getPlant() == null) result.append(" ..");
+                else result.append(String.format(" %02d", cell.getPlant().getId()));
+            }
+            result.append("\n");
+        }
+        return result.append("Live zombies: ")
+                .append(session.getZombies().stream().filter(Zombie::isAlive).count())
+                .append(" | Zombie pool: ").append(zombiePool).toString();
+    }
+
+    private List<String> zombiePoolFor(int level) {
+        return switch (level) {
+            case 2 -> List.of("ZombieDefault", "ZombieImp", "ZombieArmor1");
+            case 3 -> List.of("ZombieImp", "ZombieArmor1", "ZombieArmor2", "ZombieProspector");
+            default -> List.of("ZombieDefault");
+        };
+    }
 
     private static class UpgradePath {
         final int fromId;

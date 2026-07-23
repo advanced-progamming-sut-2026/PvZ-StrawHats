@@ -1,7 +1,7 @@
 package model.match_mechanisms;
 
 import model.collections.zombie.Zombie;
-import model.utils.GameSession;
+import model.collections.zombie.ZombieFactory;
 
 import java.util.List;
 
@@ -53,7 +53,7 @@ public class ZombieWave {
      */
     public int getWaveCost() {
         if (waveZombies == null) return 0;
-        return waveZombies.stream().mapToInt(GameSession.difficulty).sum();
+        return waveZombies.stream().mapToInt(zombie -> ZombieFactory.getZombieCost(zombie.getAlias())).sum();
     }
 
     @Override

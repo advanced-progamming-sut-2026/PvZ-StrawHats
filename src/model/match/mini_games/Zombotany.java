@@ -1,6 +1,8 @@
 package model.match.mini_games;
 
 import model.collections.plant.Plant;
+import model.collections.plant.PlantFactory;
+import model.collections.plant.PlantJsonParser;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.match_mechanisms.vector.Position;
@@ -32,15 +34,24 @@ public class Zombotany extends MiniGameMode {
     private static final double JALAPENO_FUSE_SECONDS = 10.0;
     private static final double SQUASH_TOUCH_DISTANCE = 0.4;
     private static final int SQUASH_SPEED_MULTIPLIER = 3;
+    private static final int INITIAL_SUN = 500;
 
     private final GameSession session;
+    private final List<String> availablePlants;
+    private final List<String> zombiePool = List.of(
+            PEASHOOTER_ZOMBIE, WALLNUT_ZOMBIE, JALAPENO_ZOMBIE, SQUASH_ZOMBIE
+    );
     private final Map<Zombie, Double> peashooterCooldowns = new HashMap<>();
     private final Map<Zombie, Double> jalapenoFuses = new HashMap<>();
 
     public Zombotany(int difficulty) {
         setDifficulty(difficulty);
         this.session = new GameSession(5, 9);
-        this.session.addSun(150);
+        configureSession(session);
+        this.availablePlants = availablePlantsFor(getDifficulty());
+        this.session.addSun(INITIAL_SUN);
+        this.session.setWaves(wavesFor(getDifficulty()));
+        this.session.startWaves();
     }
 
     /**
@@ -70,10 +81,7 @@ public class Zombotany extends MiniGameMode {
 
     public void tick(double deltaSeconds) {
         session.tick();
-        tickPeashooterZombies(deltaSeconds);
-        tickJalapenoZombies(deltaSeconds);
-        tickSquashZombies();
-        forgetDeadZombies();
+        // Zombotany powers are configured on the zombie blueprints and run in GameSession.
     }
 
     private void tickPeashooterZombies(double deltaSeconds) {
@@ -161,4 +169,80 @@ public class Zombotany extends MiniGameMode {
     }
 
     public GameSession getSession() { return session; }
+
+    public List<String> getAvailablePlants() { return List.copyOf(availablePlants); }
+    public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+
+    public boolean plantAt(String plantName, int row, int col) {
+        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return false;
+        if (availablePlants.stream().noneMatch(name -> name.equalsIgnoreCase(plantName))) return false;
+
+        PlantJsonParser.PlantConfig config = PlantFactory.getBlueprints().values().stream()
+                .filter(candidate -> candidate.name.equalsIgnoreCase(plantName))
+                .findFirst().orElse(null);
+        if (config == null || !session.isPlantReady(config.id)) return false;
+
+        Plant plant = PlantFactory.createPlant(config.id, 1, new Position(col, row));
+        if (session.getSunCount() < plant.getCost() || !session.plantAt(row, col, plant)) return false;
+
+        session.spendSun(plant.getCost());
+        session.startPlantCooldown(config.id, plant.getRecharge());
+        return true;
+    }
+
+    public String renderState() {
+        String plantsOnField = session.getPlants().stream()
+                .filter(Plant::isAlive)
+                .map(plant -> plant.getName() + " at ("
+                        + ((int) plant.getLocation().x() + 1) + ", "
+                        + ((int) plant.getLocation().y() + 1) + ")"
+                        + " hp=" + plant.getHP())
+                .collect(java.util.stream.Collectors.joining("\n  "));
+        if (plantsOnField.isEmpty()) plantsOnField = "none";
+
+        return getStageDetails()
+                + " | Available plants: " + availablePlants
+                + " | Zombie pool: " + zombiePool
+                + "\n" + session.renderMap()
+                + "\nPlants on the field:\n  " + plantsOnField;
+    }
+
+    private List<String> availablePlantsFor(int level) {
+        return switch (level) {
+            case 2 -> List.of("Sunflower", "Peashooter", "Repeater", "Wall-nut", "Potato Mine");
+            case 3 -> List.of("Sunflower", "Peashooter", "Repeater", "Snow Pea", "Wall-nut", "Tall-nut", "Chomper");
+            default -> List.of("Sunflower", "Peashooter", "Wall-nut");
+        };
+    }
+
+    private List<model.match_mechanisms.ZombieWave> wavesFor(int level) {
+        return switch (level) {
+            case 2 -> MiniGameWaves.create(session,
+                    new double[] {8, 18, 22, 26},
+                    new String[][] {
+                            {PEASHOOTER_ZOMBIE, SQUASH_ZOMBIE},
+                            {JALAPENO_ZOMBIE, WALLNUT_ZOMBIE},
+                            {PEASHOOTER_ZOMBIE, PEASHOOTER_ZOMBIE, JALAPENO_ZOMBIE, SQUASH_ZOMBIE},
+                            {WALLNUT_ZOMBIE, WALLNUT_ZOMBIE, JALAPENO_ZOMBIE, JALAPENO_ZOMBIE,
+                                    PEASHOOTER_ZOMBIE, PEASHOOTER_ZOMBIE, SQUASH_ZOMBIE}
+                    });
+            case 3 -> MiniGameWaves.create(session,
+                    new double[] {7, 16, 20, 24},
+                    new String[][] {
+                            {WALLNUT_ZOMBIE, JALAPENO_ZOMBIE},
+                            {WALLNUT_ZOMBIE, SQUASH_ZOMBIE, PEASHOOTER_ZOMBIE},
+                            {WALLNUT_ZOMBIE, JALAPENO_ZOMBIE, SQUASH_ZOMBIE, PEASHOOTER_ZOMBIE},
+                            {WALLNUT_ZOMBIE, WALLNUT_ZOMBIE, JALAPENO_ZOMBIE, JALAPENO_ZOMBIE,
+                                    SQUASH_ZOMBIE, SQUASH_ZOMBIE, PEASHOOTER_ZOMBIE, PEASHOOTER_ZOMBIE}
+                    });
+            default -> MiniGameWaves.create(session,
+                    new double[] {10, 22, 28},
+                    new String[][] {
+                            {PEASHOOTER_ZOMBIE},
+                            {PEASHOOTER_ZOMBIE, SQUASH_ZOMBIE},
+                            {PEASHOOTER_ZOMBIE, PEASHOOTER_ZOMBIE, PEASHOOTER_ZOMBIE,
+                                    SQUASH_ZOMBIE, JALAPENO_ZOMBIE}
+                    });
+        };
+    }
 }

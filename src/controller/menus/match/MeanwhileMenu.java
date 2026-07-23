@@ -362,6 +362,9 @@ public class MeanwhileMenu extends Menu {
 
     @Override
     public String showMenu() {
+        var level = GameSession.getInstance().getLevel();
+        String stageDetails = level == null ? ""
+                : "\nStage: " + level.getName() + " | Game mode: " + level.getGameMode();
         String conveyorOffer = "";
         if (GameSession.getInstance().getLevel() instanceof ConveyorBeltLevel conveyor) {
             conveyorOffer = " | conveyor: "
@@ -370,7 +373,8 @@ public class MeanwhileMenu extends Menu {
         String startWaves = GameSession.getInstance().getLevel() instanceof PlantWhatYouGetLevel
                 && !GameSession.getInstance().isWavesStarted()
                 ? "\n  start zombie waves" : "";
-        return (paused ? "[ Match Paused ]" : "[ Match in Progress ]") + conveyorOffer + "\nCommands:\n"
+        return (paused ? "[ Match Paused ]" : "[ Match in Progress ]")
+                + stageDetails + conveyorOffer + "\nCommands:\n"
                 + "  plant plant -t <type> -l (<x>, <y>)\n"
                 + "  pluck plant -l (<x>, <y>) | dig plant at (<x>, <y>)\n"
                 + "  collect (<x>, <y>) | collect sun -l (<x>, <y>)\n"

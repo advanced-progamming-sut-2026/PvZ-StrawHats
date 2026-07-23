@@ -1,6 +1,8 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import controller.menus.TravelLogMenu;
+import model.App;
 import model.Regex;
 import model.match.mini_games.vasebreaker.Vasebreaker;
 import view.GeneralPrinter;
@@ -29,6 +31,9 @@ public class VasebreakerController extends Menu {
             handleCollect(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             advanceTime(text);
+        } else if (text.trim().equalsIgnoreCase("show map")
+                || text.trim().equalsIgnoreCase("show status")) {
+            GeneralPrinter.print(game.renderState());
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
             return;
@@ -47,14 +52,14 @@ public class VasebreakerController extends Menu {
 
     private void handleBreak(String text) {
         int[] coords = parseCoords(text);
-        if (!game.breakVaseAt(coords[1], coords[0])) {
+        if (!game.breakVaseAt(coords[1] - 1, coords[0] - 1)) {
             GeneralPrinter.print("There's no vase to break at (" + coords[0] + ", " + coords[1] + ").");
         }
     }
 
     private void handleCollect(String text) {
         int[] coords = parseCoords(text);
-        if (!game.collectSeedPacket(coords[1], coords[0])) {
+        if (!game.collectSeedPacket(coords[1] - 1, coords[0] - 1)) {
             GeneralPrinter.print("No seed packet to collect at (" + coords[0] + ", " + coords[1] + ").");
         }
     }
@@ -75,14 +80,16 @@ public class VasebreakerController extends Menu {
 
     @Override
     public void exitMenu() {
-        changeMenu("Game Menu");
+        App.currentMenu = new TravelLogMenu();
     }
 
     @Override
     public String showMenu() {
-        return "[ Vasebreaker Menu ]\nCommands:\n"
+        return "[ Vasebreaker Menu ]\n" + game.getStageDetails()
+                + " | Zombie pool: " + game.getZombiePool() + "\nCommands:\n"
                 + "  break vase -l (x,y)\n"
                 + "  collect seed -l (x,y)\n"
+                + "  show map | show status\n"
                 + "  advance time -t <n> ticks\n"
                 + "  menu exit | menu show current";
     }

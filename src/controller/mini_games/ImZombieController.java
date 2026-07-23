@@ -1,6 +1,8 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import controller.menus.TravelLogMenu;
+import model.App;
 import model.Regex;
 import model.match.mini_games.izombie.IZombie;
 import view.GeneralPrinter;
@@ -26,6 +28,9 @@ public class ImZombieController extends Menu {
             handlePlace(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             advanceTime(text);
+        } else if (text.trim().equalsIgnoreCase("show map")
+                || text.trim().equalsIgnoreCase("show status")) {
+            GeneralPrinter.print(game.renderState());
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
             return;
@@ -45,7 +50,7 @@ public class ImZombieController extends Menu {
     private void handlePlace(String text) {
         String[] tokens = text.split("\\s+");
         String alias = tokens[3];
-        int row = Integer.parseInt(tokens[5]);
+        int row = Integer.parseInt(tokens[5]) - 1;
 
         if (!game.placeZombie(alias, row)) {
             GeneralPrinter.print("Can't place " + alias + " right now (not enough sun, or unavailable this level).");
@@ -62,13 +67,15 @@ public class ImZombieController extends Menu {
 
     @Override
     public void exitMenu() {
-        changeMenu("Game Menu");
+        App.currentMenu = new TravelLogMenu();
     }
 
     @Override
     public String showMenu() {
-        return "[ I, Zombie Menu ]\nCommands:\n"
+        return "[ I, Zombie Menu ]\n" + game.getStageDetails()
+                + " | Zombie roster: " + game.getRoster() + "\nCommands:\n"
                 + "  place zombie -t <alias> -r <row>\n"
+                + "  show map | show status\n"
                 + "  advance time -t <n> ticks\n"
                 + "  menu exit | menu show current";
     }

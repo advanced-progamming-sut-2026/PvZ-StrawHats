@@ -26,6 +26,9 @@ import java.util.Map;
 
 public class LevelLoader {
     private static final Gson gson = new Gson();
+    private static final List<String> MINI_GAME_ONLY_ZOMBIES = List.of(
+            "ZombiePeashooter", "ZombieWallnut", "ZombieJalapeno", "ZombieSquash"
+    );
 
     public static List<Level> loadLevels() throws java.io.IOException {
         return loadLevels("Levels.json");
@@ -68,6 +71,9 @@ public class LevelLoader {
 
         level.setId(raw.get("id").getAsInt());
         level.setName(raw.get("name").getAsString());
+        level.setGameMode(raw.has("gameMode")
+                ? raw.get("gameMode").getAsString()
+                : defaultGameMode(type));
 
         String seasonName = raw.get("season").getAsString();
         level.setSeason(SeasonFactory.create(seasonName));
@@ -91,6 +97,12 @@ public class LevelLoader {
         }
         level.setForcedPlants(forcedPlants);
 
+        List<String> zombiePool = new ArrayList<>();
+        if (raw.has("zombiePool")) {
+            raw.get("zombiePool").getAsJsonArray().forEach(e -> zombiePool.add(e.getAsString()));
+        }
+        level.setZombiePool(zombiePool);
+
         if (raw.has("waves")) {
             JsonArray waveArray = raw.get("waves").getAsJsonArray();
             List<ZombieWave> waves = new ArrayList<>();
@@ -100,7 +112,9 @@ public class LevelLoader {
                 JsonArray zombieTypes = w.get("zombies").getAsJsonArray();
                 List<Zombie> zombies = new ArrayList<>();
                 for (var zt : zombieTypes) {
-                    Zombie z = ZombieFactory.create(zt.getAsString(), 0, level.getCols());
+                    String zombieType = zt.getAsString();
+                    validateAdventureZombie(level, zombieType);
+                    Zombie z = ZombieFactory.create(zombieType, 0, level.getCols());
                     z.setPosition(new Position(level.getCols(), 0));
                     zombies.add(z);
                 }
@@ -168,11 +182,24 @@ public class LevelLoader {
         } else if (level instanceof LoveYourPlantsLevel) {
             int maxLoss = raw.has("maxPlantLoss") ? raw.get("maxPlantLoss").getAsInt() : 3;
             ((LoveYourPlantsLevel) level).setMaxPlantLoss(maxLoss);
+        } else if (level instanceof PlantWhatYouGetLevel) {
+            ((PlantWhatYouGetLevel) level).setPrimarySun(initialSun);
         } else if (level instanceof BossLevel) {
             String bossType = raw.get("bossType").getAsString();
+            validateAdventureZombie(level, bossType);
             Zombie boss = ZombieFactory.create(bossType, 0, level.getCols());
             ((BossLevel) level).setBossZombie(boss);
-            level.getWaves().add(new ZombieWave(5, List.of(boss)));
+            List<Zombie> bossWave = new ArrayList<>();
+            bossWave.add(boss);
+            if (raw.has("bossEscorts")) {
+                raw.get("bossEscorts").getAsJsonArray().forEach(element -> {
+                    String escortType = element.getAsString();
+                    validateAdventureZombie(level, escortType);
+                    bossWave.add(ZombieFactory.create(escortType, 0, level.getCols()));
+                });
+            }
+            double bossDelay = raw.has("bossDelay") ? raw.get("bossDelay").getAsDouble() : 5;
+            level.getWaves().add(new ZombieWave(bossDelay, bossWave));
         }
 
         for (ZombieWave wave : level.getWaves()) wave.setFinalWave(false);
@@ -180,7 +207,53 @@ public class LevelLoader {
             level.getWaves().get(level.getWaves().size() - 1).setFinalWave(true);
         }
 
+        validateWaveDifficulty(level);
+
         return level;
+    }
+
+    private static String defaultGameMode(String type) {
+        return switch (type) {
+            case "normal" -> "Adventure - Normal";
+            case "intro" -> "Adventure - Introduction";
+            case "boss" -> "Adventure - Boss";
+            case "conveyor" -> "Adventure - Special: Conveyor Belt";
+            case "locked" -> "Adventure - Special: Locked Plants";
+            case "saveSeeds" -> "Adventure - Special: Save Our Seeds";
+            case "timedWar" -> "Adventure - Special: Timed War";
+            case "nightOps" -> "Adventure - Special: Night Ops";
+            case "deadLine" -> "Adventure - Special: Dead Line";
+            case "lovePlants" -> "Adventure - Special: Love Your Plants";
+            case "plantWhatYouGet" -> "Adventure - Special: Plant What You Get";
+            default -> "Adventure";
+        };
+    }
+
+    private static void validateAdventureZombie(Level level, String zombieType) {
+        if (MINI_GAME_ONLY_ZOMBIES.stream().anyMatch(alias -> alias.equalsIgnoreCase(zombieType))) {
+            throw new IllegalArgumentException(zombieType + " is reserved for Zombotany and cannot be used in Adventure.");
+        }
+        if (level.getZombiePool() != null && !level.getZombiePool().isEmpty()
+                && level.getZombiePool().stream().noneMatch(alias -> alias.equalsIgnoreCase(zombieType))) {
+            throw new IllegalArgumentException(zombieType + " is not in the zombie pool for " + level.getName() + ".");
+        }
+    }
+
+    private static void validateWaveDifficulty(Level level) {
+        List<ZombieWave> waves = level.getWaves();
+        if (waves == null || waves.isEmpty()) return;
+
+        for (int i = 1; i < waves.size(); i++) {
+            int previousCost = waves.get(i - 1).getWaveCost();
+            int currentCost = waves.get(i).getWaveCost();
+            double requiredMultiplier = waves.get(i).isFinalWave() ? 2.0 : 1.25;
+            if (currentCost + 0.001 < previousCost * requiredMultiplier) {
+                throw new IllegalArgumentException("Unbalanced waves in " + level.getName()
+                        + ": wave " + (i + 1) + " costs " + currentCost
+                        + " but must cost at least " + requiredMultiplier + "x wave " + i
+                        + " (" + previousCost + ").");
+            }
+        }
     }
 
     public static Level loadLevelById(int levelId) throws java.io.IOException {

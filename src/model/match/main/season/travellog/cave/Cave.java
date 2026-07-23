@@ -47,7 +47,7 @@ public class Cave extends Season {
 
     public static void meltIce(Zombie zombie) {
         if (zombie == null) return;
-        if (zombie.getStatus() == Zombie.Status.FREEZE || zombie.getStatus() == Zombie.Status.CHILLED) {
+        if (zombie.getStatus() == Zombie.Status.FREEZE) {
             zombie.setStatus(Zombie.Status.NORMAL);
         }
     }

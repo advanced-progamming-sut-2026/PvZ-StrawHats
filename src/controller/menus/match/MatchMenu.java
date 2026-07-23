@@ -79,9 +79,9 @@ public class MatchMenu extends Menu {
         if (chosen == null) {
             throw new model.game_exceptions.GameException("stage is locked or does not exist.");
         }
-        selectedLevel = chosen;
-        GeneralPrinter.print("Selected " + chosen.getName()
-                + ". Use 'start game' to enter this stage.");
+            selectedLevel = chosen;
+            GeneralPrinter.print("Selected " + chosen.getName()
+                + " (Game mode: " + chosen.getGameMode() + "). Use 'start game' to enter this stage.");
     }
 
     private void unlockStagePlants(Level level) {
@@ -110,6 +110,9 @@ public class MatchMenu extends Menu {
                     .append(level.getName()).append(" [id ").append(level.getId()).append("] - ")
                     .append(completed ? "Completed" : "Available");
             if (selectedLevel != null && selectedLevel.getId() == level.getId()) result.append(" (selected)");
+            result.append("\n     Game mode: ").append(level.getGameMode())
+                    .append(" | Waves: ").append(level.getWaves() == null ? 0 : level.getWaves().size())
+                    .append(" | Zombie pool: ").append(level.getZombiePool());
         }
         return result.toString();
     }
@@ -126,7 +129,10 @@ public class MatchMenu extends Menu {
             sb.append("[ Match Menu ]\nNo stage selected.\n");
         } else {
             sb.append("Chapter: ").append(selectedLevel.getSeason().getName())
-                    .append(" | Stage: ").append(selectedLevel.getName()).append("\n");
+                    .append(" | Stage: ").append(selectedLevel.getName()).append("\n")
+                    .append("Game mode: ").append(selectedLevel.getGameMode())
+                    .append(" | Waves: ").append(selectedLevel.getWaves() == null ? 0 : selectedLevel.getWaves().size())
+                    .append("\nZombie pool: ").append(selectedLevel.getZombiePool()).append("\n");
         }
         sb.append("Commands:\n");
         sb.append("  show stages\n");

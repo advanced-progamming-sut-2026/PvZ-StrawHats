@@ -1,6 +1,8 @@
 package controller.mini_games;
 
 import controller.menus.Menu;
+import controller.menus.TravelLogMenu;
+import model.App;
 import model.Regex;
 import model.match.mini_games.Beghouled;
 import view.GeneralPrinter;
@@ -28,6 +30,9 @@ public class BeghouledController extends Menu {
             handleUpgrade(text);
         } else if (Regex.MINIGAME_ADVANCE_TIME.getMatcherRaw(text).matches()) {
             advanceTime(text);
+        } else if (text.trim().equalsIgnoreCase("show map")
+                || text.trim().equalsIgnoreCase("show status")) {
+            GeneralPrinter.print(game.renderState());
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
             return;
@@ -46,7 +51,7 @@ public class BeghouledController extends Menu {
 
     private void handleSwap(String text) {
         int[] coords = parseTwoCoords(text);
-        boolean swapped = game.trySwap(coords[1], coords[0], coords[3], coords[2]);
+        boolean swapped = game.trySwap(coords[1] - 1, coords[0] - 1, coords[3] - 1, coords[2] - 1);
         if (!swapped) {
             GeneralPrinter.print("That swap doesn't create a match — nothing happened.");
         }
@@ -80,14 +85,16 @@ public class BeghouledController extends Menu {
 
     @Override
     public void exitMenu() {
-        changeMenu("Game Menu");
+        App.currentMenu = new TravelLogMenu();
     }
 
     @Override
     public String showMenu() {
-        return "[ Beghouled Menu ]\nCommands:\n"
+        return "[ Beghouled Menu ]\n" + game.getStageDetails()
+                + " | Zombie pool: " + game.getZombiePool() + "\nCommands:\n"
                 + "  swap -l (x,y) -l (x,y)\n"
                 + "  upgrade -t <plant>\n"
+                + "  show map | show status\n"
                 + "  advance time -t <n> ticks\n"
                 + "  menu exit | menu show current";
     }

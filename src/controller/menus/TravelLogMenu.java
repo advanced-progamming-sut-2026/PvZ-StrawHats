@@ -171,11 +171,11 @@ public class TravelLogMenu extends Menu {
 
     private String renderMiniGames() {
         return "Page: MINIGAMES\n"
-                + "- Vasebreaker (levels 1-3)\n"
-                + "- Wallnut Bowling (levels 1-3)\n"
-                + "- I-Zombie (levels 1-3)\n"
-                + "- Beghouled (levels 1-3)\n"
-                + "- Zombotany (levels 1-3)";
+                + "- Vasebreaker | Game mode: Mini-game | Levels: 1-3\n"
+                + "- Wallnut Bowling | Game mode: Mini-game | Levels: 1-3\n"
+                + "- I-Zombie | Game mode: Mini-game | Levels: 1-3\n"
+                + "- Beghouled | Game mode: Mini-game | Levels: 1-3\n"
+                + "- Zombotany | Game mode: Mini-game | Levels: 1-3";
     }
 
     private void startMiniGame(String name, int level) {
@@ -194,7 +194,8 @@ public class TravelLogMenu extends Menu {
             case "zombotany" -> App.currentMenu = new ZombotanyController(new Zombotany(level));
             default -> throw new GameException("no such mini-game.");
         }
-        GeneralPrinter.print("Starting " + App.currentMenu.getName() + " level " + level + ".");
+        GeneralPrinter.print("Starting " + App.currentMenu.getName() + " level " + level
+                + ". Game mode: Mini-game.");
         GeneralPrinter.print(App.currentMenu.showMenu());
     }
 

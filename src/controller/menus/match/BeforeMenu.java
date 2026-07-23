@@ -190,7 +190,9 @@ public class BeforeMenu extends Menu {
         Level level = currentLevel();
         String levelName = level != null ? level.getName() : "unknown";
         return "[ Plant Loadout ]\n"
-                + "Stage: " + levelName + " | Selected: " + selectedPlants + " (" + selectedPlants.size() + "/" + PLANT_SLOTS + ")\n"
+                + "Stage: " + levelName + " | Game mode: "
+                + (level == null ? "unknown" : level.getGameMode())
+                + " | Selected: " + selectedPlants + " (" + selectedPlants.size() + "/" + PLANT_SLOTS + ")\n"
                 + "Commands:\n"
                 + "  show all plants\n"
                 + "  show available plants\n"

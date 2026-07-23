@@ -1,6 +1,7 @@
 [
   {
     "type": "intro",
+    "gameMode": "Adventure - Introduction",
     "id": 101,
     "name": "Ancient Egypt - Day 1",
     "season": "egypt",
@@ -9,14 +10,17 @@
     "initialSun": 150,
     "availablePlants": ["Sunflower", "Peashooter", "Wall-nut"],
     "forcedPlants": ["Sunflower", "Peashooter"],
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1"],
     "waves": [
-      { "delay": 10, "zombies": ["ZombieDefault"] },
-      { "delay": 25, "zombies": ["ZombieDefault", "ZombieDefault"] },
-      { "delay": 25, "zombies": ["ZombieDefault", "ZombieArmor1"] }
+      {"delay": 10, "zombies": ["ZombieDefault"]},
+      {"delay": 20, "zombies": ["ZombieDefault", "ZombieImp"]},
+      {"delay": 25, "zombies": ["ZombieArmor1", "ZombieDefault"]},
+      {"delay": 30, "zombies": ["ZombieArmor1", "ZombieArmor1", "ZombieDefault", "ZombieDefault"]}
     ]
   },
   {
     "type": "conveyor",
+    "gameMode": "Adventure - Special: Conveyor Belt",
     "id": 102,
     "name": "Ancient Egypt - Day 2",
     "season": "egypt",
@@ -27,14 +31,17 @@
     "forcedPlants": [],
     "conveyorPlants": ["Peashooter", "Wall-nut", "Sunflower", "Potato Mine"],
     "maxConveyorSize": 8,
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor2", "ZombieExplorer", "ZombieLostCityJane"],
     "waves": [
-      { "delay": 15, "zombies": ["ZombieDefault", "ZombieDefault"] },
-      { "delay": 25, "zombies": ["ZombieDefault", "ZombieArmor1", "ZombieDefault"] },
-      { "delay": 25, "zombies": ["ZombieArmor1", "ZombieArmor1"] }
+      {"delay": 12, "zombies": ["ZombieDefault", "ZombieImp"]},
+      {"delay": 20, "zombies": ["ZombieArmor1", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieExplorer", "ZombieArmor1", "ZombieDefault"]},
+      {"delay": 28, "zombies": ["ZombieExplorer", "ZombieLostCityJane", "ZombieArmor2", "ZombieArmor1", "ZombieDefault", "ZombieImp"]}
     ]
   },
   {
     "type": "locked",
+    "gameMode": "Adventure - Special: Locked Plants",
     "id": 103,
     "name": "Ancient Egypt - Day 3",
     "season": "egypt",
@@ -45,14 +52,17 @@
     "forcedPlants": [],
     "lockedPlants": ["Sunflower", "Repeater", "Snow Pea"],
     "alwaysAvailable": ["Peashooter"],
+    "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieArmor2", "ZombieRa", "ZombieExplorer", "ZombieTombRaiser"],
     "waves": [
-      { "delay": 10, "zombies": ["ZombieDefault"] },
-      { "delay": 20, "zombies": ["ZombieDefault", "ZombieArmor1"] },
-      { "delay": 25, "zombies": ["ZombieArmor1", "ZombieExplorer"] }
+      {"delay": 10, "zombies": ["ZombieArmor1", "ZombieDefault"]},
+      {"delay": 20, "zombies": ["ZombieRa", "ZombieExplorer", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieTombRaiser", "ZombieArmor1", "ZombieDefault"]},
+      {"delay": 28, "zombies": ["ZombieTombRaiser", "ZombieExplorer", "ZombieRa", "ZombieArmor2", "ZombieArmor1", "ZombieDefault"]}
     ]
   },
   {
     "type": "boss",
+    "gameMode": "Adventure - Boss",
     "id": 104,
     "name": "Ancient Egypt - Ra's Wrath",
     "season": "egypt",
@@ -61,15 +71,20 @@
     "initialSun": 200,
     "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Wall-nut", "Potato Mine"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor2", "ZombieArmor4", "ZombieGargantuar", "ZombieRa", "ZombieExplorer", "ZombieTombRaiser", "ZombieCrystalSkull"],
     "bossType": "ZombieRa",
+    "bossDelay": 8,
+    "bossEscorts": ["ZombieGargantuar", "ZombieArmor4", "ZombieExplorer", "ZombieImp", "ZombieArmor2"],
     "waves": [
-      { "delay": 20, "zombies": ["ZombieDefault", "ZombieArmor1"] },
-      { "delay": 30, "zombies": ["ZombieArmor1", "ZombieExplorer", "ZombieDefault"] }
+      {"delay": 12, "zombies": ["ZombieArmor2", "ZombieDefault"]},
+      {"delay": 20, "zombies": ["ZombieTombRaiser", "ZombieExplorer", "ZombieDefault", "ZombieImp"]},
+      {"delay": 24, "zombies": ["ZombieCrystalSkull", "ZombieArmor2", "ZombieArmor1"]},
+      {"delay": 28, "zombies": ["ZombieArmor4", "ZombieCrystalSkull", "ZombieTombRaiser"]}
     ]
   },
-
   {
     "type": "normal",
+    "gameMode": "Adventure - Normal",
     "id": 201,
     "name": "Frostbite Caves - Day 1",
     "season": "cave",
@@ -78,14 +93,17 @@
     "initialSun": 150,
     "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Torchwood"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieArmor2", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"],
     "waves": [
-      { "delay": 10, "zombies": ["ZombieIceAgeDodo"] },
-      { "delay": 25, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeHunter"] },
-      { "delay": 25, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+      {"delay": 10, "zombies": ["ZombieIceAgeDodo"]},
+      {"delay": 20, "zombies": ["ZombieIceAgeDodo", "ZombieDefault", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"]},
+      {"delay": 28, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieArmor2", "ZombieDefault"]}
     ]
   },
   {
     "type": "deadLine",
+    "gameMode": "Adventure - Special: Dead Line",
     "id": 202,
     "name": "Frostbite Caves - Day 2",
     "season": "cave",
@@ -95,14 +113,17 @@
     "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Chomper"],
     "forcedPlants": [],
     "deadLineColumn": 2,
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieModernAllStar", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"],
     "waves": [
-      { "delay": 12, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeDodo"] },
-      { "delay": 22, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"] },
-      { "delay": 22, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeHunter"] }
+      {"delay": 10, "zombies": ["ZombieIceAgeDodo", "ZombieImp"]},
+      {"delay": 18, "zombies": ["ZombieIceAgeHunter", "ZombieArmor1", "ZombieDefault", "ZombieImp"]},
+      {"delay": 22, "zombies": ["ZombieModernAllStar", "ZombieDefault", "ZombieImp"]},
+      {"delay": 26, "zombies": ["ZombieModernAllStar", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"]}
     ]
   },
   {
     "type": "nightOps",
+    "gameMode": "Adventure - Special: Night Ops",
     "id": 203,
     "name": "Frostbite Caves - Day 3",
     "season": "cave",
@@ -111,14 +132,17 @@
     "initialSun": 100,
     "availablePlants": ["Sunflower", "Sun-shroom", "Snow Pea", "Wall-nut"],
     "forcedPlants": ["Sunflower"],
+    "zombiePool": ["ZombieDefault", "ZombieProspector", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"],
     "waves": [
-      { "delay": 15, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeHunter"] },
-      { "delay": 25, "zombies": ["ZombieIceAgeTroglobite"] },
-      { "delay": 25, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+      {"delay": 14, "zombies": ["ZombieIceAgeDodo", "ZombieDefault", "ZombieDefault"]},
+      {"delay": 22, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"]},
+      {"delay": 25, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieProspector"]},
+      {"delay": 30, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeTroglobite", "ZombieIceAgeDodo", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeHunter", "ZombieProspector", "ZombieProspector"]}
     ]
   },
   {
     "type": "boss",
+    "gameMode": "Adventure - Boss",
     "id": 204,
     "name": "Frostbite Caves - Troglobite's Lair",
     "season": "cave",
@@ -127,15 +151,20 @@
     "initialSun": 200,
     "availablePlants": ["Sunflower", "Snow Pea", "Wall-nut", "Torchwood", "Chomper"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor2", "ZombieArmor4", "ZombieGargantuar", "ZombieModernAllStar", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"],
     "bossType": "ZombieIceAgeTroglobite",
+    "bossDelay": 8,
+    "bossEscorts": ["ZombieGargantuar", "ZombieArmor4", "ZombieModernAllStar", "ZombieIceAgeDodo", "ZombieArmor2"],
     "waves": [
-      { "delay": 20, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeDodo"] },
-      { "delay": 30, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite"] }
+      {"delay": 12, "zombies": ["ZombieIceAgeDodo", "ZombieIceAgeHunter"]},
+      {"delay": 20, "zombies": ["ZombieIceAgeTroglobite", "ZombieIceAgeDodo", "ZombieDefault", "ZombieImp"]},
+      {"delay": 24, "zombies": ["ZombieIceAgeHunter", "ZombieIceAgeTroglobite", "ZombieArmor2", "ZombieArmor1", "ZombieDefault", "ZombieImp"]},
+      {"delay": 28, "zombies": ["ZombieArmor4", "ZombieIceAgeDodo", "ZombieIceAgeHunter", "ZombieIceAgeTroglobite"]}
     ]
   },
-
   {
     "type": "normal",
+    "gameMode": "Adventure - Normal",
     "id": 301,
     "name": "Big Wave Beach - Day 1",
     "season": "beach",
@@ -144,14 +173,17 @@
     "initialSun": 150,
     "availablePlants": ["Sunflower", "Peashooter", "Lily Pad", "Tangle Kelp"],
     "forcedPlants": ["Lily Pad"],
+    "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieBeachSnorkel", "ZombieBeachFisherman"],
     "waves": [
-      { "delay": 10, "zombies": ["ZombieBeachSnorkel"] },
-      { "delay": 25, "zombies": ["ZombieBeachSnorkel", "ZombieBeachFisherman"] },
-      { "delay": 25, "zombies": ["ZombieBeachFisherman", "ZombieBeachOctopus"] }
+      {"delay": 10, "zombies": ["ZombieBeachSnorkel"]},
+      {"delay": 20, "zombies": ["ZombieBeachSnorkel", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieBeachSnorkel", "ZombieArmor1", "ZombieDefault"]},
+      {"delay": 28, "zombies": ["ZombieBeachFisherman", "ZombieBeachSnorkel", "ZombieDefault"]}
     ]
   },
   {
     "type": "saveSeeds",
+    "gameMode": "Adventure - Special: Save Our Seeds",
     "id": 302,
     "name": "Big Wave Beach - Day 2",
     "season": "beach",
@@ -160,18 +192,18 @@
     "initialSun": 150,
     "availablePlants": ["Peashooter", "Wall-nut", "Snow Pea"],
     "forcedPlants": [],
-    "seedPositions": {
-      "1,4": "Wall-nut",
-      "3,4": "Wall-nut"
-    },
+    "seedPositions": {"1,4": "Wall-nut", "3,4": "Wall-nut"},
+    "zombiePool": ["ZombieArmor1", "ZombieArmor2", "ZombieBeachSnorkel", "ZombieBeachFisherman", "ZombieBeachOctopus"],
     "waves": [
-      { "delay": 12, "zombies": ["ZombieBeachSnorkel", "ZombieBeachFisherman"] },
-      { "delay": 22, "zombies": ["ZombieBeachFisherman", "ZombieBeachOctopus"] },
-      { "delay": 22, "zombies": ["ZombieBeachOctopus", "ZombieBeachSnorkel"] }
+      {"delay": 10, "zombies": ["ZombieBeachSnorkel", "ZombieArmor1"]},
+      {"delay": 18, "zombies": ["ZombieBeachFisherman"]},
+      {"delay": 22, "zombies": ["ZombieBeachOctopus", "ZombieBeachSnorkel"]},
+      {"delay": 26, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman", "ZombieArmor2", "ZombieBeachSnorkel"]}
     ]
   },
   {
     "type": "timedWar",
+    "gameMode": "Adventure - Special: Timed War",
     "id": 303,
     "name": "Big Wave Beach - Day 3",
     "season": "beach",
@@ -182,14 +214,17 @@
     "forcedPlants": [],
     "timeLimitSeconds": 90,
     "zombiesToKill": 6,
+    "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieBeachSnorkel", "ZombieBeachFisherman"],
     "waves": [
-      { "delay": 5, "zombies": ["ZombieBeachSnorkel", "ZombieBeachSnorkel"] },
-      { "delay": 20, "zombies": ["ZombieBeachFisherman", "ZombieBeachFisherman"] },
-      { "delay": 20, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman"] }
+      {"delay": 5, "zombies": ["ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieDefault"]},
+      {"delay": 16, "zombies": ["ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieArmor1", "ZombieDefault"]},
+      {"delay": 18, "zombies": ["ZombieBeachFisherman", "ZombieBeachSnorkel", "ZombieDefault"]},
+      {"delay": 20, "zombies": ["ZombieArmor1", "ZombieArmor1", "ZombieArmor1", "ZombieArmor1", "ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieBeachSnorkel", "ZombieDefault", "ZombieDefault", "ZombieDefault", "ZombieDefault"]}
     ]
   },
   {
     "type": "boss",
+    "gameMode": "Adventure - Boss",
     "id": 304,
     "name": "Big Wave Beach - Octopus Ambush",
     "season": "beach",
@@ -198,15 +233,20 @@
     "initialSun": 200,
     "availablePlants": ["Sunflower", "Peashooter", "Repeater", "Lily Pad", "Tangle Kelp"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieArmor2", "ZombieGargantuar", "ZombieArcade", "ZombieBeachFisherman", "ZombieBeachOctopus", "ZombieBeachSnorkel"],
     "bossType": "ZombieBeachOctopus",
+    "bossDelay": 8,
+    "bossEscorts": ["ZombieGargantuar", "ZombieArcade", "ZombieBeachFisherman", "ZombieArmor1", "ZombieDefault"],
     "waves": [
-      { "delay": 20, "zombies": ["ZombieBeachFisherman", "ZombieBeachSnorkel"] },
-      { "delay": 30, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman"] }
+      {"delay": 12, "zombies": ["ZombieBeachFisherman", "ZombieBeachSnorkel"]},
+      {"delay": 20, "zombies": ["ZombieBeachOctopus", "ZombieBeachSnorkel", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieArcade", "ZombieBeachFisherman", "ZombieArmor1"]},
+      {"delay": 28, "zombies": ["ZombieBeachOctopus", "ZombieBeachFisherman", "ZombieArmor2"]}
     ]
   },
-
   {
     "type": "normal",
+    "gameMode": "Adventure - Normal",
     "id": 401,
     "name": "Dark Ages - Night 1",
     "season": "darkage",
@@ -215,14 +255,17 @@
     "initialSun": 150,
     "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Wall-nut"],
     "forcedPlants": ["Sun-shroom"],
+    "zombiePool": ["ZombieDefault", "ZombieDarkJuggler", "ZombieWizard", "ZombieDarkImpDragon"],
     "waves": [
-      { "delay": 10, "zombies": ["ZombieNewspaper"] },
-      { "delay": 25, "zombies": ["ZombieNewspaper", "ZombieDarkJuggler"] },
-      { "delay": 25, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] }
+      {"delay": 10, "zombies": ["ZombieDarkImpDragon", "ZombieDefault"]},
+      {"delay": 20, "zombies": ["ZombieDarkJuggler"]},
+      {"delay": 24, "zombies": ["ZombieDarkJuggler", "ZombieDarkImpDragon", "ZombieDefault"]},
+      {"delay": 28, "zombies": ["ZombieWizard", "ZombieDarkJuggler", "ZombieDarkImpDragon"]}
     ]
   },
   {
     "type": "lovePlants",
+    "gameMode": "Adventure - Special: Love Your Plants",
     "id": 402,
     "name": "Dark Ages - Night 2",
     "season": "darkage",
@@ -232,14 +275,17 @@
     "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Wall-nut", "Tall-nut"],
     "forcedPlants": [],
     "maxPlantLoss": 5,
+    "zombiePool": ["ZombieDefault", "ZombiePiano", "ZombieNewspaper", "ZombieDarkJuggler", "ZombieWizard", "ZombieDarkImpDragon"],
     "waves": [
-      { "delay": 12, "zombies": ["ZombieNewspaper", "ZombieDarkJuggler"] },
-      { "delay": 22, "zombies": ["ZombieWizard", "ZombieDarkJuggler"] },
-      { "delay": 22, "zombies": ["ZombieDarkImpDragon", "ZombieWizard"] }
+      {"delay": 10, "zombies": ["ZombieDarkJuggler", "ZombieDefault"]},
+      {"delay": 18, "zombies": ["ZombieNewspaper", "ZombieDarkImpDragon"]},
+      {"delay": 22, "zombies": ["ZombieWizard", "ZombieDarkJuggler"]},
+      {"delay": 26, "zombies": ["ZombieWizard", "ZombiePiano", "ZombieNewspaper", "ZombieDarkJuggler", "ZombieDarkImpDragon"]}
     ]
   },
   {
     "type": "plantWhatYouGet",
+    "gameMode": "Adventure - Special: Plant What You Get",
     "id": 403,
     "name": "Dark Ages - Night 3",
     "season": "darkage",
@@ -248,14 +294,17 @@
     "primarySun": 300,
     "availablePlants": ["Peashooter", "Wall-nut", "Repeater", "Snow Pea", "Potato Mine"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieNewspaper", "ZombieDarkJuggler", "ZombieWizard", "ZombieDarkImpDragon"],
     "waves": [
-      { "delay": 15, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] },
-      { "delay": 25, "zombies": ["ZombieWizard", "ZombieDarkImpDragon"] },
-      { "delay": 25, "zombies": ["ZombieDarkImpDragon", "ZombieDarkJuggler"] }
+      {"delay": 12, "zombies": ["ZombieDarkJuggler", "ZombieDarkImpDragon"]},
+      {"delay": 20, "zombies": ["ZombieNewspaper", "ZombieDefault", "ZombieDefault"]},
+      {"delay": 24, "zombies": ["ZombieWizard", "ZombieDarkJuggler", "ZombieArmor1", "ZombieDefault"]},
+      {"delay": 28, "zombies": ["ZombieWizard", "ZombieWizard", "ZombieDarkJuggler", "ZombieNewspaper", "ZombieArmor1", "ZombieDarkImpDragon", "ZombieDefault"]}
     ]
   },
   {
     "type": "boss",
+    "gameMode": "Adventure - Boss",
     "id": 404,
     "name": "Dark Ages - The Dark King",
     "season": "darkage",
@@ -264,10 +313,15 @@
     "initialSun": 200,
     "availablePlants": ["Sunflower", "Sun-shroom", "Peashooter", "Repeater", "Wall-nut", "Tall-nut"],
     "forcedPlants": [],
+    "zombiePool": ["ZombieDefault", "ZombieImp", "ZombieArmor1", "ZombieArmor4", "ZombieDarkArmor3", "ZombieGargantuar", "ZombiePiano", "ZombieDarkJuggler", "ZombieWizard", "ZombieDarkKing", "ZombieDarkImpDragon"],
     "bossType": "ZombieDarkKing",
+    "bossDelay": 8,
+    "bossEscorts": ["ZombieGargantuar", "ZombieDarkArmor3", "ZombieArmor4", "ZombieWizard", "ZombiePiano"],
     "waves": [
-      { "delay": 20, "zombies": ["ZombieDarkJuggler", "ZombieWizard"] },
-      { "delay": 30, "zombies": ["ZombieWizard", "ZombieDarkImpDragon"] }
+      {"delay": 12, "zombies": ["ZombieWizard", "ZombieArmor1"]},
+      {"delay": 20, "zombies": ["ZombieDarkKing", "ZombieDarkJuggler", "ZombieDarkImpDragon"]},
+      {"delay": 24, "zombies": ["ZombieDarkArmor3", "ZombieWizard", "ZombieArmor1", "ZombieDefault", "ZombieImp"]},
+      {"delay": 28, "zombies": ["ZombieArmor4", "ZombieDarkKing", "ZombieWizard"]}
     ]
   }
 ]

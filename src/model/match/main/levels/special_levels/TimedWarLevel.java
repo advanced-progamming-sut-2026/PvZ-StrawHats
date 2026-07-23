@@ -6,8 +6,15 @@ import model.utils.GameSession;
 
 public class TimedWarLevel extends Level {
     private Time timeLimit;
+    private double configuredTimeLimitSeconds;
     private int zombiesToKill;
     private int zombiesKilledSoFar = 0;
+
+    @Override
+    public void initSpecial(GameSession session) {
+        zombiesKilledSoFar = 0;
+        if (timeLimit != null) timeLimit.reset(configuredTimeLimitSeconds);
+    }
 
     /**
      * Call once per tick while the player is in this level.
@@ -38,7 +45,10 @@ public class TimedWarLevel extends Level {
     public int getZombiesKilledSoFar() { return zombiesKilledSoFar; }
 
     public Time getTimeLimit() { return timeLimit; }
-    public void setTimeLimit(Time timeLimit) { this.timeLimit = timeLimit; }
+    public void setTimeLimit(Time timeLimit) {
+        this.timeLimit = timeLimit;
+        this.configuredTimeLimitSeconds = timeLimit == null ? 0 : timeLimit.getSecondsRemaining();
+    }
     public int getZombiesToKill() { return zombiesToKill; }
     public void setZombiesToKill(int zombiesToKill) { this.zombiesToKill = zombiesToKill; }
 }

@@ -40,6 +40,9 @@ public class IZombie extends MiniGameMode {
     public IZombie(int difficulty) {
         setDifficulty(difficulty);
         this.session = new GameSession(5, 9);
+        configureSession(session);
+        session.setSkySunEnabled(false);
+        session.setZombieBreachesEnabled(false);
         this.session.addSun(STARTING_SUN);
         this.roster = ROSTERS.get(getDifficulty());
         this.brains = new Brain[session.getEnvironment().getRows()];
@@ -68,6 +71,7 @@ public class IZombie extends MiniGameMode {
                 .mapToObj(row -> {
                     Zombie zombie = ZombieFactory.create(SUN_ZOMBIE_ALIAS, row, REDLINE_COLUMN + 1);
                     zombie.setPosition(new Position(REDLINE_COLUMN + 1, row));
+                    zombie.setSpeed(Position.ShowZero());
                     session.spawnZombie(zombie);
                     return zombie;
                 })
@@ -75,6 +79,7 @@ public class IZombie extends MiniGameMode {
     }
 
     public boolean placeZombie(String alias, int row) {
+        if (row < 0 || row >= brains.length) return false;
         Integer cost = roster.get(alias);
         if (cost == null || !session.spendSun(cost)) return false;
 
@@ -106,6 +111,7 @@ public class IZombie extends MiniGameMode {
             int row = (int) zombie.getPosition().y();
             if (row >= 0 && row < brains.length && !brains[row].isEaten()) {
                 brains[row].markEaten();
+                zombie.setHp(0);
             }
         }
     }
@@ -127,6 +133,18 @@ public class IZombie extends MiniGameMode {
     public Brain[] getBrains() { return brains; }
     public GameSession getSession() { return session; }
 
+    public String renderState() {
+        StringBuilder result = new StringBuilder(getStageDetails())
+                .append(" | Sun: ").append(session.getSunCount())
+                .append("\nAvailable zombies: ").append(roster)
+                .append("\nBrains:");
+        for (int row = 0; row < brains.length; row++) {
+            result.append(" row ").append(row + 1).append("=")
+                    .append(brains[row].isEaten() ? "eaten" : "safe");
+        }
+        return result.append("\n").append(session.renderMap()).toString();
+    }
+
     private static Map<Integer, Map<String, Integer>> buildRosters() {
         Map<Integer, Map<String, Integer>> rosters = new LinkedHashMap<>();
 
@@ -139,19 +157,19 @@ public class IZombie extends MiniGameMode {
         rosters.put(1, level1);
 
         Map<String, Integer> level2 = new LinkedHashMap<>();
-        level2.put("ZombieDefault", 100);
-        level2.put("ZombieImp", 100);
+        level2.put("ZombieArmor1", 200);
+        level2.put("ZombieArmor2", 400);
         level2.put("ZombieTombRaiser", 300);
-        level2.put("ZombiePeashooter", 200);
-        level2.put("ZombieJalapeno", 300);
+        level2.put("ZombieProspector", 200);
+        level2.put("ZombieLostCityJane", 200);
         rosters.put(2, level2);
 
         Map<String, Integer> level3 = new LinkedHashMap<>();
-        level3.put("ZombieSquash", 350);
+        level3.put("ZombieImp", 100);
+        level3.put("ZombieArmor2", 400);
+        level3.put("ZombieDarkArmor3", 550);
+        level3.put("ZombieModernAllStar", 1000);
         level3.put("ZombieGargantuar", 1500);
-        level3.put("ZombieRa", 100);
-        level3.put("ZombieExplorer", 250);
-        level3.put("ZombieTombRaiser", 300);
         rosters.put(3, level3);
 
         return rosters;

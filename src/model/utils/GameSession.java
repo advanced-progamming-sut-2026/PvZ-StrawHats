@@ -6,8 +6,6 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.collections.plant.PlantTag;
-import model.collections.armour.Armour;
-import model.collections.armour.ZombieArmour;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
@@ -66,7 +64,6 @@ public class GameSession {
 
     private List<Zombie> currentWaveZombies = new ArrayList<>();
     private int currentWaveStartingHp = 0;
-    private double previousWaveMultiplier = 1.0;
     private static final double HUGE_WAVE_ALERT_LEAD_SECONDS = 5.0;
     private boolean hugeWaveAlertShown = false;
 
@@ -78,6 +75,8 @@ public class GameSession {
 
     private boolean gameOver = false;
     private boolean gameWon = false;
+    private boolean zombieBreachesEnabled = true;
+    private Boolean skySunEnabledOverride = null;
     private int difficultyLevel;
     private int plantsLostThisMatch = 0;
     private final Set<String> plantFamiliesUsedThisMatch = new HashSet<>();
@@ -151,7 +150,7 @@ public class GameSession {
 
         if (wavesStarted) tickWaveScheduler(deltaTimeSeconds);
 
-        if (wavesStarted && (level == null || level.isSkySunEnabled())) {
+        if (wavesStarted && isSkySunEnabledForSession()) {
             skySunTimer += deltaTimeSeconds;
             if (GameClock.hasReached(skySunTimer, getEffectiveSkySunInterval())) {
                 skySunTimer = 0;
@@ -186,7 +185,7 @@ public class GameSession {
         projectiles.removeIf(p -> !p.isAlive());
         zombieProjectiles.removeIf(p -> !p.isAlive());
 
-        checkZombieBreaches();
+        if (zombieBreachesEnabled) checkZombieBreaches();
 
         if (level != null && level.checkLossCondition(this)) {
             gameOver = true;
@@ -209,6 +208,11 @@ public class GameSession {
                 + SKY_SUN_INTERVAL_GROWTH * elapsed, MIN_SKY_SUN_INTERVAL);
         if (difficultyLevel <= 0) return baseInterval;
         return baseInterval * (difficultyLevel / 3.0);
+    }
+
+    private boolean isSkySunEnabledForSession() {
+        if (skySunEnabledOverride != null) return skySunEnabledOverride;
+        return level == null || level.isSkySunEnabled();
     }
 
     private void recordLevelSpecificDeaths() {
@@ -287,15 +291,12 @@ public class GameSession {
         if (wave.getWaveZombies() == null) return;
 
         int waveNumber = nextWaveIndex + 1;
-        double multiplier;
         if (wave.isFinalWave()) {
-            multiplier = previousWaveMultiplier * 2.0;
             GeneralPrinter.print("The final wave has come.");
         } else {
-            multiplier = (waveNumber == 1) ? 1.0 : previousWaveMultiplier * 1.25;
             GeneralPrinter.print("Wave " + waveNumber + " started.");
         }
-        previousWaveMultiplier = multiplier;
+        GeneralPrinter.print("Wave difficulty: " + wave.getWaveCost() + ".");
 
         if (level != null && level.getSeason() != null) {
             level.getSeason().onWaveStart(this, nextWaveIndex);
@@ -316,12 +317,6 @@ public class GameSession {
             Position speed = zombie.getSpeed();
             if (speed != null) {
                 zombie.setSpeed(new Position(-Math.abs(speed.x()), 0));
-            }
-
-            if (multiplier != 1.0) {
-                zombie.setMaxHp((int) Math.round(zombie.getMaxHp() * multiplier));
-                zombie.setHp(zombie.getMaxHp());
-                zombie.setEatDps(zombie.getEatDps() * multiplier);
             }
 
             int cost = ZombieFactory.getZombieCost(zombie.getAlias());
@@ -590,6 +585,10 @@ public class GameSession {
 
     public String renderMap() {
         StringBuilder sb = new StringBuilder();
+        if (level != null) {
+            sb.append("Stage: ").append(level.getName())
+                    .append(" | Game mode: ").append(level.getGameMode()).append("\n");
+        }
         sb.append("Wave: ").append(getWavesSpawnedCount()).append("/").append(getTotalWaveCount())
                 .append(" | Sun: ").append(sunCount)
                 .append(" | Plant food: ").append(plantFoodCount);
@@ -599,13 +598,18 @@ public class GameSession {
         }
         sb.append("\n");
         for (int r = 0; r < environment.getRows(); r++) {
-            sb.append(r + 1).append(lawnMowers[r].isUsed() ? " [ ] " : " [M] ");
+            sb.append(r + 1);
+            if (!zombieBreachesEnabled) {
+                sb.append(" [B] ");
+            } else {
+                sb.append(lawnMowers[r].isUsed() ? " [ ] " : " [M] ");
+            }
             for (int c = 0; c < environment.getCols(); c++) {
                 sb.append(mapSymbolFor(environment.getCell(r, c)));
             }
             sb.append("\n");
         }
-        sb.append("(M=lawn mower, P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
+        sb.append("(M=lawn mower, B=brain mode, P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
         List<GroundItem> visibleItems = items.stream()
                 .filter(GroundItem.class::isInstance)
                 .map(GroundItem.class::cast)
@@ -725,51 +729,21 @@ public class GameSession {
         if (zombies.isEmpty()) return "no zombies on the field";
         StringBuilder sb = new StringBuilder();
         for (Zombie zombie : zombies) {
-            if (!zombie.isAlive()) continue;
-
             Position position = zombie.getPosition();
-            sb.append(zombie.getName()).append(":\n");
-
+            sb.append(zombie.getName())
+                    .append(" | hp: ").append(zombie.getHp())
+                    .append("/").append(zombie.getMaxHp());
             if (position != null) {
-                int col = (int) Math.round(position.x()) + 1;
-                int row = (int) Math.round(position.y()) + 1;
-                sb.append("position: ").append(col).append(", ").append(row).append("\n");
+                sb.append(" | position: (").append(String.format("%.2f", position.x() + 1))
+                        .append(", ").append((int) Math.round(position.y()) + 1).append(")");
             }
-
-            sb.append("health: ").append(zombie.getHp()).append("\n");
-
-            sb.append("armor:\n");
-            Armour armour = zombie.getArmor();
-            if (armour instanceof ZombieArmour zombieArmour && !zombieArmour.isDestroyed()) {
-                sb.append("  ").append(zombieArmour.getArmorType().getName())
-                        .append(": ").append(zombieArmour.getHP()).append("\n");
+            if (zombie.getArmor() != null && zombie.getArmor().getHP() > 0) {
+                sb.append(" | armor: ").append(zombie.getArmor().getHP());
             }
-
-            sb.append("effects:\n");
-            if (zombie.getStatus() != Zombie.Status.NORMAL) {
-                sb.append("  ").append(statusDisplayName(zombie.getStatus()))
-                        .append(": ").append(formatDuration(zombie.getStatusRemainingSeconds())).append("\n");
-            }
+            sb.append(" | state: ").append(zombie.getZombieState())
+                    .append("\n");
         }
         return sb.toString().trim();
-    }
-
-    private static String statusDisplayName(Zombie.Status status) {
-        return switch (status) {
-            case CHILLED -> "chilled";
-            case FREEZE -> "frozen";
-            case FIRED -> "burning";
-            case POISONED -> "poisoned";
-            case BUTTER -> "buttered";
-            case HYPNOTIZED -> "hypnotized";
-            default -> status.toString().toLowerCase();
-        };
-    }
-
-    private static String formatDuration(double seconds) {
-        if (Double.isInfinite(seconds)) return "permanent";
-        if (seconds == Math.floor(seconds)) return (int) seconds + "s";
-        return String.format("%.1f", seconds) + "s";
     }
 
     public boolean isGameOver() {
@@ -796,6 +770,10 @@ public class GameSession {
         return zombies;
     }
 
+    public List<ZombieWave> getWaves() {
+        return List.copyOf(waves);
+    }
+
     public void setZombies(List<Zombie> zombies) {
         this.zombies = zombies;
     }
@@ -818,6 +796,8 @@ public class GameSession {
             clock.reset();
             gameOver = false;
             gameWon = false;
+            zombieBreachesEnabled = true;
+            skySunEnabledOverride = null;
             wavesStarted = false;
             wavesStartedAtSeconds = 0;
             plantsLostThisMatch = 0;
@@ -839,7 +819,6 @@ public class GameSession {
         this.waves = waves != null ? waves : new ArrayList<>();
         this.nextWaveIndex = 0;
         this.waveTimer = 0;
-        this.previousWaveMultiplier = 1.0;
         this.currentWaveZombies = new ArrayList<>();
         this.currentWaveStartingHp = 0;
         this.hugeWaveAlertShown = false;
@@ -899,6 +878,22 @@ public class GameSession {
 
     public void setDifficultyLevel(int difficultyLevel) {
         this.difficultyLevel = difficultyLevel;
+    }
+
+    public void setZombieBreachesEnabled(boolean zombieBreachesEnabled) {
+        this.zombieBreachesEnabled = zombieBreachesEnabled;
+    }
+
+    public boolean isZombieBreachesEnabled() {
+        return zombieBreachesEnabled;
+    }
+
+    public void setSkySunEnabled(boolean enabled) {
+        this.skySunEnabledOverride = enabled;
+    }
+
+    public boolean isSkySunEnabled() {
+        return isSkySunEnabledForSession();
     }
 
 

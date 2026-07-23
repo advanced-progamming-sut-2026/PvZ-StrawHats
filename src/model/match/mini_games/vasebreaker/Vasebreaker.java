@@ -28,10 +28,14 @@ public class Vasebreaker extends MiniGameMode {
     private final GameSession session;
     private final List<Vase> vases = new ArrayList<>();
     private final List<DroppedSeedPacket> droppedPackets = new ArrayList<>();
+    private final List<String> zombiePool;
 
     public Vasebreaker(int difficulty, int[] unlockedPlantIds) {
         setDifficulty(difficulty);
         this.session = new GameSession(5, 9);
+        configureSession(session);
+        session.setSkySunEnabled(false);
+        this.zombiePool = zombiePoolFor(getDifficulty());
         layoutVases(unlockedPlantIds);
     }
 
@@ -58,7 +62,7 @@ public class Vasebreaker extends MiniGameMode {
             int plantId = unlockedPlantIds[RAND.nextInt(unlockedPlantIds.length)];
             return new PlantVase(spot, plantId);
         }
-        return new RandomVase(spot, unlockedPlantIds);
+        return new RandomVase(spot, unlockedPlantIds, zombiePool.toArray(String[]::new));
     }
 
     private List<Position> candidateSpots(Environment env) {
@@ -103,7 +107,9 @@ public class Vasebreaker extends MiniGameMode {
     }
 
     public boolean isWon() {
-        return vases.stream().allMatch(Vase::isBroken) && !session.isGameOver();
+        return vases.stream().allMatch(Vase::isBroken)
+                && session.getZombies().stream().noneMatch(Zombie -> Zombie.isAlive())
+                && !session.isGameOver();
     }
 
     public boolean isLost() {
@@ -113,6 +119,46 @@ public class Vasebreaker extends MiniGameMode {
     public GameSession getSession() { return session; }
     public List<Vase> getVases() { return vases; }
     public List<DroppedSeedPacket> getDroppedPackets() { return droppedPackets; }
+    public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+
+    public String renderState() {
+        int rows = session.getRows();
+        int cols = session.getCols();
+        char[][] board = new char[rows][cols];
+        for (char[] row : board) java.util.Arrays.fill(row, '.');
+
+        for (Vase vase : vases) {
+            if (!vase.isBroken()) {
+                board[(int) vase.getPosition().y()][(int) vase.getPosition().x()] = 'V';
+            }
+        }
+        for (DroppedSeedPacket packet : droppedPackets) {
+            if (!packet.collected) board[(int) packet.position.y()][(int) packet.position.x()] = 'S';
+        }
+        session.getZombies().stream().filter(zombie -> zombie.isAlive() && zombie.getPosition() != null)
+                .forEach(zombie -> {
+                    int row = (int) Math.round(zombie.getPosition().y());
+                    int col = (int) Math.round(zombie.getPosition().x());
+                    if (row >= 0 && row < rows && col >= 0 && col < cols) board[row][col] = 'Z';
+                });
+
+        StringBuilder result = new StringBuilder(getStageDetails())
+                .append(" | Vases left: ").append(vases.stream().filter(vase -> !vase.isBroken()).count())
+                .append(" | Live zombies: ").append(session.getZombies().stream().filter(zombie -> zombie.isAlive()).count())
+                .append("\n");
+        for (int row = 0; row < rows; row++) {
+            result.append(row + 1).append(" ").append(board[row]).append("\n");
+        }
+        return result.append("(V=vase, S=seed packet, Z=zombie, .=empty)").toString();
+    }
+
+    private List<String> zombiePoolFor(int level) {
+        return switch (level) {
+            case 2 -> List.of("ZombieDefault", "ZombieArmor1", "ZombieArmor2", "ZombieProspector");
+            case 3 -> List.of("ZombieArmor1", "ZombieArmor2", "ZombieArmor4", "ZombieNewspaper");
+            default -> List.of("ZombieDefault", "ZombieImp", "ZombieArmor1");
+        };
+    }
 
     public static class DroppedSeedPacket {
         public final Position position;

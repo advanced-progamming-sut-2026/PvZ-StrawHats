@@ -8,7 +8,7 @@ public abstract class Nut {
     protected static final double SPEED = 3.0; // columns per second
 
     protected Position position;
-    protected Position direction; // unit-ish vector, e.g. (-1, 0) rolling left
+    protected Position direction; // unit-ish vector, e.g. (1, 0) rolling toward the zombies
     protected boolean alive = true;
 
     protected Nut(Position position, Position direction) {

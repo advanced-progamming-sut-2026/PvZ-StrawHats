@@ -14,17 +14,16 @@ import java.util.Random;
  */
 public class RandomVase extends Vase {
     private static final Random RAND = new Random();
-    private static final String[] NORMAL_ZOMBIE_ALIASES = {
-            "ZombieDefault", "ZombieArmor1", "ZombieExplorer"
-    };
-
     public enum Content { EMPTY, ZOMBIE, PLANT }
 
     private final Content content;
     private final int plantId; // only meaningful when content == PLANT
+    private final String[] zombieAliases;
 
-    public RandomVase(Position position, int[] unlockedPlantIds) {
+    public RandomVase(Position position, int[] unlockedPlantIds, String[] zombieAliases) {
         super(position);
+        this.zombieAliases = zombieAliases == null || zombieAliases.length == 0
+                ? new String[] {"ZombieDefault"} : zombieAliases.clone();
         double roll = RAND.nextDouble();
         if (roll < 0.5) {
             content = Content.EMPTY;
@@ -44,7 +43,7 @@ public class RandomVase extends Vase {
     protected void onBreak(GameSession session, Vasebreaker minigame) {
         switch (content) {
             case ZOMBIE -> {
-                String alias = NORMAL_ZOMBIE_ALIASES[RAND.nextInt(NORMAL_ZOMBIE_ALIASES.length)];
+                String alias = zombieAliases[RAND.nextInt(zombieAliases.length)];
                 Zombie zombie = ZombieFactory.create(alias, (int) position.y(), (int) position.x());
                 zombie.setPosition(position);
                 session.spawnZombie(zombie);
