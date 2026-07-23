@@ -17,8 +17,13 @@ public abstract class Nut {
     }
 
     public Position getPosition() { return position; }
+    public void setPosition(Position position) { this.position = position; }
     public boolean isAlive() { return alive; }
     public void kill() { alive = false; }
+
+    public String getKindName() {
+        return getClass().getSimpleName();
+    }
 
     public void move(double deltaSeconds) {
         if (!alive) return;
@@ -29,9 +34,5 @@ public abstract class Nut {
         direction = new Position(direction.x(), -direction.y());
     }
 
-    /**
-     * Called when this nut touches a zombie. Returns true if the nut is
-     * consumed by the hit (should be removed from play).
-     */
     public abstract boolean onHitZombie(Zombie zombie, GameSession session);
 }

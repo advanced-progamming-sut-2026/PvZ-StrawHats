@@ -4,13 +4,8 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 
-/**
- * Rolls in a straight line; each zombie it hits takes damage equal to a
- * normal zombie's health. The first hit turns it 45 degrees, every hit
- * after that turns it 90 degrees. It also turns when it hits the top/bottom.
- */
 public class BowlingWallnut extends Nut {
-    private static final int NORMAL_ZOMBIE_HP = 300; // matches ZombieDefault's Hitpoints
+    private static final int NORMAL_ZOMBIE_DAMAGE = 190;
     private int hitsSoFar = 0;
 
     public BowlingWallnut(Position position, Position direction) {
@@ -19,9 +14,18 @@ public class BowlingWallnut extends Nut {
 
     @Override
     public boolean onHitZombie(Zombie zombie, GameSession session) {
-        zombie.takeDamage(NORMAL_ZOMBIE_HP, this);
+        zombie.takeDamage(NORMAL_ZOMBIE_DAMAGE, this);
         turnAfterHit();
         return false; // keeps rolling after impact
+    }
+
+    @Override
+    public String getKindName() {
+        return "Bowling Wall-nut";
+    }
+
+    public int getHitsSoFar() {
+        return hitsSoFar;
     }
 
     private void turnAfterHit() {

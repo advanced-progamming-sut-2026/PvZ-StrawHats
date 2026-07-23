@@ -4,10 +4,6 @@ import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 
-/**
- * The third bowling plant per spec ("گردوی بزرگ"): rolls dead straight and
- * instantly crushes any zombie it touches without slowing down or turning.
- */
 public class BigNut extends Nut {
     public BigNut(Position position, Position direction) {
         super(position, direction);
@@ -15,7 +11,13 @@ public class BigNut extends Nut {
 
     @Override
     public boolean onHitZombie(Zombie zombie, GameSession session) {
-        zombie.setHp(0);
+        int armorHp = zombie.getArmor() == null ? 0 : zombie.getArmor().getHP();
+        zombie.takeDamage(zombie.getHp() + armorHp + 1, this);
         return false; // keeps rolling straight through
+    }
+
+    @Override
+    public String getKindName() {
+        return "Big Wall-nut";
     }
 }

@@ -259,7 +259,9 @@ public class IZombie extends MiniGameMode {
         result.append("\nLawn (| = red line):\n");
         Environment env = session.getEnvironment();
         for (int row = 0; row < env.getRows(); row++) {
-            result.append(row + 1).append(" B ");
+            char brainSymbol = brains[row].isEaten() ? '-' : 'B';
+            result.append(row + 1).append(" ").append(brainSymbol).append(" ");
+
             for (int col = 0; col < env.getCols(); col++) {
                 if (col == REDLINE_COLUMN + 1) result.append("| ");
                 result.append(symbolAt(row, col)).append(" ");
