@@ -4,19 +4,16 @@ import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
+import model.collections.item.GroundItem;
 import model.match_mechanisms.vector.Position;
 import model.pitches.*;
 import model.pitches.obstacles.Crater;
 import model.utils.GameSession;
+import view.GeneralPrinter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-/**
- * A three-in-a-row puzzle laid over a normal (never-ending) zombie lawn.
- * Swapping two adjacent plants is only allowed if it creates a match;
- * matches pay out sun, which can be spent upgrading every plant of a given
- * type on the board. A zombie eating a plant leaves a permanent crater.
- */
 public class Beghouled extends MiniGameMode {
     private static final Random RAND = new Random();
     private static final int SUN_PER_UNIT = 50;
@@ -31,6 +28,7 @@ public class Beghouled extends MiniGameMode {
 
     private int matchesMade = 0;
     private double timeSinceLastWave = 0;
+    private final List<String> eventLog = new ArrayList<>();
 
     public Beghouled(int difficulty) {
         setDifficulty(difficulty);
@@ -48,13 +46,14 @@ public class Beghouled extends MiniGameMode {
         this.zombiesPerSpawn = getDifficulty();
         this.zombiePool = zombiePoolFor(getDifficulty());
         seedBoard();
+        log("Beghouled level " + getDifficulty() + " started with a playable board.");
     }
 
     private int[] plantPoolFor(int difficulty) {
         return switch (difficulty) {
             case 2 -> new int[] { 1, 6, 44, 25, 27 };  // Sunflower, Peashooter, Wall-nut, Cabbage-pult, Melon-pult
             case 3 -> new int[] { 1, 6, 44, 23, 25 };  // Sunflower, Peashooter, Wall-nut, Puff-shroom, Cabbage-pult
-            default -> new int[] { 1, 6, 44, 23, 30 }; // Sunflower, Peashooter, Wall-nut, Puff-shroom, Potato Mine
+            default -> new int[] { 1, 6, 44, 23, 25 }; // Sunflower, Peashooter, Wall-nut, Puff-shroom, Cabbage-pult
         };
     }
 
@@ -70,12 +69,7 @@ public class Beghouled extends MiniGameMode {
     }
 
     private void seedBoard() {
-        Environment env = session.getEnvironment();
-        for (int row = 0; row < env.getRows(); row++) {
-            for (int col = 0; col < env.getCols(); col++) {
-                placeRandomPlant(row, col);
-            }
-        }
+        resetBoard();
         ensurePlayableBoard();
     }
 
@@ -91,6 +85,8 @@ public class Beghouled extends MiniGameMode {
     }
 
     public boolean trySwap(int row1, int col1, int row2, int col2) {
+        if (isWon() || isLost()) return false;
+        if (!inBounds(row1, col1) || !inBounds(row2, col2)) return false;
         if (!areAdjacent(row1, col1, row2, col2)) return false;
         if (isCrater(row1, col1) || isCrater(row2, col2)) return false;
 
@@ -101,8 +97,14 @@ public class Beghouled extends MiniGameMode {
             return false;
         }
 
+        log("Swapped (" + (col1 + 1) + ", " + (row1 + 1) + ") and ("
+                + (col2 + 1) + ", " + (row2 + 1) + ").");
         resolveMatches(false);
         return true;
+    }
+
+    private boolean inBounds(int row, int col) {
+        return row >= 0 && row < session.getRows() && col >= 0 && col < session.getCols();
     }
 
     private boolean areAdjacent(int row1, int col1, int row2, int col2) {
@@ -114,6 +116,7 @@ public class Beghouled extends MiniGameMode {
     private void swapCells(int row1, int col1, int row2, int col2) {
         Cell a = session.getEnvironment().getCell(row1, col1);
         Cell b = session.getEnvironment().getCell(row2, col2);
+        if (a == null || b == null) return;
         Plant plantA = a.getPlant();
         Plant plantB = b.getPlant();
         a.setPlant(plantB);
@@ -154,37 +157,51 @@ public class Beghouled extends MiniGameMode {
      * per group than a player-triggered match would).
      */
     private void resolveMatches(boolean isCascadePass) {
-        List<List<int[]>> groups = findMatchedGroups();
-        if (groups.isEmpty()) {
-            finishResolution();
-            return;
-        }
-
-        int bonusUnits = isCascadePass ? 1 : 0;
-        for (List<int[]> group : groups) {
-            awardSun(group.size(), bonusUnits);
-            matchesMade++;
-            for (int[] cell : group) {
-                session.removePlantAt(cell[0], cell[1]);
+        boolean cascade = isCascadePass;
+        int safety = 0;
+        while (safety++ < 50) {
+            List<List<int[]>> groups = findMatchedGroups();
+            if (groups.isEmpty()) {
+                finishResolution();
+                return;
             }
-        }
 
-        applyGravityAndRefill();
-        resolveMatches(true); // any further matches this triggers are cascades
+            int bonusUnits = cascade ? 1 : 0;
+            for (List<int[]> group : groups) {
+                awardSun(group.size(), bonusUnits);
+                matchesMade++;
+                log((cascade ? "Cascade" : "Match") + " of " + group.size()
+                        + " plants cleared. Progress: " + matchesMade + "/" + matchesNeeded + ".");
+                for (int[] cell : group) {
+                    session.removePlantAt(cell[0], cell[1]);
+                }
+            }
+
+            applyGravityAndRefill();
+            cascade = true;
+        }
+        log("Match resolution reached its safety limit; the board was reset.");
+        resetBoard();
+        finishResolution();
     }
 
     private void finishResolution() {
         if (!anyMoveWouldMatch()) {
             resetBoard();
+            ensurePlayableBoard();
+            log("No legal move remained. The board was reset.");
         }
         if (matchesMade >= matchesNeeded) {
             session.killAllZombies();
+            log("The required number of matches was reached; all zombies were cleared.");
         }
     }
 
     private void awardSun(int matchSize, int bonusUnits) {
         int units = Math.max(1, matchSize - 2) + bonusUnits;
         session.addSun(units * SUN_PER_UNIT);
+        log("Collected " + (units * SUN_PER_UNIT) + " sun from a "
+                + matchSize + "-plant combination.");
     }
 
     /**
@@ -330,14 +347,24 @@ public class Beghouled extends MiniGameMode {
 
     private void ensurePlayableBoard() {
         int attempts = 0;
-        while (!anyMoveWouldMatch() && attempts++ < 20) resetBoard();
+        while ((hasAnyMatch() || !anyMoveWouldMatch()) && attempts++ < 100) resetBoard();
+    }
+
+    private boolean hasAnyMatch() {
+        return !findMatchedGroups().isEmpty();
     }
 
     public boolean upgrade(String plantName) {
-        UpgradePath path = upgradePaths.get(plantName);
+        if (isWon() || isLost()) return false;
+        String requested = normaliseName(plantName);
+        UpgradePath path = upgradePaths.entrySet().stream()
+                .filter(entry -> normaliseName(entry.getKey()).equals(requested))
+                .map(Map.Entry::getValue)
+                .findFirst().orElse(null);
         if (path == null || !session.spendSun(path.cost)) return false;
 
         Environment env = session.getEnvironment();
+        int upgradedCount = 0;
         for (int row = 0; row < env.getRows(); row++) {
             for (int col = 0; col < env.getCols(); col++) {
                 Integer id = plantIdAt(row, col);
@@ -345,19 +372,36 @@ public class Beghouled extends MiniGameMode {
                     Plant upgraded = PlantFactory.createPlant(path.toId, 1, new Position(col, row));
                     session.removePlantAt(row, col);
                     session.plantAt(row, col, upgraded);
+                    upgradedCount++;
                 }
             }
         }
+        if (upgradedCount == 0) {
+            session.addSun(path.cost);
+            return false;
+        }
+        log("Upgraded " + upgradedCount + " " + plantName
+                + " plant(s) for " + path.cost + " sun.");
         return true;
     }
 
+    private String normaliseName(String value) {
+        return value == null ? "" : value.toLowerCase()
+                .replace("-", "").replace("_", "").replace(" ", "").trim();
+    }
+
     public void tick(double deltaSeconds) {
+        if (isWon() || isLost()) return;
         Set<Long> occupiedBeforeTick = occupiedPlantCells();
+        int zombiesBefore = session.getZombies().size();
         session.tick();
         markCratersWherePlantsWereEaten(occupiedBeforeTick);
-        timeSinceLastWave += deltaSeconds;
+        if (session.getZombies().size() < zombiesBefore) {
+            log("A zombie was removed from the board.");
+        }
+        timeSinceLastWave += Math.max(0, deltaSeconds);
         if (timeSinceLastWave >= respawnWaveInterval) {
-            timeSinceLastWave = 0;
+            timeSinceLastWave -= respawnWaveInterval;
             spawnEndlessWave();
         }
     }
@@ -382,6 +426,8 @@ public class Beghouled extends MiniGameMode {
             Cell cell = env.getCell(row, col);
             if (cell != null && cell.getPlant() == null && cell.getObstacle() == null) {
                 cell.setObstacle(new Crater());
+                log("A zombie ate the plant at (" + (col + 1) + ", " + (row + 1)
+                        + "); a permanent crater was created.");
             }
         }
     }
@@ -393,6 +439,7 @@ public class Beghouled extends MiniGameMode {
             Zombie zombie = ZombieFactory.create(alias, lane, session.getEnvironment().getCols() - 1);
             zombie.setPosition(new Position(session.getEnvironment().getCols() - 1, lane));
             session.spawnZombie(zombie);
+            log(alias + " spawned in Beghouled lane " + (lane + 1) + ".");
         }
     }
 
@@ -408,6 +455,33 @@ public class Beghouled extends MiniGameMode {
     public int getMatchesNeeded() { return matchesNeeded; }
     public GameSession getSession() { return session; }
     public List<String> getZombiePool() { return List.copyOf(zombiePool); }
+    public List<Integer> getBoardPlantIds() {
+        return java.util.Arrays.stream(boardPlantIds).boxed().toList();
+    }
+
+    public List<GroundItem> collectItemsAt(int x, int y) {
+        return session.collectItemsNear(new Position(x, y));
+    }
+
+    public void addSunCheat(int amount) {
+        if (amount <= 0) return;
+        session.addSun(amount);
+        log("Cheat added " + amount + " sun. Total: " + session.getSunCount() + ".");
+    }
+
+    public String renderPlantsInfo() {
+        if (session.getPlants().isEmpty()) return "no plants on the board";
+        return session.getPlants().stream()
+                .filter(Plant::isAlive)
+                .map(plant -> plant.getName() + " | hp: " + plant.getHP()
+                        + " | position: (" + ((int) plant.getPosition().x() + 1)
+                        + ", " + ((int) plant.getPosition().y() + 1) + ")")
+                .collect(Collectors.joining("\n"));
+    }
+
+    public String renderZombiesInfo() {
+        return session.renderZombiesInfo();
+    }
 
     public String renderState() {
         StringBuilder result = new StringBuilder(getStageDetails())
@@ -426,9 +500,33 @@ public class Beghouled extends MiniGameMode {
             }
             result.append("\n");
         }
+        String groundItems = renderGroundItems();
         return result.append("Live zombies: ")
                 .append(session.getZombies().stream().filter(Zombie::isAlive).count())
-                .append(" | Zombie pool: ").append(zombiePool).toString();
+                .append(" | Zombie pool: ").append(zombiePool)
+                .append("\nPlants:\n  ").append(renderPlantsInfo().replace("\n", "\n  "))
+                .append(groundItems.isBlank() ? "" : "\nGround items:\n  "
+                        + groundItems.replace("\n", "\n  "))
+                .append("\nRecent events:\n  ")
+                .append(eventLog.isEmpty() ? "none" : String.join("\n  ", eventLog))
+                .toString();
+    }
+
+    private String renderGroundItems() {
+        return session.getItems().stream()
+                .filter(GroundItem.class::isInstance)
+                .map(GroundItem.class::cast)
+                .filter(item -> item.isAlive() && item.getPosition() != null)
+                .map(item -> item.getItemType().name().toLowerCase() + " at ("
+                        + ((int) Math.round(item.getPosition().x()) + 1) + ", "
+                        + ((int) Math.round(item.getPosition().y()) + 1) + ")")
+                .collect(Collectors.joining("\n"));
+    }
+
+    private void log(String message) {
+        eventLog.add(message);
+        if (eventLog.size() > 14) eventLog.remove(0);
+        GeneralPrinter.print(message);
     }
 
     private List<String> zombiePoolFor(int level) {
