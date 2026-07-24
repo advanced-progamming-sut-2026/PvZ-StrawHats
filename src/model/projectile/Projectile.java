@@ -7,16 +7,16 @@ import model.match_mechanisms.vector.Position;
 import model.projectile.hit.HitEffectStrategy;
 
 public class Projectile extends Item {
-    private int damage;
-    private Item target;
+    private final int damage;
+    private final Item target;
     private Plant sourcePlant;
     private boolean isStunning;
 
-    private MoveStrategy moveStrategy;
+    private final MoveStrategy moveStrategy;
     private HitEffectStrategy hitEffectStrategy;
 
     public Projectile(Position position, Position velocity, Zombie zombie, int damage, MoveStrategy moveStrategy, HitEffectStrategy hitEffectStrategy) {
-        this((Item) zombie, position, velocity, damage, moveStrategy, hitEffectStrategy);
+        this(zombie, position, velocity, damage, moveStrategy, hitEffectStrategy);
     }
 
     public Projectile(Plant sourcePlant, Position position, Position velocity, Zombie zombie, int damage,

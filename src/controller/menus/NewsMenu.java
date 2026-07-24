@@ -1,8 +1,8 @@
 package controller.menus;
 
 import model.App;
-import model.news.News;
 import model.Regex;
+import model.news.News;
 import model.user_data.User;
 import view.GeneralPrinter;
 

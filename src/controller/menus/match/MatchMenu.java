@@ -6,14 +6,14 @@ import controller.menus.GameMenu;
 import controller.menus.Menu;
 import model.App;
 import model.Regex;
-import model.match.main.levels.Level;
-import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantJsonParser;
+import model.match.main.levels.Level;
+import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.user_data.User;
 import model.user_data.UserState;
-import model.utils.LevelProgression;
 import model.utils.GameSession;
+import model.utils.LevelProgression;
 import view.GeneralPrinter;
 
 import java.util.ArrayList;

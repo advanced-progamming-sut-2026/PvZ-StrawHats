@@ -6,8 +6,8 @@ import model.match_mechanisms.vector.Position;
 import java.util.ArrayList;
 
 public class PierceHit implements HitEffectStrategy {
-    private int pierceNumber;
-    private ArrayList<Zombie> hitZombies;
+    private final int pierceNumber;
+    private final ArrayList<Zombie> hitZombies;
     public PierceHit(int pierceNumber) {
         this.pierceNumber = pierceNumber;
         hitZombies = new ArrayList<>();

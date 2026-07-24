@@ -1,5 +1,5 @@
 package model.collections;
 
 public enum Ability {;
-    public void getAbility(){};
+    public void getAbility(){}
 }

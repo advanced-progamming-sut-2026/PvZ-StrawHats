@@ -106,7 +106,7 @@ public class GroundSun extends GroundItem {
             if (!zombie.isAlive() || zombie.getPosition() == null) continue;
             if (Math.abs(zombie.getPosition().y() - center.y()) <= 2
                     && Math.abs(zombie.getPosition().x() - center.x()) <= 2) {
-                zombie.takeDamage(150, (Object) null);
+                zombie.takeDamage(150, null);
             }
         }
 

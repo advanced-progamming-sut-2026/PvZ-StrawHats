@@ -12,16 +12,7 @@ import model.match_mechanisms.vector.Position;
 import model.utils.GameSession;
 import view.GeneralPrinter;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class WallnutBowling extends MiniGameMode {
     private static final Random RAND = new Random();

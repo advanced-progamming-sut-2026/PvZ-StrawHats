@@ -4,5 +4,5 @@ import model.collections.plant.Plant;
 import model.utils.GameSession;
 
 public interface ActStrategy {
-    public void act(Plant user, GameSession session);
+    void act(Plant user, GameSession session);
 }

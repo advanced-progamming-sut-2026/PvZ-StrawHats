@@ -4,7 +4,6 @@ import controller.CollectionManager;
 import controller.NewsManager;
 import controller.menus.GameMenu;
 import controller.menus.Menu;
-
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;

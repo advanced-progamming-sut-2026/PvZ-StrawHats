@@ -1,13 +1,10 @@
 package controller.menus;
 
 import controller.QuestManager;
-import controller.mini_games.BeghouledController;
-import controller.mini_games.ImZombieController;
-import controller.mini_games.VasebreakerController;
-import controller.mini_games.WallnutBowlingController;
-import controller.mini_games.ZombotanyController;
+import controller.mini_games.*;
 import model.App;
 import model.Regex;
+import model.game_exceptions.GameException;
 import model.match.mini_games.Beghouled;
 import model.match.mini_games.Zombotany;
 import model.match.mini_games.izombie.IZombie;
@@ -16,7 +13,6 @@ import model.match.mini_games.wallnutbowlling.WallnutBowling;
 import model.quests.GameQuest;
 import model.quests.QuestLoader;
 import model.user_data.User;
-import model.game_exceptions.GameException;
 import view.GeneralPrinter;
 
 import java.util.ArrayList;

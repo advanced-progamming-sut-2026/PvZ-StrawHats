@@ -2,7 +2,6 @@ package controller.menus.match;
 
 import controller.CollectionManager;
 import controller.menus.Menu;
-
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;

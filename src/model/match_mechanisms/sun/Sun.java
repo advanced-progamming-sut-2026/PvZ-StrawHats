@@ -9,7 +9,8 @@ public abstract class Sun {
     private double fallSpeed;
     private boolean isFallen;
 
-    public void dispose(){};
+    public void dispose(){}
+
     public abstract int getSunAmount();
 
     public boolean isFallen() {
@@ -36,5 +37,5 @@ public abstract class Sun {
         this.fallSpeed = fallSpeed;
     }
 
-    public void dropPositionEngine(){};
+    public void dropPositionEngine(){}
 }

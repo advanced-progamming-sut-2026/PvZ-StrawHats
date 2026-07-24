@@ -1,7 +1,7 @@
 package controller;
 
-import model.collections.plant.PlantJsonParser;
 import model.collections.plant.PlantFactory;
+import model.collections.plant.PlantJsonParser;
 import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.pitches.Cell;
@@ -13,11 +13,7 @@ import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class QuestManager {
 
@@ -416,7 +412,7 @@ public class QuestManager {
         boolean wantsNewPlant = "random_new_plant".equals(formula);
         for (PlantJsonParser.PlantConfig config : PlantFactory.getBlueprints().values()) {
             boolean unlocked = state.isPlantUnlocked(config.id);
-            if (wantsNewPlant ? !unlocked : unlocked) {
+            if (wantsNewPlant != unlocked) {
                 candidates.add(config);
             }
         }

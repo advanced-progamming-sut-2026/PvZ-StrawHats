@@ -3,7 +3,7 @@ package model.projectile.hit;
 import model.collections.zombie.Zombie;
 
 public class ButterHit implements HitEffectStrategy{
-    private int areaLength;
+    private final int areaLength;
 
     public ButterHit(int areaLength) {
         this.areaLength = areaLength;

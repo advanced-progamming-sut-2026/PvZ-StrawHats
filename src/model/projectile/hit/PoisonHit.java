@@ -3,7 +3,7 @@ package model.projectile.hit;
 import model.collections.zombie.Zombie;
 
 public class PoisonHit implements HitEffectStrategy {
-    private int areaLength;
+    private final int areaLength;
 
     public PoisonHit(int areaLength) {
         this.areaLength = areaLength;

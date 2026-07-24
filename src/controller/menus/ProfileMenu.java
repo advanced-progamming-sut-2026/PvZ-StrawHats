@@ -171,24 +171,23 @@ public class ProfileMenu extends Menu {
     @Override
     public String showMenu() {
         User user = User.currentUser;
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ Profile Menu ]\n");
-        sb.append("Username: ").append(user.username).append("\n");
-        sb.append("Nickname: ").append(user.nickname).append("\n");
-        sb.append("Games Played: ").append(user.userState.gamesPlayed).append("\n");
-        sb.append("Coins: ").append(user.userState.coins).append("\n");
-        sb.append("Diamonds: ").append(user.userState.diamonds).append("\n");
-        sb.append("Levels Passed: ").append(user.userState.lastLevel).append("\n");
-        sb.append("High Score: ").append(user.userState.highScore).append("\n");
-        sb.append("Commands:\n");
-        sb.append("  menu profile show-info\n");
-        sb.append("  menu profile change-username -u <username>\n");
-        sb.append("  menu profile change-nickname -u <nickname>\n");
-        sb.append("  menu profile change-email -e <email>\n");
-        sb.append("  menu profile change-password -p <new_password> -o <old_password>\n");
-        sb.append("  menu enter <menu_name>\n");
-        sb.append("  menu exit\n");
-        sb.append("  menu show current");
-        return sb.toString();
+        String sb = "[ Profile Menu ]\n" +
+                "Username: " + user.username + "\n" +
+                "Nickname: " + user.nickname + "\n" +
+                "Games Played: " + user.userState.gamesPlayed + "\n" +
+                "Coins: " + user.userState.coins + "\n" +
+                "Diamonds: " + user.userState.diamonds + "\n" +
+                "Levels Passed: " + user.userState.lastLevel + "\n" +
+                "High Score: " + user.userState.highScore + "\n" +
+                "Commands:\n" +
+                "  menu profile show-info\n" +
+                "  menu profile change-username -u <username>\n" +
+                "  menu profile change-nickname -u <nickname>\n" +
+                "  menu profile change-email -e <email>\n" +
+                "  menu profile change-password -p <new_password> -o <old_password>\n" +
+                "  menu enter <menu_name>\n" +
+                "  menu exit\n" +
+                "  menu show current";
+        return sb;
     }
 }

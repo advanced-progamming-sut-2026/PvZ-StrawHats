@@ -52,6 +52,6 @@ public class ThermiteExplosion implements ZombieEffectStatus {
 
         int armorHp = target.getArmor() != null ? target.getArmor().getHP() : 0;
         int overkillDamage = target.getHp() + armorHp + 1;
-        target.takeDamage(overkillDamage, (Object) null);
+        target.takeDamage(overkillDamage, null);
     }
 }

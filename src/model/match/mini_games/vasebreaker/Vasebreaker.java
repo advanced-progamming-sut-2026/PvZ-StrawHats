@@ -1,27 +1,18 @@
 package model.match.mini_games.vasebreaker;
 
+import model.collections.item.GroundItem;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
-import model.collections.item.GroundItem;
 import model.collections.zombie.Zombie;
 import model.match.mini_games.MiniGameMode;
-import model.match.mini_games.vasebreaker.vase.GargantuarVase;
-import model.match.mini_games.vasebreaker.vase.PlantVase;
-import model.match.mini_games.vasebreaker.vase.RandomVase;
-import model.match.mini_games.vasebreaker.vase.Vase;
-import model.match.mini_games.vasebreaker.vase.ZombieVase;
+import model.match.mini_games.vasebreaker.vase.*;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Environment;
 import model.utils.GameSession;
 import view.GeneralPrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Vasebreaker extends MiniGameMode {

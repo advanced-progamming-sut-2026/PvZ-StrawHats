@@ -2,7 +2,10 @@ package model.collections.zombie.zombie_move;
 
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import model.pitches.*;
+import model.pitches.Cell;
+import model.pitches.Environment;
+import model.pitches.Tile;
+import model.pitches.TileType;
 import model.pitches.obstacles.SlipperyDirection;
 import model.utils.GameSession;
 
@@ -19,11 +22,11 @@ public interface MoveBehavior {
         if (cell == null || cell.getTile() == null) return pos;
 
         Tile tile = cell.getTile();
-        if (tile.getType() != TileType.Slippery || tile.getSlipperyDirection() == null) {
+        if (tile.type() != TileType.Slippery || tile.slipperyDirection() == null) {
             return pos;
         }
 
-        double rowDelta = (tile.getSlipperyDirection() == SlipperyDirection.UP) ? -1.0 : 1.0;
+        double rowDelta = (tile.slipperyDirection() == SlipperyDirection.UP) ? -1.0 : 1.0;
         double newRow = row + rowDelta;
 
         if (newRow < 0 || newRow >= lawn.getRows()) return pos;

@@ -7,7 +7,10 @@ import model.user_data.User;
 import model.utils.LevelLoader;
 import view.GeneralPrinter;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -121,64 +124,45 @@ public class LeaderboardMenu extends Menu {
         rows.sort(ascending ? comparator : comparator.reversed());
     }
 
-    
-    private static final class Row {
-        final String username;
-        final String season;
-        final String chapter;
-        final String stage;
-        final int stageLevelId;
-        final int miniGamesWon;
-        final int questsCompleted;
-        final int highScore;
 
-        private Row(String username, String season, String chapter, String stage, int stageLevelId,
-                    int miniGamesWon, int questsCompleted, int highScore) {
-            this.username = username;
-            this.season = season;
-            this.chapter = chapter;
-            this.stage = stage;
-            this.stageLevelId = stageLevelId;
-            this.miniGamesWon = miniGamesWon;
-            this.questsCompleted = questsCompleted;
-            this.highScore = highScore;
-        }
+    private record Row(String username, String season, String chapter, String stage, int stageLevelId, int miniGamesWon,
+                       int questsCompleted, int highScore) {
 
         static Row of(User user, List<Level> allLevels) {
-            Level level = null;
-            if (user.userState.lastLevel > 0) {
-                level = allLevels.stream()
-                        .filter(l -> l.getId() == user.userState.lastLevel)
-                        .findFirst()
-                        .orElse(null);
-            }
-
-            String season = "-";
-            String chapter = "-";
-            String stage = "-";
-            int stageLevelId = -1;
-
-            if (level != null) {
-                season = capitalize(level.getSeason().getName());
-                stageLevelId = level.getId();
-                String name = level.getName();
-                int idx = name.indexOf(" - ");
-                if (idx >= 0) {
-                    chapter = name.substring(0, idx);
-                    stage = name.substring(idx + 3);
-                } else {
-                    chapter = name;
-                    stage = name;
+                Level level = null;
+                if (user.userState.lastLevel > 0) {
+                    level = allLevels.stream()
+                            .filter(l -> l.getId() == user.userState.lastLevel)
+                            .findFirst()
+                            .orElse(null);
                 }
+
+                String season = "-";
+                String chapter = "-";
+                String stage = "-";
+                int stageLevelId = -1;
+
+                if (level != null) {
+                    season = capitalize(level.getSeason().getName());
+                    stageLevelId = level.getId();
+                    String name = level.getName();
+                    int idx = name.indexOf(" - ");
+                    if (idx >= 0) {
+                        chapter = name.substring(0, idx);
+                        stage = name.substring(idx + 3);
+                    } else {
+                        chapter = name;
+                        stage = name;
+                    }
+                }
+
+                return new Row(user.username, season, chapter, stage, stageLevelId,
+                        user.userState.miniGamesWon, user.userState.questsCompleted, user.userState.highScore);
             }
 
-            return new Row(user.username, season, chapter, stage, stageLevelId,
-                    user.userState.miniGamesWon, user.userState.questsCompleted, user.userState.highScore);
+            private static String capitalize(String s) {
+                if (s == null || s.isEmpty()) return s;
+                return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+            }
         }
-
-        private static String capitalize(String s) {
-            if (s == null || s.isEmpty()) return s;
-            return Character.toUpperCase(s.charAt(0)) + s.substring(1);
-        }
-    }
 }

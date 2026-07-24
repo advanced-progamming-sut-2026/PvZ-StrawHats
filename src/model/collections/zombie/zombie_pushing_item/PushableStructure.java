@@ -1,7 +1,7 @@
 package model.collections.zombie.zombie_pushing_item;
 
-import model.pitches.obstacles.PushableType;
 import model.match_mechanisms.vector.Position;
+import model.pitches.obstacles.PushableType;
 
 public class PushableStructure {
     private final PushableType type;

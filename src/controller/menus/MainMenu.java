@@ -36,17 +36,16 @@ public class MainMenu extends Menu{
 
     @Override
     public String  showMenu() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[ Main Menu ]\n");
-        sb.append("  Game\n");
-        sb.append("  Settings\n");
-        sb.append(NewsManager.hasUnreadNews() ? "  News [!] (you have unread news)\n" : "  News\n");
-        sb.append("  Profile\n");
-        sb.append("Commands:\n");
-        sb.append("  menu enter <menu_name>\n");
-        sb.append("  menu logout\n");
-        sb.append("  menu show current");
-        return sb.toString();
+        String sb = "[ Main Menu ]\n" +
+                "  Game\n" +
+                "  Settings\n" +
+                (NewsManager.hasUnreadNews() ? "  News [!] (you have unread news)\n" : "  News\n") +
+                "  Profile\n" +
+                "Commands:\n" +
+                "  menu enter <menu_name>\n" +
+                "  menu logout\n" +
+                "  menu show current";
+        return sb;
     }
 
     public void Logout() {

@@ -1,12 +1,13 @@
 package model.match.mini_games;
 
+import model.collections.item.GroundItem;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
-import model.collections.item.GroundItem;
 import model.match_mechanisms.vector.Position;
-import model.pitches.*;
+import model.pitches.Cell;
+import model.pitches.Environment;
 import model.pitches.obstacles.Crater;
 import model.utils.GameSession;
 import view.GeneralPrinter;
@@ -537,15 +538,6 @@ public class Beghouled extends MiniGameMode {
         };
     }
 
-    private static class UpgradePath {
-        final int fromId;
-        final int toId;
-        final int cost;
-
-        UpgradePath(int fromId, int toId, int cost) {
-            this.fromId = fromId;
-            this.toId = toId;
-            this.cost = cost;
-        }
+    private record UpgradePath(int fromId, int toId, int cost) {
     }
 }

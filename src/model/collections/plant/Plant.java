@@ -1,12 +1,12 @@
 package model.collections.plant;
 
 import model.collections.Item;
+import model.collections.armour.PlantArmour;
 import model.collections.plant.actstrategy.ActStrategy;
+import model.collections.zombie.Zombie;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.Pluck;
 import model.match_mechanisms.vector.Position;
-import model.collections.zombie.Zombie;
-import model.collections.armour.PlantArmour;
 import model.utils.GameSession;
 import service.GameClock;
 import view.GeneralPrinter;
@@ -25,10 +25,10 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private final ArrayList<PlantTag> tags = new ArrayList<>();
     private int damage;
     private PlantType type;
-    private Plant bottom = null;
-    private int stackNumber = 1;
+    private final Plant bottom = null;
+    private final int stackNumber = 1;
 
-    private ModifiableStat hpStat;
+    private final ModifiableStat hpStat;
     private ModifiableStat actionIntervalStat;
     private ActStrategy actStrategy;
     private PlantFoodEffect plantFoodEffect;

@@ -1,5 +1,6 @@
 package model.utils;
 
+import controller.QuestManager;
 import model.collections.Item;
 import model.collections.item.*;
 import model.collections.plant.Plant;
@@ -14,27 +15,15 @@ import model.match.main.season.travellog.egypt.Egypt;
 import model.match.main.season.travellog.egypt.SandStorm;
 import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
-import model.pitches.Cell;
-import model.pitches.Environment;
-import model.pitches.LawnMower;
-import model.pitches.Tile;
-import model.pitches.TileType;
+import model.pitches.*;
 import model.projectile.Projectile;
 import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.GameClock;
-import controller.QuestManager;
 import view.GeneralPrinter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.ToIntFunction;
 
 public class GameSession {
@@ -637,7 +626,7 @@ public class GameSession {
         if (hasZombie) return 'Z';
         if (hasPlant) return 'P';
         if (cell.getObstacle() != null) return 'X';
-        if (cell.getTile() != null && cell.getTile().getType() == TileType.Slippery) return '~';
+        if (cell.getTile() != null && cell.getTile().type() == TileType.Slippery) return '~';
         return '.';
     }
 
@@ -701,9 +690,9 @@ public class GameSession {
 
         if (cell.getTile() != null) {
             Tile tile = cell.getTile();
-            String terrain = tile.getType().toString();
-            if (tile.getSlipperyDirection() != null) {
-                terrain += " (" + tile.getSlipperyDirection() + ")";
+            String terrain = tile.type().toString();
+            if (tile.slipperyDirection() != null) {
+                terrain += " (" + tile.slipperyDirection() + ")";
             }
             parts.add("terrain=" + terrain);
         }

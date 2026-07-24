@@ -6,5 +6,5 @@ public class RadioactivateSun extends Sun {
         return 25;
     }
 
-    public void explode(){};
+    public void explode(){}
 }
