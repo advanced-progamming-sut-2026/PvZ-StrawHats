@@ -16,14 +16,14 @@ public class PlantWhatYouGetLevel extends Level {
         return false;
     }
 
-    /** Sunflower selection isn't available in this level; the player lives off the initial sun pool only.*/
+    
     public void handleBanSunflower() {
         if (getAvailablePlants() != null) {
             getAvailablePlants().removeIf(alias -> alias.toLowerCase().contains("sunflower"));
         }
     }
 
-    /** Player plants freely (without recharge costs applying) until "start zombie waves"; then normal*/
+    
     public void startWave(GameSession session) {
         session.startWaves();
     }

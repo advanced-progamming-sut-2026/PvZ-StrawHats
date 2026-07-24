@@ -63,8 +63,6 @@ public class Vasebreaker extends MiniGameMode {
     private void layoutVases() {
         int vaseCount = 6 + (getDifficulty() - 1) * 4; // 6, 10, 14
         int zombieVases = Math.max(1, getDifficulty());
-        // Keep one clearly identifiable giant vase on every mini-game index;
-        // later indices still become harder through extra zombie/random vases.
         int gargantuarVases = 1;
         int plantVases = 2 + getDifficulty();
 

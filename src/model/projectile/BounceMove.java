@@ -23,19 +23,18 @@ public class BounceMove implements MoveStrategy {
         Position speed = projectile.getSpeed();
 
         if (pos != null && speed != null) {
-            // Record the initial firing height as the floor to bounce off of
-            if (floorY == null) {
-                floorY = pos.y();
-            }
+            // initial firing height as the floor to bounce off of
+            if (floorY == null) floorY = pos.y();
+
 
             double newSpeedY = speed.y() + (gravity * GameClock.SECONDS_PER_TICK);
             double newY = pos.y() + (newSpeedY * GameClock.SECONDS_PER_TICK);
             double newX = pos.x() + (speed.x() * GameClock.SECONDS_PER_TICK);
 
-            // If it hits or passes the floor while falling, BOUNCE!
+            // bounce when hits or passes the floor while falling, !
             if (newY >= floorY && newSpeedY > 0) {
                 newY = floorY; // Snap back to the floor line
-                newSpeedY = -newSpeedY * bounceDamping; // Reverse direction and dampen speed
+                newSpeedY = -newSpeedY * bounceDamping; // Reverse direction and change speed a bit (when you learned phys2: )
             }
 
             Position newSpeed = Position.of(speed.x(), newSpeedY);

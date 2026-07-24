@@ -113,11 +113,9 @@ public class QuestManager {
                 }
             }
         }
-        // Persist every progress change immediately (not only on completion) so
-        // progress survives even if the player quits before finishing a quest.
-        if (changed) {
-            QuestLoader.saveActiveQuestsProgress();
-        }
+        // update every progress even if the player quits before finishing a quest.
+        if (changed) QuestLoader.saveActiveQuestsProgress();
+
     }
 
     public static void notifyLevelWon(GameSession session) {
@@ -376,7 +374,7 @@ public class QuestManager {
         return null;
     }
 
-    /** Highest criterion target for a quest; used to render its progress bar. */
+    
     public static int getDisplayTarget(GameQuest quest) {
         int target = 1;
         if (quest.getCriteria() != null) {

@@ -7,10 +7,7 @@ import model.user_data.User;
 import model.utils.LevelLoader;
 import view.GeneralPrinter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -116,15 +113,15 @@ public class LeaderboardMenu extends Menu {
         };
 
         if (comparator == null) {
-            // "rank": nothing to compare by, just optionally reverse whatever order rows arrived in
-            if (!ascending) java.util.Collections.reverse(rows);
+            // "rank": reverse whatever order rows arrived in
+            if (!ascending) Collections.reverse(rows);
             return;
         }
 
         rows.sort(ascending ? comparator : comparator.reversed());
     }
 
-    /** One flattened, pre-computed leaderboard row so sorting never has to touch User/Level again. */
+    
     private static final class Row {
         final String username;
         final String season;

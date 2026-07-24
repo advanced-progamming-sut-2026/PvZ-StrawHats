@@ -5,7 +5,7 @@ import model.user_data.User;
 import model.utils.GameSession;
 
 public abstract class MiniGameMode extends Match {
-    /** 1, 2, or 3 — each minigame has three levels of increasing difficulty per spec. */
+    
     protected int difficulty = 1;
 
     public int getDifficulty() { return difficulty; }

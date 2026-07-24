@@ -14,7 +14,7 @@ public enum ArmourType {
     private final int armorHp;
     private final boolean isMetal;
 
-    // constructor
+
     ArmourType(String name, int armorHp, boolean isMetal) {
         this.name = name;
         this.armorHp = armorHp;

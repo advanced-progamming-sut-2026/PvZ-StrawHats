@@ -12,7 +12,7 @@ public class GameQuest extends Quest {
     private QuestReward reward;
     private long assignedAtEpochSecond;
 
-    /** True once the (already-completed) quest's reward has actually been collected by the player. */
+
     private boolean rewardCollected;
 
     public String getId() {

@@ -21,10 +21,10 @@ public abstract class Level {
     protected List<String> forcedPlants;
     protected List<String> zombiePool = new ArrayList<>();
 
-    // Tide support (used for Big Wave Beach)
-    protected int currentTideColumn = 0;      // 0 = no water, >0 = water covers that many columns from right
+
+    protected int currentTideColumn = 0;
     protected double tideTimer = 0;
-    protected int maxTideColumn = 3;          // default, can be overridden per level
+    protected int maxTideColumn = 3;
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -57,11 +57,7 @@ public abstract class Level {
     public int getMaxTideColumn() { return maxTideColumn; }
     public void setMaxTideColumn(int maxTideColumn) { this.maxTideColumn = maxTideColumn; }
 
-    /**
-     * Update tide level based on elapsed time.
-     * Override in Beach levels to implement dynamic tide changes.
-     * Default does nothing (no tide).
-     */
+
     public void updateTide(double deltaSeconds, GameSession session) {
         // Default: no tide
     }
@@ -83,7 +79,7 @@ public abstract class Level {
         return false;
     }
 
-    /** Default victory: every configured wave spawned and no live zombies remain. */
+    
     public boolean checkWinCondition(GameSession session) {
         return session != null
                 && session.isWavesStarted()

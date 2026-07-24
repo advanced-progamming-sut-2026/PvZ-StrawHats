@@ -2,11 +2,7 @@ package model.pitches.obstacles;
 
 import model.collections.plant.Plant;
 
-/**
- * Left behind once a plant's chill level from repeated snowball hits maxes
- * out: freezes the plant solid (incapacitated) until enough damage is dealt
- * to the ice itself.
- */
+
 public class IceBlock implements Obstacle {
     private final Plant frozenPlant;
     private int hp;
@@ -16,11 +12,7 @@ public class IceBlock implements Obstacle {
         this.hp = hp;
     }
 
-    /**
-     * Damages the ice. Once its HP is exhausted, it frees the plant it's
-     * holding and resets the plant's chill buildup. Returns true if this
-     * broke the ice.
-     */
+
     public boolean takeDamage(int amount) {
         if (hp <= 0) return false;
         hp -= amount;

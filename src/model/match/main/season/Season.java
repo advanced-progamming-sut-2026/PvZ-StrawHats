@@ -16,12 +16,7 @@ public abstract class Season {
 
     public String getName() { return name; }
 
-    public static void handleTravellog() {}
-    public static void applyEffect() {}
 
-    // Season-specific checks (can be overridden)
-    public boolean hasGraves() { return false; }
-    public boolean hasIceTiles() { return false; }
     public boolean hasTide() { return false; }
     public boolean isNight() { return false; }
 

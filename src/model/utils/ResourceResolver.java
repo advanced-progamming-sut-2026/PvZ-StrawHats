@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/** Opens game data both from an IDE checkout and from a packaged Gradle build. */
+
 public final class ResourceResolver {
     private ResourceResolver() {
     }

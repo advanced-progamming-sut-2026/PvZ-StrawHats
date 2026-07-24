@@ -7,7 +7,7 @@ import model.utils.GameSession;
 public class DeadLineLevel extends Level {
     private Position deadLine; // e.g., column x = 3
 
-    /** any zombie crosses past the dead line column. */
+    
     @Override
     public boolean checkLossCondition(GameSession session) {
         if (deadLine == null) return false;

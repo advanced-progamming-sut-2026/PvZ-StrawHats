@@ -36,10 +36,10 @@ public class Cell {
     public PushableStructure getStructure() { return structure; }
     public void setStructure(PushableStructure structure) { this.structure = structure; }
 
-    /** The pushable structure (e.g. ice block) currently occupying this cell, or null if it's free. */
+    
     public PushableStructure getInteractableStructure() { return structure; }
 
-    /** This cell's terrain, or null if it's plain ground with no special tile. */
+    
     public Tile getTile() { return tile; }
     public void setTile(Tile tile) { this.tile = tile; }
 

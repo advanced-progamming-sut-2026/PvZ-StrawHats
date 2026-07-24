@@ -12,7 +12,7 @@ public class LoveYourPlantsLevel extends Level {
         plantsLost = 0;
     }
 
-    /** called whenever one of the player's plants dies or is eaten while this level is active.*/
+    
     public void recordPlantLoss() {
         plantsLost++;
     }

@@ -6,9 +6,6 @@ public class Time {
     // ---- Global game tick (static) ----
     private static int tick;
 
-    public static void update(int amount) {
-        tick += amount;
-    }
 
     public static int getTick() {
         return tick;
@@ -27,14 +24,11 @@ public class Time {
         this.running = true;
     }
 
-    /**
-     * Decrease the timer by delta seconds.
-     * @param delta seconds elapsed
-     */
+    /// Decrease the timer by delta seconds.
     public void tick(double delta) {
-        if (running && !GameClock.isZero(secondsRemaining)) {
+        if (running && !GameClock.isZero(secondsRemaining))
             secondsRemaining = GameClock.countDown(secondsRemaining, delta);
-        }
+
     }
 
     public double getSecondsRemaining() {

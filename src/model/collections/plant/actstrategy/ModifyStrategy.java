@@ -14,7 +14,6 @@ import java.util.ArrayList;
 public class ModifyStrategy implements ActStrategy {
     @Override
     // ability values: 1 for pads(do nothing) 2 for (Torchwood) 3 for (hypnotism)
-    // the hypno will handled in the zombie and plant in the future
     public void act(Plant user, GameSession session) {
         switch ((int) user.getAbilityValue()) {
             case 1:

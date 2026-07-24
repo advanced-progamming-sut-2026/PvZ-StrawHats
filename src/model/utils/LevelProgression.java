@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/** Keeps stage unlock checks based on level order instead of gaps in numeric IDs. */
+
 public final class LevelProgression {
     private LevelProgression() {
     }

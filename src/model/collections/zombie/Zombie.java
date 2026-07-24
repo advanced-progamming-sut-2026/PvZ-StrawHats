@@ -131,9 +131,7 @@ public class Zombie extends Item implements Attack {
                 if (damageWhileSubmerged != null && damageWhileSubmerged.contains(plantName)) {
                     allowDamage = true;
                 }
-                //    else if (plant.getPlantFoodTimer() > 0 && damageWhileSubmergedPlantfoodOnly != null && damageWhileSubmergedPlantfoodOnly.contains(plantName)) {
-                //    allowDamage = true;
-                //  }
+
             } else if (damageSource instanceof Projectile p) {
                 if (p.getMoveStrategy() instanceof ArcMove) {
                     allowDamage = true;
@@ -186,7 +184,7 @@ public class Zombie extends Item implements Attack {
 
     @Override
     public void tick() {
-        // سازگاری با اینترفیس آیتم
+
     }
 
     public void tick(double deltaTimeSeconds, GameSession session) {

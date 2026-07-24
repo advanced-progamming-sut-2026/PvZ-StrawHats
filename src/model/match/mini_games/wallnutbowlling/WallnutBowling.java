@@ -51,7 +51,7 @@ public class WallnutBowling extends MiniGameMode {
         this.session = new GameSession(5, 9);
         configureSession(session);
         session.setSkySunEnabled(false);
-        this.redLineColumn = 5 - getDifficulty(); // level 1: column 5, level 3: column 3
+        this.redLineColumn = 5 - getDifficulty();
         this.zombiePool = zombiePoolFor(getDifficulty());
         session.setWaves(wavesFor(getDifficulty()));
         session.startWaves();

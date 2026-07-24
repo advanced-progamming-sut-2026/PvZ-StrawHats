@@ -2,10 +2,6 @@ package model.pitches.obstacles;
 
 import model.collections.plant.Plant;
 
-/**
- * Left behind by an Octopus zombie's grapple: pins a plant in place
- * (incapacitated) until enough damage is dealt to the wrap itself.
- */
 public class OctopusWrap implements Obstacle {
     private final Plant wrappedPlant;
     private int hp;
@@ -15,10 +11,7 @@ public class OctopusWrap implements Obstacle {
         this.hp = hp;
     }
 
-    /**
-     * Damages the wrap. Once its HP is exhausted, it frees the plant it's
-     * holding. Returns true if this broke the wrap open.
-     */
+
     public boolean takeDamage(int amount) {
         if (hp <= 0) return false;
         hp -= amount;

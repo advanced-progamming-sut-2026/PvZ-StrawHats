@@ -102,7 +102,7 @@ public class GameSession {
         return instance;
     }
 
-    /** Returns the active session without creating one as a side effect. */
+    
     public static GameSession peekInstance() {
         return instance;
     }

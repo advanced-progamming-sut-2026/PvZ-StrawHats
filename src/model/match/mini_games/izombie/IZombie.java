@@ -3,7 +3,6 @@ package model.match.mini_games.izombie;
 import model.collections.item.GroundItem;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantFactory;
-import model.collections.plant.PlantJsonParser;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.match.mini_games.MiniGameMode;
@@ -35,8 +34,7 @@ public class IZombie extends MiniGameMode {
     private static final Random RAND = new Random();
     private static final int[] DEFENDER_PLANTS = {1, 6, 44, 23, 30, 25};
 
-    // Exactly five purchasable zombies per level.  The three selections are
-    // intentionally different and contain more than ten unique zombies.
+    // Exactly five purchasable zombies per level.
     private static final Map<Integer, Map<String, Integer>> ROSTERS = buildRosters();
 
     private final GameSession session;
@@ -187,8 +185,7 @@ public class IZombie extends MiniGameMode {
                     brains[row].markEaten();
                     log(zombie.getName() + " ate the brain in lane " + (row + 1) + ".");
                 }
-                // A second zombie reaching an already-eaten brain must not
-                // remain stranded outside the lawn.
+                // second zombie reaching an eaten brain remain stranded outside the lawn.
                 zombie.setHp(0);
             }
         }

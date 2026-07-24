@@ -113,8 +113,6 @@ public class VasebreakerController extends Menu {
     }
 
     private boolean breakAtPlayerCoordinates(int x, int y) {
-        // Commands are one based.  The fallback keeps old source-level smoke
-        // scripts that passed zero-based coordinates working as well.
         if (game.breakVaseAt(y - 1, x - 1)) return true;
         return game.breakVaseAt(y, x);
     }

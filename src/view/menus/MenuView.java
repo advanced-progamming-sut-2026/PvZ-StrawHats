@@ -13,7 +13,7 @@ public abstract class MenuView {
     public boolean getInput() {
         if (!SCANNER.hasNextLine()) return false;
         String input = SCANNER.nextLine();
-        if (input.equalsIgnoreCase("exit")) return false; // fore debug
+        if (input.equalsIgnoreCase("exit")) return false; // for debug
         this.showMenu(input);
         App.currentMenu.handleCommand(input.trim());
         return true;

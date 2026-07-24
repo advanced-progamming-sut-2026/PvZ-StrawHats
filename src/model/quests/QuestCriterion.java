@@ -7,13 +7,7 @@ public class QuestCriterion {
     private int target;
     private Map<String, Object> params;
 
-    /**
-     * Name of the entry inside {@code params} that "variableOptions" should
-     * randomize into, at quest-assignment time (e.g. "maxPlantsLost",
-     * "familyType", "chapter"). When null/blank, a numeric variableOptions list
-     * randomizes {@code target} directly instead (legacy behaviour, used by
-     * e.g. the daily sun collector).
-     */
+
     private String variableParam;
 
     public String getType() {

@@ -16,10 +16,9 @@ public class Egypt extends Season {
         super("Egypt");
     }
 
-    @Override
-    public boolean hasGraves() { return true; }
 
-    /** Scatters a few (non-necromancy) graves across empty cells when an Egypt level starts. */
+
+    
     @Override
     public void placeSeasonObstacles(GameSession session) {
         if (session == null || session.getEnvironment() == null) return;

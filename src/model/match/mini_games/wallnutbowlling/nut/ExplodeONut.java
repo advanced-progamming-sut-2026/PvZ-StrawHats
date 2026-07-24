@@ -6,7 +6,7 @@ import model.utils.GameSession;
 
 public class ExplodeONut extends Nut {
     private static final int EXPLOSION_DAMAGE = 1800; // matches Cherry Bomb's damage
-    private static final int BLAST_RADIUS_TILES = 1; // 3x3 = 1 tile in every direction
+    private static final int BLAST_RADIUS_TILES = 1;
 
     public ExplodeONut(Position position, Position direction) {
         super(position, direction);

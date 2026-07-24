@@ -5,7 +5,7 @@ import model.collections.zombie.ZombieFactory;
 
 import java.util.List;
 
-/** Represents a single wave of zombies in a level.and a list of zombies that spawn together. */
+/// Represents a single wave of zombies in a level,and a list of zombies that spawn together.
 public class ZombieWave {
     private double delay;          // seconds after previous wave
     private List<Zombie> waveZombies;
@@ -47,10 +47,7 @@ public class ZombieWave {
         this.isFinalWave = isFinalWave;
     }
 
-    /**
-     * Returns the total "cost" or difficulty of this wave.
-     * Can be used for wave difficulty calculations.
-     */
+    // Returns the total "cost" or difficulty of this wave, for wave difficulty calculations.
     public int getWaveCost() {
         if (waveZombies == null) return 0;
         return waveZombies.stream().mapToInt(zombie -> ZombieFactory.getZombieCost(zombie.getAlias())).sum();

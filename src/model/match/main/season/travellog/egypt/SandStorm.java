@@ -2,10 +2,7 @@ package model.match.main.season.travellog.egypt;
 
 import java.util.Random;
 
-/**
- * Egypt's whirlwind entry: on the final wave, zombies may be blown 1-4
- * columns further onto the lawn than a normal spawn.
- */
+
 public class SandStorm {
     private static final Random RAND = new Random();
     private static final int MIN_COLUMNS = 1;

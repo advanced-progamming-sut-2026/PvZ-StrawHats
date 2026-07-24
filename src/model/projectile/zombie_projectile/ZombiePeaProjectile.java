@@ -33,6 +33,6 @@ public class ZombiePeaProjectile extends ZombieProjectile {
 
     @Override
     protected void onDestinationReached(GameSession session) {
-        // گلوله نخود بدون برخورد به چیزی از زمین بازی خارج شد. شاید بعدا این رو باید یکمی تغییر بدیم فعلا ولی کاری نمیکنه خالیه
+        // maybe later
     }
 }

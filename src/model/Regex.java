@@ -193,7 +193,7 @@ public enum Regex {
             "^\\s*shop\\s+buy\\s+-i\\s+(?<itemid>\\S+)\\s+-n\\s+(?<count>\\d+)(?:\\s+-t\\s+(?<planttype>.+?))?\\s*$"
     ),
 
-    // in 3 ta hameja hastan vali handeleshoon fargh dare moragheb bashid toye override ha sooti nadid
+    // generals
     MENU_ENTER(
             "^\\s*menu\\s+enter\\s+(?<menuname>.+?)\\s*$"
     ),
@@ -201,7 +201,7 @@ public enum Regex {
             "^\\s*(?:menu\\s+show\\s+current|show\\s+current\\s+menu)\\s*$"
     ),
 
-    // in-match commands (core gameplay loop)
+    // in-match commands
     ADVANCE_TIME(
             "^\\s*advance\\s+time\\s+-t\\s+(?<ticks>\\d+)\\s+ticks?\\s*$"
     ),

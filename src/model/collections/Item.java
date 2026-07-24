@@ -54,7 +54,7 @@ public abstract class Item {
         this.state = state;
     }
 
-    // مدیریت موقعیت ثانویه/خارجی آیتم
+
     public Position getPosition() {
         return this.externalPosition;
     }
@@ -63,7 +63,7 @@ public abstract class Item {
         this.externalPosition = target;
     }
 
-    // مدیریت سرعت برداری حرکت آیتم
+
     public Position getSpeed() {
         return this.speed;
     }

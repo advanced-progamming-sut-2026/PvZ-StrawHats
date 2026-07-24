@@ -184,8 +184,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
         this.state = state;
     }
 
-    // Named getPlantState (not getState) because Item already declares a
-    // getState()/setState(ItemState) pair with an unrelated return type.
+
+    /// getState()/setState(ItemState) pair with an unrelated return type.
     public PlantState getPlantState() {
         return this.state;
     }

@@ -30,14 +30,14 @@ public class MeleeStrategy implements ActStrategy {
     private boolean isEnemyAround(Plant user , GameSession session) {
         Position userPos = user.getPosition();
         switch ((int)user.getAbilityValue()) {
-            case 1 : //(front and back)
+            case 1 : // front and back
                 for(Zombie zombie : session.getZombies()) {
                     if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     if(Math.abs(zombie.getPosition().x() - userPos.x()) < 1)
                         return true;
                 }
                 break;
-            case 2 : //(area damage)
+            case 2 : // area damage
                 for(Zombie zombie : session.getZombies()) {
                     if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     Position zomPos = zombie.getPosition();
@@ -45,14 +45,14 @@ public class MeleeStrategy implements ActStrategy {
                         return true;
                 }
                 break;
-            case 3 : //(wave damage)
+            case 3 : // wave damage
                 for(Zombie zombie : session.getZombies()) {
                     if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     if(Math.abs(zombie.getPosition().distanceTo(userPos)) < 5)
                         return true;
                 }
                 break;
-            case 4 : //(swallow)
+            case 4 : // swallow
                 for (Zombie zombie : session.getZombies()) {
                     if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
                     if(zombie.getPosition().x() - userPos.x() < 1)

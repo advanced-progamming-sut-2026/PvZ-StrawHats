@@ -24,7 +24,7 @@ public class SignupMenu extends Menu {
 
     // the things we are working on currently
     private static String pendingUsername, pendingPassword, pendingNickname, pendingEmail, pendingGender;
-    private static int pendingQuestion = -1;
+
     private static boolean isPendingSecurityAnswer = false;
 
     @Override
