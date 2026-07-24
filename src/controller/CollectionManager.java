@@ -8,6 +8,7 @@ import model.match.main.levels.Level;
 import model.match_mechanisms.ZombieWave;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
+import model.utils.LevelProgression;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,8 +47,9 @@ public class CollectionManager {
         } catch (Exception e) {
             return seen;
         }
-        for (Level level : levels) {
-            if (level.getId() > state.lastLevel || level.getWaves() == null) continue;
+        List<Level> sorted = LevelProgression.sorted(levels);
+        for (Level level : sorted) {
+            if (!LevelProgression.isCompleted(sorted, state.lastLevel, level) || level.getWaves() == null) continue;
             for (ZombieWave wave : level.getWaves()) {
                 if (wave.getWaveZombies() == null) continue;
                 for (Zombie zombie : wave.getWaveZombies()) {
@@ -97,6 +99,8 @@ public class CollectionManager {
         if (state.isPlantUnlocked(config.id) || state.coins < PURCHASE_COST) return false;
         state.coins -= PURCHASE_COST;
         state.unlockPlant(config.id);
+        NewsManager.generateNews("PLANT", config.name,
+                formatPlant(config, true, state.getPlantLevel(config.id)));
         return true;
     }
 

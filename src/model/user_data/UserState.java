@@ -42,8 +42,8 @@ public class UserState {
         return unlockedPlantIds.contains(plantId);
     }
 
-    public void unlockPlant(int plantId) {
-        unlockedPlantIds.add(plantId);
+    public boolean unlockPlant(int plantId) {
+        return unlockedPlantIds.add(plantId);
     }
 
     public int getPlantLevel(int plantId) {

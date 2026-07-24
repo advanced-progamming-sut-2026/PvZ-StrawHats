@@ -1,5 +1,7 @@
 package controller.menus.match;
 
+import controller.CollectionManager;
+import controller.NewsManager;
 import controller.menus.GameMenu;
 import controller.menus.Menu;
 import model.App;
@@ -9,6 +11,7 @@ import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantJsonParser;
 import model.user_data.User;
+import model.user_data.UserState;
 import model.utils.LevelProgression;
 import model.utils.GameSession;
 import view.GeneralPrinter;
@@ -94,7 +97,11 @@ public class MatchMenu extends Menu {
 
         for (PlantJsonParser.PlantConfig config : model.collections.plant.PlantFactory.getBlueprints().values()) {
             if (plantNames.stream().anyMatch(name -> name.equalsIgnoreCase(config.name))) {
-                User.currentUser.userState.unlockPlant(config.id);
+                UserState state = User.currentUser.userState;
+                if (state.unlockPlant(config.id)) {
+                    NewsManager.generateNews("PLANT", config.name,
+                            new CollectionManager().formatPlant(config, true, state.getPlantLevel(config.id)));
+                }
             }
         }
     }

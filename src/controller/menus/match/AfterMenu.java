@@ -1,20 +1,26 @@
 package controller.menus.match;
 
 import controller.CollectionManager;
+import controller.NewsManager;
 import controller.menus.GameMenu;
 import controller.menus.Menu;
 
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;
+import model.collections.zombie.Zombie;
 import model.match.main.levels.Level;
 import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.GameSession;
+import model.utils.LevelLoader;
+import model.utils.LevelProgression;
 import view.GeneralPrinter;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public class AfterMenu extends Menu {
     private static final Random RANDOM = new Random();
@@ -42,6 +48,15 @@ public class AfterMenu extends Menu {
         UserState state = User.currentUser.userState;
         Level level = GameSession.getInstance().getLevel();
 
+        List<Level> allLevels;
+        try {
+            allLevels = LevelProgression.sorted(LevelLoader.loadLevels());
+        } catch (Exception e) {
+            allLevels = List.of();
+        }
+        int previousLastLevel = state.lastLevel;
+        Set<String> seenZombiesBefore = MANAGER.getSeenZombieAliases(state);
+
         coinsAwarded = won ? 100 + RANDOM.nextInt(101) : 20 + RANDOM.nextInt(21);
         state.coins += coinsAwarded;
 
@@ -56,6 +71,26 @@ public class AfterMenu extends Menu {
 
         int completedLevelId = won && level != null ? level.getId() : state.lastLevel;
         state.recordGameResult(completedLevelId, coinsAwarded);
+
+        for (Level candidate : allLevels) {
+            boolean unlockedBefore = LevelProgression.isUnlocked(allLevels, previousLastLevel, candidate);
+            boolean unlockedAfter = LevelProgression.isUnlocked(allLevels, state.lastLevel, candidate);
+            if (!unlockedBefore && unlockedAfter) {
+                String chapterName = candidate.getSeason() != null ? candidate.getSeason().getName() : "Unknown";
+                String info = "Chapter: " + chapterName + " | Game mode: " + candidate.getGameMode();
+                NewsManager.generateNews("LEVEL", candidate.getName(), info);
+            }
+        }
+
+        Set<String> seenZombiesAfter = MANAGER.getSeenZombieAliases(state);
+        Set<String> newlySeenZombies = new HashSet<>(seenZombiesAfter);
+        newlySeenZombies.removeAll(seenZombiesBefore);
+        for (String alias : newlySeenZombies) {
+            Zombie zombie = MANAGER.findZombie(alias);
+            String info = zombie != null ? MANAGER.formatZombie(zombie) : "";
+            NewsManager.generateNews("ZOMBIE", alias, info);
+        }
+
         User.save();
     }
 

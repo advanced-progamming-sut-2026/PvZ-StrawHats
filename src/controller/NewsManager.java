@@ -12,12 +12,19 @@ public class NewsManager {
     }
 
     public static void generateNews(String type, String itemName) {
+        generateNews(type, itemName, null);
+    }
+
+    public static void generateNews(String type, String itemName, String info) {
         if (App.currentUser == null) return;
 
+        String detail = (info == null || info.isBlank()) ? "" : " (" + info + ")";
+
         String message = switch (type.toUpperCase()) {
-            case "PLANT" -> "You unlocked a new Plant: " + itemName + "!";
-            case "ZOMBIE" -> "New Zombie discovered in your level: " + itemName + "!";
-            case "MINIGAME" -> "You unlocked a new Minigame: " + itemName + "!";
+            case "PLANT" -> "You unlocked a new Plant: " + itemName + "!" + detail;
+            case "ZOMBIE" -> "New Zombie discovered in your level: " + itemName + "!" + detail;
+            case "LEVEL" -> "New level unlocked: " + itemName + "!" + detail;
+            case "MINIGAME" -> "You unlocked a new Minigame: " + itemName + "!" + detail;
             case "MESSAGE" -> "New message from network: " + itemName;
             default -> itemName;
         };

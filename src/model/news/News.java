@@ -23,6 +23,5 @@ public class News {
 
     public void setRead(boolean read) {
         isRead = read;
-        // *
     }
 }
