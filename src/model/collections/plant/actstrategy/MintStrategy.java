@@ -11,7 +11,7 @@ public class MintStrategy implements ActStrategy {
                 .forEach(plant -> {
                     if (plant.getPlantFoodEffect() != null) {
                         plant.getPlantFoodEffect().applyStatusModifiers(plant);
-                        //todo check and update the triggers
+                        
                         plant.getPlantFoodEffect().triggerSuperpower(plant, session);
                     }
                 });

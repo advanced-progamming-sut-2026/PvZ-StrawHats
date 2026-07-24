@@ -16,7 +16,7 @@ public class PierceKnockBackHit implements HitEffectStrategy{
     }
     @Override
     public void apply(Zombie zombie) {
-        //todo : call the zombie.knockback(knockbackdistance) here
+        
     }
 }
 

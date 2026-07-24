@@ -10,8 +10,8 @@ import java.util.ArrayList;
 public class ExplodeStrategy implements ActStrategy{
     private final double TRAP_ACTIVATION_RADIUS = 0.3;
     @Override
-    //todo : if an explosive plant have an activate delay set its activate for its action interval and also do it for interval timer
-    //todo : ability values : 1 for (touch) 2 for (area) 3 for (line) 4 for (whole pitch) 5 for (nearest(water of land)
+    
+    
     public void act(Plant user, GameSession session) {
         if(user.getIntervalTimer() > 0) return;
         ArrayList<Zombie> targets = null;
@@ -94,7 +94,7 @@ public class ExplodeStrategy implements ActStrategy{
     }
 
     private void makeHole(GameSession session) {
-        //todo: make a 1*1 or 3*3 hole in the pitch that we can not plant any seed in it for a while
+        
     }
 
     private void userAct(Plant user , ArrayList<Zombie> targets) {
