@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class WallnutBowling extends MiniGameMode {
     private static final Random RAND = new Random();

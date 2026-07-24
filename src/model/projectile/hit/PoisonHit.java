@@ -10,6 +10,7 @@ public class PoisonHit implements HitEffectStrategy {
     }
     @Override
     public void apply(Zombie zombie) {
-
+        if (zombie == null || !zombie.isAlive()) return;
+        zombie.setStatus(Zombie.Status.POISONED);
     }
 }

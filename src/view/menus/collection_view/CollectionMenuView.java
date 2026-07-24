@@ -1,7 +1,5 @@
 package view.menus.collection_view;
 
-import controller.menus.CollectionMenu;
-import model.Regex;
 import view.menus.MenuView;
 
 public class CollectionMenuView extends MenuView {

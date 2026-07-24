@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import model.greenhouse.Greenhouse;
-import model.news.News;
 import view.GeneralPrinter;
 
 import java.io.*;

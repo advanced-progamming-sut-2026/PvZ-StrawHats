@@ -51,6 +51,7 @@ public class ShootStrategy implements ActStrategy {
         if (user.getTags().contains(PlantTag.ICE)) return new IceHit(areaLength);
         if (user.getTags().contains(PlantTag.POISON)) return new PoisonHit(areaLength);
         if (user.getTags().contains(PlantTag.PIERCE)) return new PierceHit(-1);
+        if (user.getTags().contains(PlantTag.BUTTER)) return new ButterHit(1);
         return new NormalHit(areaLength);
     }
 
