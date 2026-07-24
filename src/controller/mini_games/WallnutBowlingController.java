@@ -5,6 +5,7 @@ import controller.menus.TravelLogMenu;
 import model.App;
 import model.Regex;
 import model.match.mini_games.wallnutbowlling.WallnutBowling;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 import java.util.List;
@@ -107,6 +108,7 @@ public class WallnutBowlingController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
+            if (User.currentUser != null) User.currentUser.userState.miniGamesWon++;
             GeneralPrinter.print("All Wall-nut Bowling waves cleared. You win!");
             App.currentMenu = new MiniGameEndMenu("Wall-nut Bowling", true,
                     "Every zombie wave was cleared.");

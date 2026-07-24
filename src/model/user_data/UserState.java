@@ -13,6 +13,8 @@ public class UserState {
     public int difficultyLevel;
     public int gamesPlayed = 0;
     public int highScore = 0;
+    public int miniGamesWon = 0;
+    public int questsCompleted = 0;
 
     public Set<Integer> unlockedPlantIds = new HashSet<>();
     public Map<Integer, Integer> plantLevels = new HashMap<>();

@@ -33,7 +33,7 @@ public abstract class Menu {
             case "login" -> App.currentMenu = new LoginMenu();
             case "collection" -> App.currentMenu = new CollectionMenu();
             case "travellog" -> App.currentMenu = new TravelLogMenu();
-            case "network" -> App.currentMenu = new LeaderboardMenu();
+            case "network" -> App.currentMenu = new NetworkMenu();
             default -> throw new GameException("no such menu.");
         }
         System.out.println("Menu changed to: " + menuKey + " menu");
@@ -49,7 +49,7 @@ public abstract class Menu {
         }
     }
 
-    
+
 
     public abstract String getName();
 

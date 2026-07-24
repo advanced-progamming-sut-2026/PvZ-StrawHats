@@ -5,6 +5,7 @@ import controller.menus.TravelLogMenu;
 import model.App;
 import model.Regex;
 import model.match.mini_games.Zombotany;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 import java.util.List;
@@ -125,6 +126,7 @@ public class ZombotanyController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
+            if (User.currentUser != null) User.currentUser.userState.miniGamesWon++;
             GeneralPrinter.print("All Zombotany waves cleared. You win!");
             App.currentMenu = new MiniGameEndMenu("Zombotany", true,
                     "Every Zombotany wave was cleared.");

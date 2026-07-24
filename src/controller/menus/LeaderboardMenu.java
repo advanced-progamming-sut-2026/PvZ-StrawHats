@@ -7,11 +7,21 @@ import model.user_data.User;
 import model.utils.LevelLoader;
 import view.GeneralPrinter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class LeaderboardMenu extends Menu {
+
+    private static final List<String> VALID_COLUMNS = List.of(
+            "rank", "username", "season", "chapter", "stage", "minigames", "quests", "score"
+    );
+
+    private String sortColumn = "score";
+    private boolean ascending = false;
 
     @Override
     public String getName() {
@@ -20,13 +30,33 @@ public class LeaderboardMenu extends Menu {
 
     @Override
     public void handleCommand(String text) {
+        super.handleCommand(text);
+        if (isGeneralCmd) return;
+
         if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
-        } else if (Regex.MENU_SHOW_CURRENT.getMatcherRaw(text).matches()) {
-            GeneralPrinter.print(showMenu());
+        } else if (Regex.LEADERBOARD_SORT.getMatcherRaw(text).matches()) {
+            sort(text);
         } else {
             GeneralPrinter.print("Not Valid");
         }
+    }
+
+    private void sort(String text) {
+        Matcher matcher = Regex.LEADERBOARD_SORT.getMatcherRaw(text);
+        matcher.matches();
+        String column = matcher.group("column").toLowerCase(Locale.ROOT);
+        String order = matcher.group("order").toLowerCase(Locale.ROOT);
+
+        if (!VALID_COLUMNS.contains(column)) {
+            GeneralPrinter.print("Error: unknown column '" + column + "'. Valid columns: "
+                    + String.join(", ", VALID_COLUMNS) + ".");
+            return;
+        }
+
+        this.sortColumn = column;
+        this.ascending = order.equals("asc");
+        GeneralPrinter.print(showMenu());
     }
 
     @Override
@@ -36,7 +66,10 @@ public class LeaderboardMenu extends Menu {
 
     @Override
     public String showMenu() {
-        String commands = "\nCommands:\n  menu exit | menu show current";
+        String commands = "\nCommands:\n"
+                + "  leaderboard sort -c <rank|username|season|chapter|stage|minigames|quests|score> -o <asc|desc>\n"
+                + "  menu exit | menu show current";
+
         List<Level> allLevels;
         try {
             allLevels = LevelLoader.loadLevels();
@@ -44,30 +77,111 @@ public class LeaderboardMenu extends Menu {
             return "[ Leaderboard Menu ]\nError: could not load levels." + commands;
         }
 
-        List<User> ranked = User.users.stream()
-                .filter(u -> u.userState.lastLevel > 0)
-                .sorted(Comparator.comparingInt((User u) -> u.userState.lastLevel).reversed())
+        List<Row> rows = User.users.stream()
+                .map(u -> Row.of(u, allLevels))
                 .collect(Collectors.toList());
 
-        if (ranked.isEmpty()) return "[ Leaderboard Menu ]\nNo records yet." + commands;
-
-        StringBuilder sb = new StringBuilder("[ Leaderboard Menu ]\n");
-        for (User u : ranked) {
-            sb.append(u.nickname).append(" - ").append(formatProgress(u.userState.lastLevel, allLevels)).append("\n");
+        if (rows.isEmpty()) {
+            return "[ Leaderboard Menu ]\nNo records yet." + commands;
         }
+
+        sortRows(rows);
+
+        StringBuilder sb = new StringBuilder("[ Leaderboard Menu ]  (sorted by ")
+                .append(sortColumn).append(", ").append(ascending ? "ascending" : "descending").append(")\n");
+        sb.append(String.format("%-5s %-16s %-10s %-20s %-14s %-11s %-8s %-6s%n",
+                "Rank", "Username", "Season", "Chapter", "Stage", "MiniGames", "Quests", "Score"));
+
+        int rank = 1;
+        for (Row row : rows) {
+            sb.append(String.format("%-5d %-16s %-10s %-20s %-14s %-11d %-8d %-6d%n",
+                    rank++, row.username, row.season, row.chapter, row.stage,
+                    row.miniGamesWon, row.questsCompleted, row.highScore));
+        }
+
         return sb.toString().trim() + commands;
     }
 
-    private String formatProgress(int lastLevelId, List<Level> allLevels) {
-        Level level = allLevels.stream().filter(l -> l.getId() == lastLevelId).findFirst().orElse(null);
-        if (level == null) return "Stage ?";
+    private void sortRows(List<Row> rows) {
+        Comparator<Row> comparator = switch (sortColumn) {
+            case "rank" -> null; // "rank" just means: keep insertion order, flip if descending
+            case "username" -> Comparator.comparing((Row r) -> r.username, String.CASE_INSENSITIVE_ORDER);
+            case "season" -> Comparator.comparing((Row r) -> r.season, String.CASE_INSENSITIVE_ORDER);
+            case "chapter" -> Comparator.comparing((Row r) -> r.chapter, String.CASE_INSENSITIVE_ORDER);
+            case "stage" -> Comparator.comparingInt((Row r) -> r.stageLevelId);
+            case "minigames" -> Comparator.comparingInt((Row r) -> r.miniGamesWon);
+            case "quests" -> Comparator.comparingInt((Row r) -> r.questsCompleted);
+            case "score" -> Comparator.comparingInt((Row r) -> r.highScore);
+            default -> Comparator.comparingInt((Row r) -> r.highScore);
+        };
 
-        List<Level> seasonLevels = allLevels.stream()
-                .filter(l -> l.getSeason().getName().equalsIgnoreCase(level.getSeason().getName()))
-                .sorted(Comparator.comparingInt(Level::getId))
-                .collect(Collectors.toList());
+        if (comparator == null) {
+            // "rank": nothing to compare by, just optionally reverse whatever order rows arrived in
+            if (!ascending) java.util.Collections.reverse(rows);
+            return;
+        }
 
-        int stageNumber = seasonLevels.indexOf(level) + 1;
-        return "Stage " + stageNumber + " " + level.getSeason().getName();
+        rows.sort(ascending ? comparator : comparator.reversed());
+    }
+
+    /** One flattened, pre-computed leaderboard row so sorting never has to touch User/Level again. */
+    private static final class Row {
+        final String username;
+        final String season;
+        final String chapter;
+        final String stage;
+        final int stageLevelId;
+        final int miniGamesWon;
+        final int questsCompleted;
+        final int highScore;
+
+        private Row(String username, String season, String chapter, String stage, int stageLevelId,
+                    int miniGamesWon, int questsCompleted, int highScore) {
+            this.username = username;
+            this.season = season;
+            this.chapter = chapter;
+            this.stage = stage;
+            this.stageLevelId = stageLevelId;
+            this.miniGamesWon = miniGamesWon;
+            this.questsCompleted = questsCompleted;
+            this.highScore = highScore;
+        }
+
+        static Row of(User user, List<Level> allLevels) {
+            Level level = null;
+            if (user.userState.lastLevel > 0) {
+                level = allLevels.stream()
+                        .filter(l -> l.getId() == user.userState.lastLevel)
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            String season = "-";
+            String chapter = "-";
+            String stage = "-";
+            int stageLevelId = -1;
+
+            if (level != null) {
+                season = capitalize(level.getSeason().getName());
+                stageLevelId = level.getId();
+                String name = level.getName();
+                int idx = name.indexOf(" - ");
+                if (idx >= 0) {
+                    chapter = name.substring(0, idx);
+                    stage = name.substring(idx + 3);
+                } else {
+                    chapter = name;
+                    stage = name;
+                }
+            }
+
+            return new Row(user.username, season, chapter, stage, stageLevelId,
+                    user.userState.miniGamesWon, user.userState.questsCompleted, user.userState.highScore);
+        }
+
+        private static String capitalize(String s) {
+            if (s == null || s.isEmpty()) return s;
+            return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+        }
     }
 }

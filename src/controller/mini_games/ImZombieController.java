@@ -5,6 +5,7 @@ import controller.menus.TravelLogMenu;
 import model.App;
 import model.Regex;
 import model.match.mini_games.izombie.IZombie;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 import java.util.List;
@@ -142,6 +143,7 @@ public class ImZombieController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
+            if (User.currentUser != null) User.currentUser.userState.miniGamesWon++;
             GeneralPrinter.print("Every brain has been eaten. You win!");
             App.currentMenu = new MiniGameEndMenu("I, Zombie", true,
                     "All five brains were eaten.");

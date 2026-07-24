@@ -340,6 +340,9 @@ public class QuestManager {
             }
         }
         quest.setCompleted(true);
+        if (User.currentUser != null) {
+            User.currentUser.userState.questsCompleted++;
+        }
     }
 
     public static String collectReward(String questId) {

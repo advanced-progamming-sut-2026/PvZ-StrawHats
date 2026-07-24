@@ -47,6 +47,9 @@ public enum Regex {
     MENU_LEADERBOARD(
             "^\\s*menu\\s+leaderboard\\s*$"
     ),
+    LEADERBOARD_SORT(
+            "^\\s*leaderboard\\s+sort\\s+-c\\s+(?<column>\\S+)\\s+-o\\s+(?<order>asc|desc)\\s*$"
+    ),
     MENU_COIN_WALLET(
             "^\\s*(?:menu\\s+coin-wallet|coin-wallet\\s+menu)\\s*$"
     ),

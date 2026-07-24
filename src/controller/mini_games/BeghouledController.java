@@ -5,6 +5,7 @@ import controller.menus.TravelLogMenu;
 import model.App;
 import model.Regex;
 import model.match.mini_games.Beghouled;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 import java.util.List;
@@ -140,6 +141,7 @@ public class BeghouledController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
+            if (User.currentUser != null) User.currentUser.userState.miniGamesWon++;
             GeneralPrinter.print("Reached " + game.getMatchesNeeded()
                     + " matches — every zombie is cleared. You win!");
             App.currentMenu = new MiniGameEndMenu("Beghouled", true,

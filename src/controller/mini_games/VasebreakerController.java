@@ -5,6 +5,7 @@ import controller.menus.TravelLogMenu;
 import model.App;
 import model.Regex;
 import model.match.mini_games.vasebreaker.Vasebreaker;
+import model.user_data.User;
 import view.GeneralPrinter;
 
 import java.util.regex.Matcher;
@@ -148,6 +149,7 @@ public class VasebreakerController extends Menu {
 
     private void reportOutcome() {
         if (game.isWon()) {
+            if (User.currentUser != null) User.currentUser.userState.miniGamesWon++;
             GeneralPrinter.print("All vases broken and all released zombies defeated. You win!");
             App.currentMenu = new MiniGameEndMenu("Vasebreaker", true,
                     "Every vase was opened safely.");
