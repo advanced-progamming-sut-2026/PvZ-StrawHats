@@ -18,7 +18,7 @@ public final class AttackBehaviorRegistry {
         });
 
         register("SmashAttack", (params, data) -> {
-            int fallbackDamage = BehaviorSpec.getInt(data, "SmashDamage", 0);
+            int fallbackDamage = BehaviorSpec.getInt(data, "SmashDamage", 99999);
             int finalDamage = BehaviorSpec.getInt(params, "smashDamage", fallbackDamage);
             double windup = BehaviorSpec.getDouble(params, "windupDuration", 0.0);
             boolean singleUse = BehaviorSpec.getBoolean(params, "isOneTime", false);

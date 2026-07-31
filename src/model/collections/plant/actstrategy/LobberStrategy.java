@@ -52,6 +52,7 @@ public class LobberStrategy implements ActStrategy {
         if (user.getTags().contains(PlantTag.FIRE)) return new FireHit(areaLength);
         if (user.getTags().contains(PlantTag.ICE)) return new IceHit(areaLength);
         if (user.getTags().contains(PlantTag.POISON)) return new PoisonHit(areaLength);
+        if (user.getName().equalsIgnoreCase("Kernel-pult") && Math.random() < 0.25) return new ButterHit(areaLength);
         if (user.getTags().contains(PlantTag.PIERCE)) return new PierceHit(-1);
         return new NormalHit(areaLength);
     }

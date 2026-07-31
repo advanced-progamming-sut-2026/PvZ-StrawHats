@@ -14,12 +14,11 @@ public final class MoveBehaviorRegistry {
         register("NormalWalk", (params, data) -> new NormalWalk());
 
         register("SprintMove", (params, data) -> {
-            if (params == null || params.isEmpty()) {
-                return new SprintMove();
-            }
             double initialScale = BehaviorSpec.getDouble(params, "baseSprintMultiplier", 1.0);
-            double rageScale = BehaviorSpec.getDouble(params, "enrageMultiplier", 4.0);
-            boolean armorEnrage = BehaviorSpec.getBoolean(params, "enragesOnArmorLoss", false);
+            double rageScale = BehaviorSpec.getDouble(params, "enrageMultiplier",
+                    BehaviorSpec.getDouble(data, "EnragedSpeedScale", 4.0));
+            boolean armorEnrage = BehaviorSpec.getBoolean(params, "enragesOnArmorLoss",
+                    data != null && data.containsKey("EnragedSpeedScale"));
             return new SprintMove(initialScale, rageScale, armorEnrage);
         });
 

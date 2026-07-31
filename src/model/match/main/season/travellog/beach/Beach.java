@@ -14,10 +14,7 @@ public class Beach extends Season {
     @Override
     public void onWaveStart(GameSession session, int waveIndex) {
         if (session == null || session.getLevel() == null) return;
-        if (waveIndex % 2 == 0) {
-            Flood.riselevel(session.getLevel());
-        } else {
-            Flood.falllevel(session.getLevel());
-        }
+        if (waveIndex % 2 == 0) Flood.riselevel(session.getLevel(), session);
+        else Flood.falllevel(session.getLevel(), session);
     }
 }

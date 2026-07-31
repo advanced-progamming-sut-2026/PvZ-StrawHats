@@ -23,22 +23,7 @@ public class MageState implements ZombieEffectStatus {
 
     @Override
     public void applyTickEffect(Zombie spellcaster, GameSession session) {
-        if (!spellcaster.isAlive()) {
-            if (!isDispellCompleted) {
-                for (Item targetedCursed : hexedTargetsList) {
-                    if (targetedCursed.isAlive()) {
-                        if (targetedCursed instanceof Plant vegetation) {
-                            vegetation.setState(Plant.PlantState.ACTIVE);
-                        } else if (targetedCursed instanceof Zombie zombieServant) {
-                            zombieServant.setStatus(Zombie.Status.NORMAL);
-                        }
-                    }
-                }
-                hexedTargetsList.clear();
-                isDispellCompleted = true;
-            }
-            return;
-        }
+        if (!spellcaster.isAlive()) return;
 
         spellTimer += GameClock.SECONDS_PER_TICK;
         if (spellTimer >= hexCooldown) {
@@ -49,12 +34,27 @@ public class MageState implements ZombieEffectStatus {
         interceptPhysicalCollisions(spellcaster, session);
     }
 
+    @Override
+    public void onDeath(Zombie target, GameSession session) {
+        if (isDispellCompleted) return;
+        for (Item targetedCursed : hexedTargetsList) {
+            if (!targetedCursed.isAlive()) continue;
+            if (targetedCursed instanceof Plant vegetation) {
+                vegetation.setState(Plant.PlantState.ACTIVE);
+            } else if (targetedCursed instanceof Zombie zombieServant) {
+                zombieServant.setStatus(Zombie.Status.NORMAL);
+            }
+        }
+        hexedTargetsList.clear();
+        isDispellCompleted = true;
+    }
+
     private void castHexOnRandomObjective(Zombie warlock, GameSession session) {
         List<Item> prospectiveTargets = new ArrayList<>();
 
         if (warlock.getFaction() == Faction.ZOMBIES) {
             for (Plant plant : session.getPlants()) {
-                if (plant.isAlive() && !plant.getState().equals(Plant.PlantState.INCAPACITATED)) {
+                if (plant.isAlive() && plant.getPlantState() != Plant.PlantState.INCAPACITATED) {
                     prospectiveTargets.add(plant);
                 }
             }

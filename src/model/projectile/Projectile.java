@@ -3,8 +3,17 @@ package model.projectile;
 import model.collections.Item;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
+import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.vector.Position;
+import model.pitches.Cell;
 import model.projectile.hit.HitEffectStrategy;
+import model.utils.GameSession;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
 
 public class Projectile extends Item {
     private final int damage;
@@ -14,6 +23,8 @@ public class Projectile extends Item {
 
     private final MoveStrategy moveStrategy;
     private HitEffectStrategy hitEffectStrategy;
+    private final Set<Zombie> hitZombies = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+    private int remainingHits = Integer.MIN_VALUE;
 
     public Projectile(Position position, Position velocity, Zombie zombie, int damage, MoveStrategy moveStrategy, HitEffectStrategy hitEffectStrategy) {
         this(zombie, position, velocity, damage, moveStrategy, hitEffectStrategy);
@@ -43,78 +54,174 @@ public class Projectile extends Item {
     @Override
     public void tick() {
         if (!isAlive) return;
-        if (target == null || !target.isAlive()) {
+
+        Position previousPosition = getPosition();
+        if (previousPosition == null) {
             setAlive(false);
             return;
         }
 
-        Position previousPosition = getPosition();
-
-        if (moveStrategy != null) {
-            moveStrategy.move(this);
+        if (moveStrategy != null) moveStrategy.move(this);
+        Position currentPosition = getPosition();
+        if (currentPosition == null) {
+            setAlive(false);
+            return;
         }
 
-        boolean hasHitTarget = checkCollision(target, previousPosition);
+        GameSession session = GameSession.peekInstance();
+        if (session == null || session.getEnvironment() == null) {
+            hitOriginalTarget(previousPosition);
+            return;
+        }
 
-        if (hasHitTarget) {
-            if (target instanceof Zombie zombie) {
-                zombie.takeDamage(damage, this);
-            } else {
-                target.takeDamage(damage);
-            }
+        PushableStructure structure = findFirstStructureCollision(session, previousPosition, currentPosition);
+        if (structure != null) {
+            structure.takeDamage(getEffectiveDamage(), sourcePlant, session);
+            setAlive(false);
+            return;
+        }
 
-            if (hitEffectStrategy != null && target instanceof Zombie zombie) {
-                hitEffectStrategy.apply(zombie);
+        List<ZombieHit> collisions = new ArrayList<>();
+        for (Zombie zombie : session.getZombies()) {
+            if (!isValidTarget(zombie) || hitZombies.contains(zombie)) continue;
+            double projection = collisionProjection(zombie.getPosition(), previousPosition, currentPosition);
+            if (projection >= 0) collisions.add(new ZombieHit(zombie, projection));
+        }
+        collisions.sort(Comparator.comparingDouble(ZombieHit::projection));
+
+        if (remainingHits == Integer.MIN_VALUE) {
+            remainingHits = hitEffectStrategy == null ? 1 : hitEffectStrategy.getPierceCount();
+            if (remainingHits == 0) remainingHits = 1;
+        }
+
+        for (ZombieHit collision : collisions) {
+            hitZombie(collision.zombie(), session);
+            hitZombies.add(collision.zombie());
+            if (remainingHits > 0) remainingHits--;
+            if (remainingHits == 0) {
+                setAlive(false);
+                break;
             }
-            this.isAlive = false;
+        }
+
+        if (isOutsideLawn(session, currentPosition)) setAlive(false);
+    }
+
+    private void hitOriginalTarget(Position previousPosition) {
+        if (target == null || !target.isAlive()) return;
+        Position targetPosition = resolveTargetPosition(target);
+        Position currentPosition = getPosition();
+        if (targetPosition == null || currentPosition == null) return;
+        if (collisionProjection(targetPosition, previousPosition, currentPosition) < 0) return;
+
+        if (target instanceof Zombie zombie) {
+            zombie.takeDamage(getEffectiveDamage(), this);
+            if (hitEffectStrategy != null) hitEffectStrategy.apply(zombie);
+        } else {
+            target.takeDamage(getEffectiveDamage());
+        }
+        setAlive(false);
+    }
+
+    private void hitZombie(Zombie primary, GameSession session) {
+        applyDamageAndEffect(primary);
+
+        int areaLength = hitEffectStrategy == null ? 1 : hitEffectStrategy.getAreaLength();
+        double radius = Math.max(0, (areaLength - 1) / 2.0);
+        if (radius <= 0 || primary.getPosition() == null) return;
+
+        Position center = primary.getPosition();
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie == primary || !isValidTarget(zombie) || zombie.getPosition() == null) continue;
+            if (Math.abs(zombie.getPosition().x() - center.x()) <= radius
+                    && Math.abs(zombie.getPosition().y() - center.y()) <= radius) {
+                applyDamageAndEffect(zombie);
+            }
         }
     }
 
-    private boolean checkCollision(Item target, Position previousPosition) {
-        if (target == null || !target.isAlive()) return false;
-        Position targetPos = resolveTargetPosition(target);
-        Position currentPosition = getPosition();
-        if (targetPos == null || previousPosition == null || currentPosition == null) return false;
+    private void applyDamageAndEffect(Zombie zombie) {
+        int effectiveDamage = getEffectiveDamage();
+        if (hitEffectStrategy != null && hitEffectStrategy.bypassesArmor()) {
+            zombie.takeDamage(effectiveDamage, true);
+        } else {
+            zombie.takeDamage(effectiveDamage, this);
+        }
+        if (hitEffectStrategy != null && zombie.isAlive()) hitEffectStrategy.apply(zombie);
+        if (isStunning && zombie.isAlive()) zombie.applyStatus(Zombie.Status.BUTTER, 1.0);
 
-        Position movement = currentPosition.sub(previousPosition);
+        if (hitEffectStrategy != null && hitEffectStrategy.getKnockbackDistance() != 0 && zombie.getPosition() != null) {
+            zombie.setPosition(new Position(
+                    zombie.getPosition().x() + hitEffectStrategy.getKnockbackDistance(),
+                    zombie.getPosition().y()
+            ));
+        }
+    }
+
+    private int getEffectiveDamage() {
+        double multiplier = hitEffectStrategy == null ? 1.0 : hitEffectStrategy.getDamageMultiplier();
+        return Math.max(0, (int) Math.round(damage * multiplier));
+    }
+
+    private boolean isValidTarget(Zombie zombie) {
+        return zombie != null && zombie.isAlive() && !zombie.isHypnotized() && zombie.getPosition() != null;
+    }
+
+    private PushableStructure findFirstStructureCollision(GameSession session, Position start, Position end) {
+        PushableStructure best = null;
+        double bestProjection = Double.MAX_VALUE;
+        Set<PushableStructure> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for (int row = 0; row < session.getEnvironment().getRows(); row++) {
+            for (int col = 0; col < session.getEnvironment().getCols(); col++) {
+                Cell cell = session.getEnvironment().getCell(row, col);
+                PushableStructure structure = cell == null ? null : cell.getStructure();
+                if (structure == null || !structure.isAlive() || !seen.add(structure)) continue;
+                double projection = collisionProjection(structure.getPosition(), start, end);
+                if (projection >= 0 && projection < bestProjection) {
+                    bestProjection = projection;
+                    best = structure;
+                }
+            }
+        }
+        return best;
+    }
+
+    private double collisionProjection(Position targetPosition, Position start, Position end) {
+        if (targetPosition == null || start == null || end == null) return -1;
+        Position movement = end.sub(start);
         double lengthSquared = movement.dot(movement);
-        if (lengthSquared == 0) return currentPosition.distanceTo(targetPos) <= 0.5;
+        if (lengthSquared == 0) return end.distanceTo(targetPosition) <= 0.5 ? 0 : -1;
 
-        double projection = targetPos.sub(previousPosition).dot(movement) / lengthSquared;
-        double clamped = Math.max(0, Math.min(1, projection));
-        Position closestPoint = previousPosition.add(movement.scale(clamped));
-        return closestPoint.distanceTo(targetPos) <= 0.5;
+        double projection = targetPosition.sub(start).dot(movement) / lengthSquared;
+        if (projection < 0 || projection > 1) return -1;
+        Position closestPoint = start.add(movement.scale(projection));
+        return closestPoint.distanceTo(targetPosition) <= 0.5 ? projection : -1;
+    }
+
+    private boolean isOutsideLawn(GameSession session, Position position) {
+        return position.x() < -1 || position.x() > session.getEnvironment().getCols()
+                || position.y() < -1 || position.y() > session.getEnvironment().getRows();
     }
 
     private Position resolveTargetPosition(Item target) {
-        if (target instanceof Zombie zombie) {
-            return zombie.getPosition();
-        }
+        if (target instanceof Zombie zombie) return zombie.getPosition();
         if (target instanceof Plant plant) {
             var loc = plant.getLocation();
             return loc == null ? null : Position.of(loc.x(), loc.y());
         }
-        return null;
+        return target.getPosition();
     }
 
     public void setHitEffectStrategy(HitEffectStrategy strategy) {
         this.hitEffectStrategy = strategy;
+        this.remainingHits = Integer.MIN_VALUE;
     }
 
-    public HitEffectStrategy getHitEffectStrategy() {
-        return this.hitEffectStrategy;
-    }
+    public HitEffectStrategy getHitEffectStrategy() { return this.hitEffectStrategy; }
+    public Object getMoveStrategy() { return moveStrategy; }
+    public int getDamage() { return damage; }
+    public Plant getSourcePlant() { return sourcePlant; }
 
-    public Object getMoveStrategy() {
-        return moveStrategy;
-    }
-
-    public int getDamage() {
-        return damage;
-    }
-
-    public Plant getSourcePlant() {
-        return sourcePlant;
-    }
-
+    private record ZombieHit(Zombie zombie, double projection) {}
 }

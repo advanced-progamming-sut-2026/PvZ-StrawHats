@@ -25,7 +25,8 @@ public abstract class Plant extends Item implements Pluck, Attack {
     private final ArrayList<PlantTag> tags = new ArrayList<>();
     private int damage;
     private PlantType type;
-    private final Plant bottom = null;
+    private AbilityType abilityType;
+    private Plant bottom;
     private final int stackNumber = 1;
 
     private final ModifiableStat hpStat;
@@ -95,6 +96,10 @@ public abstract class Plant extends Item implements Pluck, Attack {
     }
 
     public void takeDamage(int damageAmount, Zombie dealer) {
+        if (!isAlive() || damageAmount <= 0) return;
+        if (dealer != null && name.equalsIgnoreCase("Endurian") && getDamage() > 0) {
+            dealer.takeDamage(getDamage(), this);
+        }
         int remainingDamage = damageAmount;
 
         if (this.armor != null && !this.armor.isDestroyed()) {
@@ -114,6 +119,11 @@ public abstract class Plant extends Item implements Pluck, Attack {
             if (newHp <= 0) {
                 setHP(0);
                 this.state = PlantState.DYING;
+                if (name.equalsIgnoreCase("Explode-o-nut")) executeArmorExplosion();
+                if (name.equalsIgnoreCase("Sun Bean")) {
+                    GameSession session = GameSession.peekInstance();
+                    if (session != null) session.addSun(Math.max(25, (int) abilityValue * 25));
+                }
                 Position position = getLocation();
                 if (position != null) {
                     GeneralPrinter.print("Plant " + name + " at (" + ((int) position.x() + 1)
@@ -125,11 +135,24 @@ public abstract class Plant extends Item implements Pluck, Attack {
         }
     }
 
-    private void executeArmorExplosion() {}
+    private void executeArmorExplosion() {
+        GameSession session = GameSession.peekInstance();
+        Position center = getPosition();
+        if (session == null || center == null) return;
+
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
+            if (Math.abs(zombie.getPosition().x() - center.x()) <= 1
+                    && Math.abs(zombie.getPosition().y() - center.y()) <= 1) {
+                zombie.takeDamage(Math.max(1, getDamage()), this);
+            }
+        }
+    }
 
     @Override public void dealDamage(Item target) { if (target != null) target.setHP(target.getHP() - getDamage()); }
     public void activatePlant(GameSession session) {
         if (this.plantFoodEffect == null) return;
+        this.plantFoodEffect.reset();
         this.plantFoodTimer = 5.0;
         this.plantFoodEffect.applyStatusModifiers(this);
         this.plantFoodEffect.triggerSuperpower(this, session);
@@ -160,6 +183,10 @@ public abstract class Plant extends Item implements Pluck, Attack {
     public void setDamage(int damage) { this.damage = damage; }
     public PlantType getType() { return type; }
     public void setType(PlantType type) { this.type = type; }
+    public AbilityType getAbilityType() { return abilityType; }
+    public void setAbilityType(AbilityType abilityType) { this.abilityType = abilityType; }
+    public Plant getBottom() { return bottom; }
+    public void setBottom(Plant bottom) { this.bottom = bottom; }
     public ArrayList<PlantTag> getTags() { return tags; }
     public List<String> getRawUpgrades() { return rawUpgrades; }
     public void setActStrategy(ActStrategy actStrategy) { this.actStrategy = actStrategy; }

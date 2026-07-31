@@ -73,10 +73,15 @@ public class PlantFactory {
             }
         }
 
-        Plant plant = new GenericPlant(config.name, position, Math.max(0, runtimeHp));
+        boolean oneShotPlant = runtimeHp <= 0 && (config.abilityType == AbilityType.INSTANT_EXPLOSIVE
+                || config.abilityType == AbilityType.INSTANT_SUN_BURST
+                || config.abilityType == AbilityType.MINT_FAMILY_BOOST
+                || config.name.equalsIgnoreCase("Imitater"));
+        Plant plant = new GenericPlant(config.name, position, oneShotPlant ? 1 : Math.max(0, runtimeHp));
         plant.setPosition(position);
         plant.setId(config.id);
         plant.setType(config.category);
+        plant.setAbilityType(config.abilityType);
         if (config.tags != null) {
             plant.getTags().addAll(config.tags);
         }
@@ -93,18 +98,11 @@ public class PlantFactory {
 
         plant.setActStrategy(buildActStrategy(config));
 
-        if (config.abilityType == AbilityType.PASSIVE_SHIELD) {
-            PlantArmour plantArmor = (PlantArmour) ArmourFactory.createArmour(
-                    ArmourType.PLANT_SHIELD,
-                    (int) config.abilityValue,
-                    0,
-                    false
-            );
-            plant.setArmor(plantArmor);
-        }
-
         plant.setPlantFoodEffect(buildPlantFoodEffect(config));
         plant.setShootingVectors(buildShootingVectors(config));
+        if (plant.getTags().contains(PlantTag.CHARGE)) {
+            plant.setInternalTimer(plant.getActionInterval());
+        }
         return plant;
     }
 
@@ -134,22 +132,27 @@ public class PlantFactory {
         return switch (config.plantFoodType) {
             case NONE -> null;
             case SPAWN_SUN_ITEMS -> new SpawnSun(value);
-            case PROJECTILE_BURST -> new TimedProjectileBurst(Math.max(1, value));
+            case PROJECTILE_BURST -> new TimedProjectileBurst(projectileBurstCount(config));
             case SPAWN_CLONES -> new SpawnClones(Math.max(1, value));
-            case LOCAL_AOE_ATTACK -> new LocalAttack(2.0, value);
+            case LOCAL_AOE_ATTACK -> new LocalAttack(2.0, Math.max(config.damage, value));
             case GRANT_PERMANENT_ARMOR -> new GrantArmor(value);
             case RANDOM_HYPNOTIZE -> new RandomHypnotize(Math.max(1, value));
             case KNOCKBACK_BLAST -> new KnockBackBlast(value, 2.0);
-            case PULL_UNDERWATER -> new PullUnderWater(1);
+            case PULL_UNDERWATER -> new PullUnderWater(Math.max(1, value));
             case MAP_WIDE_FREEZE -> new MapWideFreeze();
             case INSTANT_KILL -> new InstantKill();
-            case LOBBER_BARRAGE -> new LobberBarrage(Math.max(1, value));
+            case LOBBER_BARRAGE -> new LobberBarrage(projectileBurstCount(config));
         };
+    }
+
+    private static int projectileBurstCount(PlantJsonParser.PlantConfig config) {
+        int baseDamage = Math.max(1, config.damage);
+        return Math.max(1, Math.min(12, (int) Math.ceil(config.plantFoodValue / baseDamage)));
     }
 
     private static final Map<String, List<Position>> NAMED_SHOOT_PATTERNS = Map.of(
             "Threepeater", List.of(new Position(1, -1), new Position(1, 0), new Position(1, 1)),
-            "Split Pea", List.of(new Position(1, 0), new Position(-1, 0)),
+            "Split Pea", List.of(new Position(1, 0), new Position(1, 0), new Position(-1, 0)),
             "Rotobaga", List.of(new Position(1, 1), new Position(1, -1), new Position(-1, 1), new Position(-1, -1)),
             "Starfruit", List.of(
                     new Position(1, 0), new Position(-1, 0),

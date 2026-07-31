@@ -37,10 +37,12 @@ public class JesterDeflection implements DefenseBehavior {
     private void reflectTowardsPlant(Zombie zombie, Projectile projectile, GameSession session) {
         Plant targetPlant = searchClosestPlantInRow(zombie, session);
         if (targetPlant != null && projectile != null) {
-            Position speed = projectile.getSpeed();
-            if (speed != null) {
-                projectile.setSpeed(new Position(Math.abs(speed.x()), speed.y()));
+            targetPlant.takeDamage(projectile.getDamage(), zombie);
+            if (projectile.getHitEffectStrategy() instanceof model.projectile.hit.IceHit) {
+                targetPlant.setState(Plant.PlantState.INCAPACITATED);
             }
+            Position speed = projectile.getSpeed();
+            if (speed != null) projectile.setSpeed(new Position(Math.abs(speed.x()), speed.y()));
         }
     }
 

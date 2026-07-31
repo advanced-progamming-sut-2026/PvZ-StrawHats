@@ -4,6 +4,10 @@ import model.collections.zombie.Zombie;
 
 public interface HitEffectStrategy {
     void apply(Zombie zombie);
-    
-    // is arc move it should call zombie.takeDamage(int damage , Object moveStrategy)
+
+    default int getAreaLength() { return 1; }
+    default int getPierceCount() { return 1; }
+    default double getKnockbackDistance() { return 0; }
+    default double getDamageMultiplier() { return 1.0; }
+    default boolean bypassesArmor() { return false; }
 }

@@ -1,5 +1,6 @@
 package model.collections.zombie.zombie_move;
 
+import model.collections.Faction;
 import model.collections.plant.Plant;
 import model.collections.zombie.Zombie;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
@@ -8,11 +9,8 @@ import model.pitches.Cell;
 import model.pitches.Environment;
 import model.utils.GameSession;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class PusherMove implements MoveBehavior {
-    private static final double PUSH_GAP_LIMIT = 1.1;
+    private static final double PUSH_GAP = 0.6;
 
     @Override
     public void move(Zombie zombie, double deltaTime, GameSession session) {
@@ -22,55 +20,40 @@ public class PusherMove implements MoveBehavior {
 
         double deltaX = zombie.getSpeed().x() * deltaTime;
         double targetZombieX = pos.x() + deltaX;
-        int currentRow = (int) pos.y();
+        PushableStructure structure = zombie.getPushedStructure();
 
-        Cell[] row = lawn.getRowCells(currentRow);
-        if (row != null) {
-            List<GridObstacleMapping> obstaclesToPush = detectPushableStructures(row, pos);
+        if (structure != null && structure.isAlive()) {
+            int row = (int) Math.round(pos.y());
+            Position oldPosition = structure.getPosition();
+            if (oldPosition == null || Math.abs(oldPosition.y() - row) > 0.5
+                    || Math.abs((pos.x() - oldPosition.x()) - PUSH_GAP) > 0.75) {
+                oldPosition = new Position(pos.x() - PUSH_GAP, row);
+                structure.setPosition(oldPosition);
+            }
 
-            for (GridObstacleMapping map : obstaclesToPush) {
-                Cell currentCell = map.cell();
-                PushableStructure targetStructure = map.structure();
+            Position nextPosition = new Position(oldPosition.x() + deltaX, row);
+            int oldCol = (int) Math.round(oldPosition.x());
+            int newCol = (int) Math.round(nextPosition.x());
 
-                double nextStructureX = targetStructure.getPosition().x() + deltaX;
-                int oldCol = currentCell.getCol();
-                int newCol = (int) nextStructureX;
-
-                targetStructure.setPosition(new Position(nextStructureX, targetStructure.getPosition().y()));
-
-                if (oldCol != newCol && newCol >= 0) {
-                    Cell nextCell = lawn.getCell(currentRow, newCol);
-                    if (nextCell != null) {
-                        Plant plantInWay = nextCell.getPlant();
-                        if (plantInWay != null && plantInWay.isAlive()) {
-                            plantInWay.takeDamage(plantInWay.getHP(), zombie);
-                        }
-
-                        nextCell.setStructure(targetStructure);
-                        currentCell.setStructure(null);
+            Cell nextCell = lawn.getCell(row, newCol);
+            if (nextCell != null) {
+                Plant plant = nextCell.getPlant();
+                if (plant != null && plant.isAlive()) plant.takeDamage(plant.getHP(), zombie);
+                for (Zombie other : nextCell.getZombies()) {
+                    if (other != null && other.isAlive() && other != zombie && other.getFaction() == Faction.PLANTS) {
+                        other.takeDamage(other.getHp(), zombie);
                     }
                 }
             }
+
+            structure.setPosition(nextPosition);
+            if (oldCol != newCol) {
+                Cell oldCell = lawn.getCell(row, oldCol);
+                if (oldCell != null && oldCell.getStructure() == structure) oldCell.setStructure(null);
+            }
+            session.registerStructure(structure);
         }
 
         zombie.setPosition(new Position(targetZombieX, pos.y()));
-
     }
-
-    private List<GridObstacleMapping> detectPushableStructures(Cell[] row, Position pos) {
-        List<GridObstacleMapping> list = new ArrayList<>();
-        for (Cell cell : row) {
-            if (cell == null) continue;
-            PushableStructure structure = cell.getInteractableStructure();
-            if (structure != null && structure.isAlive()) {
-                double structX = structure.getPosition().x();
-                if (structX < pos.x() && (pos.x() - structX) <= PUSH_GAP_LIMIT) {
-                    list.add(new GridObstacleMapping(cell, structure));
-                }
-            }
-        }
-        return list;
-    }
-
-    private record GridObstacleMapping(Cell cell, PushableStructure structure) {}
 }

@@ -34,10 +34,6 @@ public class GigantorImpChucker implements ZombieEffectStatus {
         double healthRatio = (double) host.getHp() / host.getMaxHp();
         if (healthRatio > launchThresholdPercent) return;
 
-        if (thresholdSpawnX > 0 && host.getPosition().x() * 100.0 < thresholdSpawnX) {
-            return;
-        }
-
         executeImpThrow(host, session);
         impLaunched = true;
     }
@@ -55,5 +51,7 @@ public class GigantorImpChucker implements ZombieEffectStatus {
         session.addZombieProjectile(new GargantuarImpProjectile(
                 origin, destination, airTravelDuration, projectileArcApex, trackRow, impCharacterAlias, session
         ));
+        view.GeneralPrinter.print("ZombieGargantuar threw an Imp to column " + (correctedCol + 1)
+                + " in lane " + (trackRow + 1) + ".");
     }
 }

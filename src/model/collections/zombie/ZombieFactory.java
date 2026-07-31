@@ -97,8 +97,12 @@ public class ZombieFactory {
 
         Object moveSpec = data.getOrDefault("move", "NormalWalk");
         Object attackSpec = data.getOrDefault("attack", "ChompAttack");
+        if ("ZombiePiano".equals(alias) && attackSpec instanceof String) {
+            attackSpec = Map.of("type", "CrushAttack", "crushDamage", 99999);
+        }
         Object defenseSpec = data.getOrDefault("defense", "NormalDefense");
         Object effectSpec = data.get("effect");
+        if (effectSpec == null && "ZombiePiano".equals(alias)) effectSpec = "PianistMusicEffect";
 
         zombie.setMoveBehavior(MoveBehaviorRegistry.create(moveSpec, data));
         zombie.setAttackBehavior(AttackBehaviorRegistry.create(attackSpec, data));
@@ -188,7 +192,10 @@ public class ZombieFactory {
 
         if (type == null) return;
 
-        PushableStructure structure = new PushableStructure(type, zombie.getPosition());
+        Position position = zombie.getPosition();
+        PushableStructure structure = new PushableStructure(type,
+                new Position(position.x() - 0.6, position.y()));
+        structure.setOwner(zombie);
         zombie.setPushedStructure(structure);
         placeOnLawnIfPossible(zombie, structure);
 
@@ -204,7 +211,12 @@ public class ZombieFactory {
             return;
         }
 
-        PushableStructure fresh = new PushableStructure(current.getType(), zombie.getPosition());
+        GameSession session = GameSession.peekInstance();
+        if (session != null) session.registerStructure(current);
+        Position position = zombie.getPosition();
+        PushableStructure fresh = new PushableStructure(current.getType(),
+                new Position(position.x() - 0.6, position.y()));
+        fresh.setOwner(zombie);
         zombie.setPushedStructure(fresh);
         zombie.setPushableRespawnsRemaining(zombie.getPushableRespawnsRemaining() - 1);
         placeOnLawnIfPossible(zombie, fresh);
@@ -213,14 +225,6 @@ public class ZombieFactory {
     private static void placeOnLawnIfPossible(Zombie zombie, PushableStructure structure) {
         GameSession session = GameSession.getInstance();
         if (session == null || session.getLawn() == null) return;
-
-        int row = (int) zombie.getPosition().y();
-        int lastCol = session.getLawn().getCols() - 1;
-        var cell = session.getLawn().getCell(row, lastCol);
-
-        if (cell != null && cell.getInteractableStructure() == null) {
-            cell.setStructure(structure);
-        }
 
         session.registerStructure(structure);
     }

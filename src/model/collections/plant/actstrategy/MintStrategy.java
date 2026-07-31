@@ -9,11 +9,7 @@ public class MintStrategy implements ActStrategy {
         session.getPlants().stream()
                 .filter(plant -> plant != null && plant.isAlive() && plant.getType() == user.getType())
                 .forEach(plant -> {
-                    if (plant.getPlantFoodEffect() != null) {
-                        plant.getPlantFoodEffect().applyStatusModifiers(plant);
-                        
-                        plant.getPlantFoodEffect().triggerSuperpower(plant, session);
-                    }
+                    if (plant != user && plant.getPlantFoodEffect() != null) plant.activatePlant(session);
                 });
 
         user.setAlive(false);

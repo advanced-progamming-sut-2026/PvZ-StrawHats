@@ -31,7 +31,8 @@ public class HomingStrategy implements ActStrategy {
     }
 
     private Projectile buildProjectile(Plant user, Zombie target, boolean isMagic) {
-        Position velocity = new Position(20, 0);
+        Position direction = target.getPosition().sub(user.getPosition()).normalize();
+        Position velocity = direction.scale(20.0);
 
         if (isMagic) {
             int pierceCount = (int) user.getAbilityValue();

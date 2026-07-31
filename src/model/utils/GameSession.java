@@ -11,6 +11,7 @@ import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match.main.levels.Level;
+import model.match.main.season.travellog.beach.Flood;
 import model.match.main.season.travellog.egypt.Egypt;
 import model.match.main.season.travellog.egypt.SandStorm;
 import model.match_mechanisms.ZombieWave;
@@ -125,7 +126,7 @@ public class GameSession {
             if (plant.isAlive()) plant.tick(deltaTimeSeconds, this);
         }
         for (Zombie zombie : zombies) {
-            if (zombie.isAlive()) zombie.tick(deltaTimeSeconds, this);
+            zombie.tick(deltaTimeSeconds, this);
         }
         for (Projectile projectile : projectiles) {
             if (projectile.isAlive()) projectile.tick();
@@ -160,6 +161,7 @@ public class GameSession {
         }
 
         clearDeadPlantsFromGrid();
+        clearDeadStructuresFromGrid();
         refreshZombieOccupancy();
 
         recordLevelSpecificDeaths();
@@ -225,8 +227,18 @@ public class GameSession {
             for (int c = 0; c < environment.getCols(); c++) {
                 Cell cell = environment.getCell(r, c);
                 if (cell.getPlant() != null && !cell.getPlant().isAlive()) {
-                    cell.setPlant(null);
+                    Plant bottom = cell.getPlant().getBottom();
+                    cell.setPlant(bottom != null && bottom.isAlive() ? bottom : null);
                 }
+            }
+        }
+    }
+
+    private void clearDeadStructuresFromGrid() {
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                Cell cell = environment.getCell(r, c);
+                if (cell.getStructure() != null && !cell.getStructure().isAlive()) cell.setStructure(null);
             }
         }
     }
@@ -521,8 +533,23 @@ public class GameSession {
 
     public boolean plantAt(int row, int col, Plant plant) {
         Cell cell = environment.getCell(row, col);
-        if (cell == null || cell.hasPlant() || cell.getObstacle() != null || plant == null) return false;
+        if (cell == null || plant == null) return false;
 
+        boolean handlesObstacle = (plant.getName().equalsIgnoreCase("Hot Potato")
+                && cell.getObstacle() instanceof model.pitches.obstacles.IceBlock)
+                || (plant.getName().equalsIgnoreCase("Grave Buster")
+                && cell.getObstacle() instanceof model.pitches.obstacles.Grave);
+        if (cell.getObstacle() != null && !handlesObstacle) return false;
+
+        boolean flooded = cell.getTile() != null && cell.getTile().type() == TileType.Water;
+        Plant existing = cell.hasPlant() ? cell.getPlant() : null;
+        boolean lilySupport = existing != null && existing.getTags().contains(PlantTag.WATER)
+                && existing.getTags().contains(PlantTag.STACK);
+
+        if (existing != null && !lilySupport) return false;
+        if (flooded && !plant.getTags().contains(PlantTag.WATER) && !lilySupport) return false;
+
+        if (lilySupport) plant.setBottom(existing);
         cell.setPlant(plant);
         plant.setPosition(new Position(col, row));
         plants.add(plant);
@@ -551,8 +578,9 @@ public class GameSession {
         if (cell == null || !cell.hasPlant()) return false;
 
         Plant plant = cell.getPlant();
+        Plant bottom = plant.getBottom();
         plant.setAlive(false);
-        cell.setPlant(null);
+        cell.setPlant(bottom != null && bottom.isAlive() ? bottom : null);
         plants.remove(plant);
         return true;
     }
@@ -562,7 +590,8 @@ public class GameSession {
         if (cell == null || !cell.hasPlant()) return null;
 
         Plant plant = cell.getPlant();
-        cell.setPlant(null);
+        Plant bottom = plant.getBottom();
+        cell.setPlant(bottom != null && bottom.isAlive() ? bottom : null);
         plants.remove(plant);
         return plant;
     }
@@ -598,7 +627,7 @@ public class GameSession {
             }
             sb.append("\n");
         }
-        sb.append("(M=lawn mower, B=brain mode, P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, .=empty)");
+        sb.append("(M=lawn mower, B=brain mode, P=plant, Z=zombie, E=zombie eating a plant, X=obstacle, ~=ice, W=water, .=empty)");
         List<GroundItem> visibleItems = items.stream()
                 .filter(GroundItem.class::isInstance)
                 .map(GroundItem.class::cast)
@@ -627,6 +656,7 @@ public class GameSession {
         if (hasPlant) return 'P';
         if (cell.getObstacle() != null) return 'X';
         if (cell.getTile() != null && cell.getTile().type() == TileType.Slippery) return '~';
+        if (cell.getTile() != null && cell.getTile().type() == TileType.Water) return 'W';
         return '.';
     }
 
@@ -800,6 +830,7 @@ public class GameSession {
             level.initSpecial(this);
             if (level.getSeason() != null) {
                 level.getSeason().placeSeasonObstacles(this);
+                if (level.getSeason().hasTide()) Flood.initialize(level, this);
             }
         }
     }
@@ -886,12 +917,31 @@ public class GameSession {
     }
 
 
+    public List<PushableStructure> getPushableStructures() {
+        Set<PushableStructure> structures = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (environment == null) return new ArrayList<>();
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                PushableStructure structure = environment.getCell(r, c).getStructure();
+                if (structure != null && structure.isAlive()) structures.add(structure);
+            }
+        }
+        return new ArrayList<>(structures);
+    }
+
     public void registerStructure(PushableStructure structure) {
-        if (structure == null || environment == null) return;
-        int row = (int) structure.getPosition().y();
-        int col = (int) structure.getPosition().x();
+        if (structure == null || environment == null || structure.getPosition() == null) return;
+        for (int r = 0; r < environment.getRows(); r++) {
+            for (int c = 0; c < environment.getCols(); c++) {
+                Cell existing = environment.getCell(r, c);
+                if (existing.getStructure() == structure) existing.setStructure(null);
+            }
+        }
+        if (!structure.isAlive()) return;
+        int row = (int) Math.round(structure.getPosition().y());
+        int col = (int) Math.round(structure.getPosition().x());
         Cell cell = environment.getCell(row, col);
-        if (cell != null) {
+        if (cell != null && (cell.getStructure() == null || cell.getStructure() == structure)) {
             cell.setStructure(structure);
         }
     }

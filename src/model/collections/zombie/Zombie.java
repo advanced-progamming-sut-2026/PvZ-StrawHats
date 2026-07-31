@@ -7,9 +7,11 @@ import model.collections.plant.Plant;
 import model.collections.zombie.zombie_attack.AttackBehavior;
 import model.collections.zombie.zombie_attack.ZombieTargeting;
 import model.collections.zombie.zombie_defense.DefenseBehavior;
+import model.collections.zombie.zombie_effect.FireEffect;
 import model.collections.zombie.zombie_effect.ZombieEffectStatus;
 import model.collections.zombie.zombie_move.HypnotizedMoveBehavior;
 import model.collections.zombie.zombie_move.MoveBehavior;
+import model.collections.zombie.zombie_move.ProspectorMove;
 import model.collections.zombie.zombie_pushing_item.PushableStructure;
 import model.match_mechanisms.Attack;
 import model.match_mechanisms.vector.Position;
@@ -48,6 +50,9 @@ public class Zombie extends Item implements Attack {
 
     public enum Status { NORMAL, FREEZE, FIRED, POISONED, BUTTER, HYPNOTIZED }
     private Status status = Status.NORMAL;
+    private double statusTimer = 0;
+    private double statusDamageAccumulator = 0;
+    private boolean deathHandled = false;
     private VulnerabilityType vulnerabilityState = VulnerabilityType.FULLY_VULNERABLE;
     private Faction faction = Faction.ZOMBIES;
 
@@ -81,7 +86,7 @@ public class Zombie extends Item implements Attack {
     @Override
     public void dealDamage(Item target) {
         if (target == null || !target.isAlive()) return;
-        int damage = (int) Math.round(eatDps * service.GameClock.SECONDS_PER_TICK);
+        int damage = (int) Math.round(getEatDps() * service.GameClock.SECONDS_PER_TICK);
         if (damage <= 0) return;
 
         if (target instanceof Plant plant) {
@@ -105,15 +110,7 @@ public class Zombie extends Item implements Attack {
             int newHp = Math.max(0, getHP() - damage);
             setHP(newHp);
 
-            if (newHp <= 0) {
-                zombieState = ZombieState.DEAD;
-                if (isGlowing) plantFoodPending = true;
-
-                GameSession session = GameSession.getInstance();
-                if (session != null) {
-                    session.notifyZombieDied(this, "Poison");
-                }
-            }
+            if (newHp <= 0) handleDeath(GameSession.peekInstance(), "Poison");
         } else {
             takeDamage(damage, null);
         }
@@ -126,7 +123,7 @@ public class Zombie extends Item implements Attack {
             boolean allowDamage = false;
 
             if (damageSource instanceof Plant plant) {
-                String plantName = plant.getName().toLowerCase().replace("-", "").replace(" ", "");
+                String plantName = normalizePlantName(plant.getName());
 
                 if (damageWhileSubmerged != null && damageWhileSubmerged.contains(plantName)) {
                     allowDamage = true;
@@ -135,6 +132,9 @@ public class Zombie extends Item implements Attack {
             } else if (damageSource instanceof Projectile p) {
                 if (p.getMoveStrategy() instanceof ArcMove) {
                     allowDamage = true;
+                } else if (p.getSourcePlant() != null) {
+                    String plantName = normalizePlantName(p.getSourcePlant().getName());
+                    allowDamage = damageWhileSubmerged != null && damageWhileSubmerged.contains(plantName);
                 }
             }
 
@@ -158,18 +158,37 @@ public class Zombie extends Item implements Attack {
         int newHp = Math.max(0, getHP() - remaining);
         setHP(newHp);
 
-        if (newHp <= 0) {
-            zombieState = ZombieState.DEAD;
-            if (isGlowing) {
-                plantFoodPending = true;
-            }
+        if (newHp <= 0) handleDeath(GameSession.peekInstance(), resolveKillerName(damageSource));
+    }
 
-            GameSession session = GameSession.getInstance();
-            if (session != null) {
-                String killerName = resolveKillerName(damageSource);
-                session.notifyZombieDied(this, killerName);
+    private void handleDeath(GameSession session, String killerName) {
+        if (deathHandled) return;
+        deathHandled = true;
+        zombieState = ZombieState.DEAD;
+        setHP(0);
+        if (isGlowing) plantFoodPending = true;
+        if (zombieEffectStatus != null) zombieEffectStatus.onDeath(this, session);
+        if (session != null) session.notifyZombieDied(this, killerName);
+    }
+
+    private void updateStatus(double deltaTimeSeconds) {
+        if (status == Status.NORMAL || status == Status.HYPNOTIZED) return;
+        statusTimer = Math.max(0, statusTimer - deltaTimeSeconds);
+        if (status == Status.POISONED) {
+            statusDamageAccumulator += deltaTimeSeconds;
+            while (statusDamageAccumulator >= 1.0 && isAlive()) {
+                statusDamageAccumulator -= 1.0;
+                takeDamage(15, true);
             }
         }
+        if (statusTimer <= 0 && isAlive()) {
+            status = Status.NORMAL;
+            statusDamageAccumulator = 0;
+        }
+    }
+
+    private String normalizePlantName(String plantName) {
+        return plantName == null ? "" : plantName.toLowerCase().replace("-", "").replace("_", "").replace(" ", "");
     }
 
     private String resolveKillerName(Object damageSource) {
@@ -188,7 +207,16 @@ public class Zombie extends Item implements Attack {
     }
 
     public void tick(double deltaTimeSeconds, GameSession session) {
-        if (!isAlive()) return;
+        if (!isAlive()) {
+            handleDeath(session, "Unknown");
+            return;
+        }
+
+        updateStatus(deltaTimeSeconds);
+        if (!isAlive()) {
+            handleDeath(session, status == Status.POISONED ? "Poison" : "Fire");
+            return;
+        }
 
         ZombieFactory.respawnPushedStructureIfNeeded(this);
 
@@ -199,6 +227,9 @@ public class Zombie extends Item implements Attack {
         Item target = acquireTarget(session);
         if (target != null && target.isAlive()) {
             zombieState = ZombieState.EATING;
+            if (moveBehavior instanceof model.collections.zombie.zombie_move.SnorkelMove) {
+                vulnerabilityState = VulnerabilityType.FULLY_VULNERABLE;
+            }
             if (attackBehavior != null) {
                 attackBehavior.attack(this, session);
             } else {
@@ -233,6 +264,8 @@ public class Zombie extends Item implements Attack {
     public void hypnotize() {
         if (faction == Faction.PLANTS || !isAlive()) return;
         this.faction = Faction.PLANTS;
+        this.status = Status.HYPNOTIZED;
+        this.statusTimer = 0;
 
         Position speed = getSpeed();
         if (speed != null) {
@@ -274,7 +307,10 @@ public class Zombie extends Item implements Attack {
     }
     public int getMaxHp() { return maxHp; }
     public void setMaxHp(int maxHp) { this.maxHp = maxHp; }
-    public double getEatDps() { return eatDps; }
+    public double getEatDps() {
+        if ("ZombieNewspaper".equals(name) && (armour == null || armour.getHP() <= 0)) return eatDps * 4.0;
+        return eatDps;
+    }
     public void setEatDps(double eatDps) { this.eatDps = eatDps; }
     public ZombieRace getRace() { return race; }
     public void setRace(ZombieRace race) { this.race = race; }
@@ -286,7 +322,33 @@ public class Zombie extends Item implements Attack {
     public boolean isGlowing() { return isGlowing; }
     public String getAlias() { return name; }
     public Status getStatus() { return this.status; }
-    public void setStatus(Status status) { this.status = status; }
+    public void setStatus(Status status) {
+        double duration = switch (status) {
+            case FREEZE -> 5.0;
+            case FIRED -> 3.0;
+            case POISONED -> 6.0;
+            case BUTTER -> 4.0;
+            default -> 0.0;
+        };
+        applyStatus(status, duration);
+    }
+    public void applyStatus(Status status, double duration) {
+        if (status == null || !isAlive()) return;
+        if (status == Status.HYPNOTIZED) {
+            hypnotize();
+            return;
+        }
+        if (status == Status.FIRED) {
+            if (zombieEffectStatus instanceof FireEffect fireEffect) fireEffect.setActiveFlame(true);
+            if (moveBehavior instanceof ProspectorMove prospectorMove) prospectorMove.litDynamite();
+        } else if (status == Status.FREEZE) {
+            if (zombieEffectStatus instanceof FireEffect fireEffect) fireEffect.setActiveFlame(false);
+            if (moveBehavior instanceof ProspectorMove prospectorMove) prospectorMove.extinguishDynamite();
+        }
+        this.status = status;
+        this.statusTimer = Math.max(0, duration);
+        this.statusDamageAccumulator = 0;
+    }
     public boolean isFacingRight() { return isFacingRight; }
     public void setFacingRight(boolean facingRight) { isFacingRight = facingRight; }
     public boolean hasPlantFood() { return hasPlantFood; }

@@ -39,4 +39,10 @@ public class TimedProjectileBurst implements PlantFoodEffect {
     @Override
     public void applyStatusModifiers(Plant plant) {
     }
+
+    @Override
+    public void reset() {
+        elapsed = 0;
+        fired = 0;
+    }
 }

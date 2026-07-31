@@ -2,21 +2,22 @@ package model.projectile.hit;
 
 import model.collections.zombie.Zombie;
 
-import java.util.ArrayList;
-
-public class PierceKnockBackHit implements HitEffectStrategy{
-    private final int pierceNumber; // Use -1 for infinite pierce
+public class PierceKnockBackHit implements HitEffectStrategy {
+    private final int pierceNumber;
     private final double knockbackDistance;
-    private final ArrayList<Zombie> hitZombies;
 
     public PierceKnockBackHit(int pierceNumber, double knockbackDistance) {
-        this.pierceNumber = pierceNumber;
+        this.pierceNumber = pierceNumber == 0 ? 1 : pierceNumber;
         this.knockbackDistance = knockbackDistance;
-        this.hitZombies = new ArrayList<>();
     }
+
     @Override
     public void apply(Zombie zombie) {
-        
     }
-}
 
+    @Override
+    public int getPierceCount() { return pierceNumber; }
+
+    @Override
+    public double getKnockbackDistance() { return knockbackDistance; }
+}

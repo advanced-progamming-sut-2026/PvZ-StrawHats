@@ -39,14 +39,7 @@ public class SunThief implements ZombieEffectStatus {
 
     @Override
     public void applyTickEffect(Zombie target, GameSession session) {
-        if (!target.isAlive()) {
-            if (!refundDispensedOnDeath) {
-                int refundVal = (int) (collectedSuns * refundPercentage);
-                if (refundVal > 0) session.addSun(refundVal);
-                refundDispensedOnDeath = true;
-            }
-            return;
-        }
+        if (!target.isAlive()) return;
 
         if (target.getFaction() == Faction.PLANTS) {
             if (directBankStealer && !beamDischarged) {
@@ -61,6 +54,14 @@ public class SunThief implements ZombieEffectStatus {
         } else {
             handleScavengerBehavior(session);
         }
+    }
+
+    @Override
+    public void onDeath(Zombie target, GameSession session) {
+        if (refundDispensedOnDeath || session == null) return;
+        int refundVal = (int) Math.round(collectedSuns * refundPercentage);
+        if (refundVal > 0) session.addSun(refundVal);
+        refundDispensedOnDeath = true;
     }
 
     private void handleScavengerBehavior(GameSession session) {

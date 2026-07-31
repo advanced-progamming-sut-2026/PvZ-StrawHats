@@ -5,4 +5,5 @@ import model.utils.GameSession;
 
 public interface ZombieEffectStatus {
     void applyTickEffect(Zombie target, GameSession session);
+    default void onDeath(Zombie target, GameSession session) {}
 }
