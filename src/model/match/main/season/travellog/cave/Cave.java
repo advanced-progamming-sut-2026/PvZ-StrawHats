@@ -22,7 +22,7 @@ public class Cave extends Season {
         super("Frostbite Caves");
     }
 
-    @Override
+
     public boolean hasIceTiles() { return true; }
 
     @Override
