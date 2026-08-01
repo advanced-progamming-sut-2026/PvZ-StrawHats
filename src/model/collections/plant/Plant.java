@@ -82,10 +82,10 @@ public abstract class Plant extends Item implements Pluck, Attack {
         if (growthTracker != null) growthTracker.update(deltaTimeSeconds);
 
         if (plantFoodTimer > 0) {
-            plantFoodTimer = GameClock.countDown(plantFoodTimer, deltaTimeSeconds);
             if (plantFoodEffect != null) {
                 plantFoodEffect.tickDurationEffect(this, deltaTimeSeconds);
             }
+            plantFoodTimer = GameClock.countDown(plantFoodTimer, deltaTimeSeconds);
             return;
         }
 
@@ -150,13 +150,18 @@ public abstract class Plant extends Item implements Pluck, Attack {
     }
 
     @Override public void dealDamage(Item target) { if (target != null) target.setHP(target.getHP() - getDamage()); }
-    public void activatePlant(GameSession session) {
-        if (this.plantFoodEffect == null) return;
+    public boolean activatePlant(GameSession session) {
+        if (this.plantFoodEffect == null || this.plantFoodTimer > 0 || session == null || !isAlive()) return false;
         this.plantFoodEffect.reset();
-        this.plantFoodTimer = 5.0;
         this.plantFoodEffect.applyStatusModifiers(this);
         this.plantFoodEffect.triggerSuperpower(this, session);
+        this.plantFoodTimer = Math.max(0.0, this.plantFoodEffect.getDurationSeconds());
+        return true;
     }
+    public boolean canUsePlantFood() {
+        return this.plantFoodEffect != null && this.plantFoodTimer <= 0 && isAlive();
+    }
+    public boolean isPlantFoodActive() { return this.plantFoodTimer > 0; }
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }

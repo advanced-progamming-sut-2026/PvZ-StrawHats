@@ -291,8 +291,8 @@
     "season": "darkage",
     "rows": 5,
     "cols": 9,
-    "primarySun": 300,
-    "availablePlants": ["Peashooter", "Wall-nut", "Repeater", "Snow Pea", "Potato Mine"],
+    "primarySun": 800,
+    "availablePlants": ["Peashooter", "Wall-nut", "Repeater", "Snow Pea", "Potato Mine", "Cabbage-pult"],
     "forcedPlants": [],
     "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieNewspaper", "ZombieDarkJuggler", "ZombieWizard", "ZombieDarkImpDragon"],
     "waves": [

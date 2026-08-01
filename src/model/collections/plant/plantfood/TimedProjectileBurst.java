@@ -37,6 +37,11 @@ public class TimedProjectileBurst implements PlantFoodEffect {
     }
 
     @Override
+    public double getDurationSeconds() {
+        return Math.max(0.0, (burstCount - 1) * FIRE_INTERVAL + 0.1);
+    }
+
+    @Override
     public void applyStatusModifiers(Plant plant) {
     }
 

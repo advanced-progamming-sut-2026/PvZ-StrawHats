@@ -24,8 +24,6 @@ public class GrantArmor implements PlantFoodEffect {
 
     @Override
     public void applyStatusModifiers(Plant plant) {
-        if (plant.getArmor() == null) {
-            plant.setArmor((PlantArmour) ArmourFactory.createArmour(ArmourType.PLANT_SHIELD, hp, 0, false));
-        }
+        plant.setArmor((PlantArmour) ArmourFactory.createArmour(ArmourType.PLANT_SHIELD, hp, 0, false));
     }
 }

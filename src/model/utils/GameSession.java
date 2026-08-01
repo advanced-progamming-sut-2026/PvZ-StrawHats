@@ -73,6 +73,7 @@ public class GameSession {
     private boolean plantedAnyPlantThisMatch = false;
     private boolean usedNonNightPlantThisMatch = false;
     private final Map<Integer, Double> plantCooldowns = new HashMap<>();
+    private final Set<Integer> matchBoostedPlantIds = new HashSet<>();
 
     private double skySunTimer = 0;
 
@@ -509,6 +510,23 @@ public class GameSession {
         return true;
     }
 
+    public boolean grantMatchBoost(int plantId) {
+        return matchBoostedPlantIds.add(plantId);
+    }
+
+    public boolean hasMatchBoost(int plantId) {
+        return matchBoostedPlantIds.contains(plantId);
+    }
+
+    public Set<Integer> getMatchBoostedPlantIds() {
+        return Set.copyOf(matchBoostedPlantIds);
+    }
+
+    public void restoreMatchBoosts(Collection<Integer> plantIds) {
+        matchBoostedPlantIds.clear();
+        if (plantIds != null) matchBoostedPlantIds.addAll(plantIds);
+    }
+
     public void killAllZombies() {
         zombies.forEach(z -> z.setHp(0));
         zombies.clear();
@@ -812,6 +830,7 @@ public class GameSession {
             projectiles.clear();
             zombieProjectiles.clear();
             plantCooldowns.clear();
+            matchBoostedPlantIds.clear();
             clock.reset();
             gameOver = false;
             gameWon = false;

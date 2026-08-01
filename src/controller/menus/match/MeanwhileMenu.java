@@ -198,9 +198,11 @@ public class MeanwhileMenu extends Menu {
         } else {
             session.spendSun(plant.getCost());
             if (!freePlantingTime) session.startPlantCooldown(config.id, plant.getRecharge());
-            boolean boosted = state.consumeBoost(config.id);
-            if (boosted) {
-                plant.activatePlant(session);
+            boolean matchBoost = session.hasMatchBoost(config.id);
+            boolean reservedBoost = !matchBoost && state.hasBoost(config.id);
+            if ((matchBoost || reservedBoost) && plant.activatePlant(session) && reservedBoost) {
+                state.consumeBoost(config.id);
+                User.save();
             }
             GeneralPrinter.print(config.name + " planted at (" + x + "," + y + "). Sun: "
                     + session.getSunCount() + ".");
@@ -245,10 +247,16 @@ public class MeanwhileMenu extends Menu {
         }
         if (plant == null) {
             throw new GameException("no plant there.");
+        } else if (plant.getPlantFoodEffect() == null) {
+            throw new GameException("this plant has no plant food effect.");
+        } else if (plant.isPlantFoodActive()) {
+            throw new GameException("this plant's plant food effect is already active.");
         } else if (!session.spendPlantFood()) {
             throw new GameException("no plant food available.");
+        } else if (!plant.activatePlant(session)) {
+            session.addPlantFood();
+            throw new GameException("plant food could not be used on this plant.");
         } else {
-            plant.activatePlant(session);
             GeneralPrinter.print("Plant food used on " + plant.getName() + ".");
         }
     }
@@ -314,11 +322,13 @@ public class MeanwhileMenu extends Menu {
 
         }
         try {
+            var matchBoosts = session.getMatchBoostedPlantIds();
             var freshLevel = LevelLoader.loadLevelById(session.getLevel().getId());
             MatchMenu.selectedLevel = freshLevel;
             GameSession fresh = new GameSession(freshLevel.getRows(), freshLevel.getCols());
             fresh.setDifficultyLevel(User.currentUser.userState.difficultyLevel);
             fresh.setLevel(freshLevel);
+            fresh.restoreMatchBoosts(matchBoosts);
             if (!(freshLevel instanceof PlantWhatYouGetLevel)) fresh.startWaves();
             GeneralPrinter.print("Match restarted.");
         } catch (Exception e) {

@@ -5,6 +5,7 @@ import controller.menus.Menu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantJsonParser;
+import model.collections.plant.PlantFoodType;
 import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
@@ -126,16 +127,22 @@ public class BeforeMenu extends Menu {
 
     private void boostPlant(String plantName) {
         UserState state = User.currentUser.userState;
+        GameSession session = GameSession.getInstance();
         PlantJsonParser.PlantConfig config = manager.findPlant(plantName);
-        if (config == null) {
-            throw new GameException("no such plant.");
-        } else if (state.hasBoost(config.id)) {
-            throw new GameException("plant already boosted.");
+        if (config == null || !state.isPlantUnlocked(config.id)) {
+            throw new GameException("plant not available.");
+        } else if (!isAllowedInCurrentLevel(config.name)) {
+            throw new GameException("plant is locked for this stage.");
+        } else if (config.plantFoodType == null || config.plantFoodType == PlantFoodType.NONE) {
+            throw new GameException("this plant has no plant food effect.");
+        } else if (session.hasMatchBoost(config.id)) {
+            throw new GameException("plant already boosted for this match.");
         } else if (state.diamonds < BOOST_COST_DIAMONDS) {
             throw new GameException("not enough diamonds.");
         } else {
             state.diamonds -= BOOST_COST_DIAMONDS;
-            state.grantBoost(config.id);
+            session.grantMatchBoost(config.id);
+            User.save();
             GeneralPrinter.print(config.name + " boosted for this match.");
         }
     }

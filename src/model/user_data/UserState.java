@@ -55,18 +55,21 @@ public class UserState {
     }
 
     public boolean hasBoost(int plantId) {
+        if (plantBoosts == null) plantBoosts = new HashMap<>();
         return plantBoosts.getOrDefault(plantId, false);
     }
 
     public boolean grantBoost(int plantId) {
+        if (plantBoosts == null) plantBoosts = new HashMap<>();
         if (hasBoost(plantId)) return false;
         plantBoosts.put(plantId, true);
         return true;
     }
 
     public boolean consumeBoost(int plantId) {
+        if (plantBoosts == null) plantBoosts = new HashMap<>();
         if (!hasBoost(plantId)) return false;
-        plantBoosts.put(plantId, false);
+        plantBoosts.remove(plantId);
         return true;
     }
 
