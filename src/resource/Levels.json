@@ -50,7 +50,14 @@
     "initialSun": 150,
     "availablePlants": ["Peashooter", "Wall-nut", "Potato Mine"],
     "forcedPlants": [],
-    "lockedPlants": ["Sunflower", "Repeater", "Snow Pea"],
+    "lockedPlants": [
+      "Sunflower", "Twin Sunflower", "Sun-shroom", "Primal Sunflower", "Gold Bloom", "Sun Bean", "Repeater",
+      "Threepeater", "Snow Pea", "Pea Pod", "Citron", "Caulipower", "Electric Blueberry", "Bowling Bulb",
+      "Fire Peashooter", "Mega Gatling Pea", "Melon-pult", "Winter Melon", "Primal Potato Mine",
+      "Cherry Bomb", "Grapeshot", "Jalapeno", "Doom-shroom", "Wasabi Whip", "Kiwibeast", "Tall-nut", "Explode-o-nut",
+      "Pumpkin", "Torchwood", "Magnet-shroom", "Hypno-shroom", "Imitater", "Enlighten-mint", "Appease-mint",
+      "Arma-mint", "Bombard-mint", "Enforce-mint", "Reinforce-mint", "Enchant-mint", "Pierce-mint", "catTail-mint"
+    ],
     "alwaysAvailable": ["Peashooter"],
     "zombiePool": ["ZombieDefault", "ZombieArmor1", "ZombieArmor2", "ZombieRa", "ZombieExplorer", "ZombieTombRaiser"],
     "waves": [

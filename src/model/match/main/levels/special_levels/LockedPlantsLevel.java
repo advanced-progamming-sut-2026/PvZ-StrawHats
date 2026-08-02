@@ -9,15 +9,12 @@ public class LockedPlantsLevel extends Level {
     private List<String> alwaysAvailable;
 
     /**
-     * True if this plant is not selectable in this level: either it is
-     * explicitly locked, or it simply isn't in the available/forced lists.
+     * Purchased/unlocked plants remain selectable in this level unless the
+     * level explicitly locks them. Always-available plants override a lock.
      */
     public boolean isPlantLocked(String plantAlias) {
-        if (containsIgnoreCase(lockedPlants, plantAlias)) return true;
         if (containsIgnoreCase(alwaysAvailable, plantAlias)) return false;
-        boolean inAvailable = containsIgnoreCase(getAvailablePlants(), plantAlias);
-        boolean inForced = containsIgnoreCase(getForcedPlants(), plantAlias);
-        return !inAvailable && !inForced;
+        return containsIgnoreCase(lockedPlants, plantAlias);
     }
 
     private boolean containsIgnoreCase(List<String> values, String target) {
