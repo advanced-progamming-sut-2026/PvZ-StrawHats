@@ -75,9 +75,8 @@ public class BeforeMenu extends Menu {
 
     private void showAvailablePlants() {
         Level level = currentLevel();
-        if (level == null || level.getAvailablePlants() == null) {
+        if (level == null) {
             throw new GameException("no level loaded.");
-
         }
         if (level instanceof ConveyorBeltLevel conveyor) {
             if (conveyor.getConveyorPlants() == null || conveyor.getConveyorPlants().isEmpty()) {
@@ -90,9 +89,8 @@ public class BeforeMenu extends Menu {
         }
 
         UserState state = User.currentUser.userState;
-        for (String name : level.getAvailablePlants()) {
-            PlantJsonParser.PlantConfig config = manager.findPlant(name);
-            if (config != null && state.isPlantUnlocked(config.id)) {
+        for (PlantJsonParser.PlantConfig config : manager.getUnlockedPlants(state)) {
+            if (isAllowedInCurrentLevel(config.name)) {
                 GeneralPrinter.print(manager.formatPlant(config, true, state.getPlantLevel(config.id)));
             }
         }
@@ -174,16 +172,14 @@ public class BeforeMenu extends Menu {
 
     private boolean isAllowedInCurrentLevel(String plantName) {
         Level level = currentLevel();
-        if (level == null) return false;
+        if (level == null || level instanceof ConveyorBeltLevel) return false;
         if (level instanceof LockedPlantsLevel lockedLevel) {
             return !lockedLevel.isPlantLocked(plantName);
         }
-        return containsIgnoreCase(level.getAvailablePlants(), plantName)
-                || containsIgnoreCase(level.getForcedPlants(), plantName);
-    }
-
-    private boolean containsIgnoreCase(List<String> values, String target) {
-        return values != null && values.stream().anyMatch(value -> value.equalsIgnoreCase(target));
+        if (level instanceof PlantWhatYouGetLevel) {
+            return !plantName.toLowerCase().contains("sunflower");
+        }
+        return true;
     }
 
     @Override
