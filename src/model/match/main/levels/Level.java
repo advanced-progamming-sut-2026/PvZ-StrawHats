@@ -62,19 +62,11 @@ public abstract class Level {
         // Default: no tide
     }
 
-    /**
-     * Called when the level is loaded into GameSession.
-     * Override to place forced plants, set initial tide, etc.
-     */
     public void initSpecial(GameSession session) {
         // default no‑op
     }
 
-    /**
-     * Per-level loss condition, checked every tick alongside the normal
-     * "zombie reached the house" rule. Override in special levels that can
-     * end the match on their own (Dead Line, Save Our Seeds, Love Your Plants...).
-     */
+
     public boolean checkLossCondition(GameSession session) {
         return false;
     }
@@ -87,10 +79,7 @@ public abstract class Level {
                 && session.getZombies().isEmpty();
     }
 
-    /**
-     * Whether sun should keep falling from the sky on this level.
-     * Night Ops and Plant What You Get turn this off.
-     */
+
     public boolean isSkySunEnabled() {
         return season == null || !season.isNight();
     }

@@ -8,10 +8,7 @@ public class LockedPlantsLevel extends Level {
     private List<String> lockedPlants;
     private List<String> alwaysAvailable;
 
-    /**
-     * Purchased/unlocked plants remain selectable in this level unless the
-     * level explicitly locks them. Always-available plants override a lock.
-     */
+
     public boolean isPlantLocked(String plantAlias) {
         if (containsIgnoreCase(alwaysAvailable, plantAlias)) return false;
         return containsIgnoreCase(lockedPlants, plantAlias);

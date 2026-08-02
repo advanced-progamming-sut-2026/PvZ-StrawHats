@@ -39,11 +39,7 @@ public class SaveOurSeedsLevel extends Level {
         }
     }
 
-    /**
-     * Instant loss the moment a zombie manages to eat one of the guarded plants.
-     * note that a seed position only counts once we've actually seen a plant sitting there
-     * (so this doesn't fire before the level's initial plants have been placed).
-     */
+
     @Override
     public boolean checkLossCondition(GameSession session) {
         if (seedPositions == null) return false;

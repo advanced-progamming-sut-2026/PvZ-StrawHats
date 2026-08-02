@@ -8,10 +8,7 @@ import model.utils.GameSession;
 
 import java.util.Random;
 
-/**
- * A regular "?" vase: empty, or hides a normal zombie, or hides a random seed packet.
- * The outcome isn't shown to the player until it's broken.
- */
+
 public class RandomVase extends Vase {
     private static final Random RAND = new Random();
     public enum Content { EMPTY, ZOMBIE, PLANT }

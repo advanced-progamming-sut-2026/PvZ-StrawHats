@@ -59,11 +59,7 @@ public class IZombie extends MiniGameMode {
                 + " started with " + STARTING_SUN + " sun.");
     }
 
-    /**
-     * Place two or three real plants in the first three columns of every
-     * lane.  The pattern is random but always leaves several left-side
-     * columns represented, making the red-line deployment rule visible.
-     */
+    /// Place two or three real plants in the first three columns of every
     private void seedDefendingPlants() {
         for (int row = 0; row < session.getEnvironment().getRows(); row++) {
             List<Integer> columns = new ArrayList<>(List.of(0, 1, 2));

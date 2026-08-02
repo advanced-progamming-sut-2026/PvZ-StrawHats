@@ -48,10 +48,7 @@ public class ConveyorBeltLevel extends Level {
         return currentPlant;
     }
 
-    /**
-     * Player takes the currently offered plant off the belt to plant it;
-     * the belt starts counting down toward the next one.
-     */
+
     public Plant takeCurrentPlant() {
         Plant taken = currentPlant;
         currentPlant = null;

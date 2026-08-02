@@ -151,12 +151,7 @@ public class Beghouled extends MiniGameMode {
         return cell.getPlant().getId();
     }
 
-    /**
-     * Finds every match currently on the board, removes it, applies gravity
-     * and refill, and pays out sun per matched group. Repeats for any
-     * cascade matches created by the refill (which pay one extra sun unit
-     * per group than a player-triggered match would).
-     */
+
     private void resolveMatches(boolean isCascadePass) {
         boolean cascade = isCascadePass;
         int safety = 0;
@@ -205,10 +200,7 @@ public class Beghouled extends MiniGameMode {
                 + matchSize + "-plant combination.");
     }
 
-    /**
-     * Returns every matched run on the board, grouped so that runs sharing
-     * a cell (an L/T-shaped match) are merged into a single group.
-     */
+
     private List<List<int[]>> findMatchedGroups() {
         java.util.Set<Long> matched = new java.util.LinkedHashSet<>();
         Environment env = session.getEnvironment();

@@ -1,9 +1,6 @@
 package model.pitches.obstacles;
 
-/**
- * Left behind wherever a zombie eats a plant. A crater blocks planting
- * forever after — normally or by swapping another plant into it.
- */
+/// crater blocks planting
 public class Crater implements Obstacle {
     @Override
     public boolean blocksPlanting() {

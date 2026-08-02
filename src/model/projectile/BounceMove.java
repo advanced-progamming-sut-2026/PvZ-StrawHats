@@ -8,10 +8,7 @@ public class BounceMove implements MoveStrategy {
     private final double bounceDamping;
     private Double floorY = null;
 
-    /**
-     * @param gravity       The downward pull (e.g., 9.8)
-     * @param bounceDamping How much energy it retains per bounce (e.g., 0.6 retains 60% height)
-     */
+    /// bounceDamping How much energy it retains per bounce (e.g., 0.6 retains 60% height)
     public BounceMove(double gravity, double bounceDamping) {
         this.gravity = gravity;
         this.bounceDamping = bounceDamping;
