@@ -16,11 +16,11 @@ def gdxVersion = "1.13.1"
 
 dependencies {
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
 
     implementation 'com.google.code.gson:gson:2.11.0'
 
-    implementation 'org.openjfx:javafx-controls:21'
-    implementation 'org.openjfx:javafx-fxml:21'
+
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
