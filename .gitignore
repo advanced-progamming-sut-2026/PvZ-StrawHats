@@ -6,3 +6,4 @@ out/
 *.xml
 .gradle/
 build/
+Data.json
