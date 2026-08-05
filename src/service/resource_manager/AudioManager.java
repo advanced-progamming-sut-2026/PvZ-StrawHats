@@ -3,7 +3,8 @@ package service.resource_manager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
-import model.assets.GameAssetManager;
+import controller.assets.GameAssetManager;
+
 
 import java.util.EnumMap;
 import java.util.Map;

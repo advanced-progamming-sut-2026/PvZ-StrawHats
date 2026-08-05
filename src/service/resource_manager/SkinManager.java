@@ -10,8 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Disposable;
-import model.assets.AssetPaths;
-import model.assets.GameAssetManager;
+import controller.assets.AssetPaths;
+import controller.assets.GameAssetManager;
+
 
 import java.util.EnumMap;
 import java.util.HashMap;
