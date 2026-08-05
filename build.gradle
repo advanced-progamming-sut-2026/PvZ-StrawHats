@@ -22,9 +22,6 @@ dependencies {
     implementation 'org.openjfx:javafx-controls:21'
     implementation 'org.openjfx:javafx-fxml:21'
 
-    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
-    implementation "com.badlogicgames.gdx:gdx-maps:$gdxVersion"
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
