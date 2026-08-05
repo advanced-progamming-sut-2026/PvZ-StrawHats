@@ -4,7 +4,7 @@ public final class AssetPaths {
 
     private AssetPaths() {}
 
-    public static final String ROOT = "model/assets/";
+    public static final String ROOT = "assets/";
 
     public static final String IMAGES = ROOT + "images/";
     public static final String PLANT_IMAGES = IMAGES + "plants/";
