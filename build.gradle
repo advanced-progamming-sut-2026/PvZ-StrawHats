@@ -12,7 +12,11 @@ repositories {
     mavenCentral()
 }
 
+def gdxVersion = "1.13.1"
+
 dependencies {
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+
     implementation 'com.google.code.gson:gson:2.11.0'
 
     implementation 'org.openjfx:javafx-controls:21'
