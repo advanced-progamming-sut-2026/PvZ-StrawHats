@@ -17,11 +17,8 @@ def gdxVersion = "1.13.1"
 dependencies {
     implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
-
     implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-
     implementation 'com.google.code.gson:gson:2.11.0'
-
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
@@ -29,6 +26,9 @@ sourceSets {
     main {
         java {
             srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['assets']
         }
     }
 }
@@ -39,10 +39,15 @@ application {
 
 run {
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
-        jvmArgs '-XstartOnFirstThread'
-    }
-}
+        def iconFile = file('assets/images/ui/icon.png')
 
-tasks.named('test') {
-    useJUnitPlatform()
+        if (iconFile.exists()) {
+            jvmArgs '-XstartOnFirstThread',
+                    "-Xdock:icon=${iconFile.absolutePath}",
+                    '-Xdock:name=Plants vs Zombies'
+        } else {
+            jvmArgs '-XstartOnFirstThread',
+                    '-Xdock:name=Plants vs Zombies'
+        }
+    }
 }
