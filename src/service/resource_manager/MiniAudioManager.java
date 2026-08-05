@@ -1,160 +1,76 @@
 package service.resource_manager;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
+import model.assets.GameAssetManager;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class MiniAudioManager implements Disposable {
 
-    public static final float DEFAULT_VOLUME = 1.0f;
-
-    private final Map<MiniAudioEnum, Sound> soundCache;
-    private final Map<MiniAudioEnum, Long> activeSoundIds;
-
-    private float volume;
-    private boolean muted;
-    private boolean enabled;
+    private final GameAssetManager gameAssetManager;
+    private final Map<MiniAudioEnum, Sound> soundMap;
+    private float globalVolume = 1.0f;
+    private boolean muted = false;
 
     public MiniAudioManager() {
-        this.soundCache = new EnumMap<>(MiniAudioEnum.class);
-        this.activeSoundIds = new EnumMap<>(MiniAudioEnum.class);
-        this.volume = DEFAULT_VOLUME;
-        this.muted = false;
-        this.enabled = true;
+        this.gameAssetManager = GameAssetManager.getInstance();
+        this.soundMap = new EnumMap<>(MiniAudioEnum.class);
     }
 
-    public void loadAll() {
-        for (MiniAudioEnum audio : MiniAudioEnum.values()) {
-            load(audio);
-        }
+    public void preloadSound(MiniAudioEnum miniAudio) {
+        if (miniAudio == null || miniAudio.getFilePath() == null) return;
+        gameAssetManager.loadSound(miniAudio.getFilePath());
     }
 
-    public void load(MiniAudioEnum audio) {
-        if (!soundCache.containsKey(audio)) {
-            if (Gdx.files.internal(audio.getFilePath()).exists()) {
-                Sound sound = Gdx.audio.newSound(Gdx.files.internal(audio.getFilePath()));
-                soundCache.put(audio, sound);
-            }
-        }
+    public void playSound(MiniAudioEnum miniAudio) {
+        playSound(miniAudio, 1.0f);
     }
 
-    public long play(MiniAudioEnum audio) {
-        return play(audio, this.volume, false);
-    }
+    public void playSound(MiniAudioEnum miniAudio, float volume) {
+        if (muted || miniAudio == null) return;
 
-    public long play(MiniAudioEnum audio, float customVolume) {
-        return play(audio, customVolume, false);
-    }
+        String path = miniAudio.getFilePath();
+        if (path == null || path.isEmpty()) return;
 
-    public long playLooping(MiniAudioEnum audio) {
-        return play(audio, this.volume, true);
-    }
+        Sound sound = soundMap.get(miniAudio);
 
-    public long play(MiniAudioEnum audio, float playVolume, boolean loop) {
-        if (!enabled || muted) {
-            return -1;
-        }
-
-        Sound sound = soundCache.get(audio);
         if (sound == null) {
-            load(audio);
-            sound = soundCache.get(audio);
-        }
-
-        if (sound != null) {
-            float effectiveVolume = Math.max(0.0f, Math.min(1.0f, playVolume));
-            long soundId;
-            if (loop) {
-                soundId = sound.loop(effectiveVolume);
-            } else {
-                soundId = sound.play(effectiveVolume);
+            if (!gameAssetManager.isLoaded(path)) {
+                gameAssetManager.loadSound(path);
+                gameAssetManager.finishLoading();
             }
-            activeSoundIds.put(audio, soundId);
-            return soundId;
-        }
-        return -1;
-    }
-
-    public void stop(MiniAudioEnum audio) {
-        Sound sound = soundCache.get(audio);
-        if (sound != null) {
-            sound.stop();
-            activeSoundIds.remove(audio);
-        }
-    }
-
-    public void stopAll() {
-        for (Sound sound : soundCache.values()) {
-            sound.stop();
-        }
-        activeSoundIds.clear();
-    }
-
-    public void increaseVolume(float delta) {
-        setVolume(this.volume + delta);
-    }
-
-    public void decreaseVolume(float delta) {
-        setVolume(this.volume - delta);
-    }
-
-    public void setVolume(float volume) {
-        this.volume = Math.max(0.0f, Math.min(1.0f, volume));
-        for (Map.Entry<MiniAudioEnum, Long> entry : activeSoundIds.entrySet()) {
-            Sound sound = soundCache.get(entry.getKey());
+            sound = gameAssetManager.getSound(path);
             if (sound != null) {
-                sound.setVolume(entry.getValue(), this.volume);
+                soundMap.put(miniAudio, sound);
             }
+        }
+
+        if (sound != null) {
+            float finalVolume = Math.max(0.0f, Math.min(1.0f, globalVolume * volume));
+            sound.play(finalVolume);
         }
     }
 
-    public float getVolume() {
-        return volume;
+    public void setGlobalVolume(float volume) {
+        this.globalVolume = Math.max(0.0f, Math.min(1.0f, volume));
     }
 
-    public void mute() {
-        this.muted = true;
-        stopAll();
+    public float getGlobalVolume() {
+        return globalVolume;
     }
 
-    public void unmute() {
-        this.muted = false;
+    public void setMuted(boolean muted) {
+        this.muted = muted;
     }
 
     public boolean isMuted() {
         return muted;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        if (!enabled) {
-            stopAll();
-        }
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void resetToDefault() {
-        this.volume = DEFAULT_VOLUME;
-        this.muted = false;
-        this.enabled = true;
-    }
-
-    public void update(float delta) {
-    }
-
     @Override
     public void dispose() {
-        stopAll();
-        for (Sound sound : soundCache.values()) {
-            sound.dispose();
-        }
-        soundCache.clear();
-        activeSoundIds.clear();
+        soundMap.clear();
     }
 }
