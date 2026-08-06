@@ -1,7 +1,6 @@
 package view.general_screens;
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -9,28 +8,31 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import controller.assets.GameAssetManager;
 import controller.assets.ScreenManager;
 
-
-/** for popups (pause menu, purchase confirmation,
- * Clicking outside the modal's own content closes it; clicking inside doesn't do that bro. */
 public class Modal extends Table {
     protected Skin skin;
     private final Table wrapperTable;
 
     public Modal() {
         skin = GameAssetManager.get().getSkin();
+        this.setFillParent(true);
         wrapperTable = new Table();
-        wrapperTable.setTouchable(Touchable.enabled);
-        setTouchable(Touchable.enabled); // avoid getting confused with the wrapper's clicked()
-        wrapperTable.add(this);
+        wrapperTable.setFillParent(true);
 
-        wrapperTable.addListener(new ClickListener() {
+        Table content = new Table();
+        content.setBackground(skin.getDrawable("modal-background"));
+        content.pad(30);
+
+        wrapperTable.center();
+        wrapperTable.add(content).width(500).height(300);
+
+        this.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (event.getTarget() == wrapperTable) {
-                    hide(); // click landed outside the modal's own content
-                }
+                if (event.getTarget() == Modal.this) hide();
             }
         });
+
+        this.add(wrapperTable);
     }
 
     public void show() {

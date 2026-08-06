@@ -10,12 +10,6 @@ import controller.menus.authentication.SignupMenu;
 
 import java.util.List;
 
-/**
- * Graphical version of {@link SignupMenu}. Buttons just format the same command strings the
- * console expected ({@code Regex.REGISTER}, {@code Regex.PICK_QUESTION}) and hand them to
- * {@code runCommand()} - every validation rule (username/password/nickname/email/gender, the
- * five fixed security questions) still lives only in {@code SignupMenu}.
- */
 public class SignupScreen extends AuthScreen {
 
     private enum Step { REGISTER, SECURITY_QUESTION }
@@ -24,6 +18,7 @@ public class SignupScreen extends AuthScreen {
 
     @Override
     public void show() {
+        setBackground("assets/images/backg/PVZIOS_newtitle.png");
         super.show();
         buildRegisterStep();
     }
@@ -38,8 +33,8 @@ public class SignupScreen extends AuthScreen {
         TextField nickname = field(false);
         TextField email = field(false);
 
-        TextButton male = new TextButton("Male", skin);
-        TextButton female = new TextButton("Female", skin);
+        TextButton male = new TextButton("Male", skin, "gender-button");
+        TextButton female = new TextButton("Female", skin, "gender-button");
         male.setChecked(true);
         ButtonGroup<TextButton> genderGroup = new ButtonGroup<>();
         genderGroup.setMinCheckCount(1);
@@ -47,7 +42,9 @@ public class SignupScreen extends AuthScreen {
         genderGroup.add(male, female);
 
         Table card = new Table();
-        card.pad(24).defaults().pad(6);
+        card.setBackground(skin.getDrawable("card-background"));
+        card.pad(40).defaults().pad(8);
+        addTitleImage(card);
         card.add(new Label("Create your account", skin, "title")).colspan(2).padBottom(18).row();
         addRow(card, "Username", username);
         addRow(card, "Password", password);
@@ -56,9 +53,9 @@ public class SignupScreen extends AuthScreen {
         addRow(card, "Email", email);
 
         Table genderRow = new Table();
-        genderRow.add(male).pad(4).width(140);
-        genderRow.add(female).pad(4).width(140);
-        card.add(new Label("Gender", skin)).left();
+        genderRow.add(male).pad(4).width(150);
+        genderRow.add(female).pad(4).width(150);
+        card.add(new Label("Gender", skin, "main")).left();
         card.add(genderRow).left().row();
 
         card.add(primaryButton("Register", () -> {
@@ -68,12 +65,11 @@ public class SignupScreen extends AuthScreen {
                     + " -n " + nickname.getText()
                     + " -e " + email.getText()
                     + " -g " + gender);
-        })).colspan(2).padTop(12).width(300).row();
+        })).colspan(2).padTop(12).width(380).row();
 
         card.add(secondaryButton("Already have an account? Log in", () -> runCommand("menu enter login")))
-                .colspan(2).padTop(10).row();
-        // SignupMenu.exitMenu() calls System.exit(0) directly - phase-1 behavior, gated behind a confirm here.
-        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(4).row();
+                .colspan(2).padTop(10).width(380).row();
+        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(4).width(380).row();
 
         rootTable.add(card);
     }
@@ -88,14 +84,16 @@ public class SignupScreen extends AuthScreen {
         group.setMaxCheckCount(1);
 
         Table card = new Table();
-        card.pad(24).defaults().pad(6);
+        card.setBackground(skin.getDrawable("card-background"));
+        card.pad(40).defaults().pad(8);
+        addTitleImage(card);
         card.add(new Label("Pick a security question", skin, "title")).colspan(2).padBottom(18).row();
 
         for (String q : questions) {
-            TextButton questionButton = new TextButton(q, skin);
+            TextButton questionButton = new TextButton(q, skin, "main");
             questionButton.getLabel().setWrap(true);
             group.add(questionButton);
-            card.add(questionButton).colspan(2).width(440).left().row();
+            card.add(questionButton).colspan(2).width(460).left().row();
         }
         if (!group.getButtons().isEmpty()) {
             group.getButtons().first().setChecked(true);
@@ -109,7 +107,7 @@ public class SignupScreen extends AuthScreen {
         card.add(primaryButton("Submit", () -> {
             int questionNumber = group.getCheckedIndex() + 1;
             runCommand("pick question -q " + questionNumber + " -a " + answer.getText() + " -c " + confirmAnswer.getText());
-        })).colspan(2).padTop(12).width(300).row();
+        })).colspan(2).padTop(12).width(380).row();
 
         rootTable.add(card);
     }
@@ -124,8 +122,6 @@ public class SignupScreen extends AuthScreen {
         if (pendingQuestion && step != Step.SECURITY_QUESTION) {
             buildSecurityQuestionStep();
         } else if (!pendingQuestion && step == Step.SECURITY_QUESTION) {
-            // shouldn't normally happen (a correct pick moves to LoginScreen entirely), but keeps
-            // this screen consistent if it's ever reached in a state we don't expect
             buildRegisterStep();
         }
     }

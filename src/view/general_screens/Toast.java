@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import controller.assets.GameAssetManager;
 
-
 public final class Toast extends Table {
 
     private static final float DEFAULT_DURATION = 3f;
@@ -22,7 +21,7 @@ public final class Toast extends Table {
         super();
         pad(10, 16, 10, 16);
 
-        Label label = new Label(message, GameAssetManager.get().getSkin());
+        Label label = new Label(message, GameAssetManager.get().getSkin(), "main");
         label.setColor(Color.WHITE);
         label.setWrap(true);
         add(label).width(BaseScreen.SCREEN_WIDTH / 4f);
@@ -40,7 +39,6 @@ public final class Toast extends Table {
     }
 
     private static TextureRegionDrawable backgroundDrawable() {
-
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(0f, 0f, 0f, 0.75f);
         pixmap.fill();
@@ -49,7 +47,6 @@ public final class Toast extends Table {
         return new TextureRegionDrawable(texture);
     }
 
-    /** short time notification. while another toast is still visible. */
     public static void show(Stage stage, String message) {
         if (stage == null || message == null || busy) {
             return;

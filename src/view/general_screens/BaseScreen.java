@@ -15,11 +15,6 @@ import model.utils.GameSettings;
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 
-/**
- * Base class for every graphical screen (menus and the live match alike). It has the Stage, the
- * shared skin, and three stacked layers on top of the background: rootTable ,
- * modalStack (popups like the pause menu) and toastStack (transient error/notification toasts).
- */
 public abstract class BaseScreen implements Screen {
     protected String[] particlePaths = null;
     public abstract void initParticles();
@@ -75,7 +70,7 @@ public abstract class BaseScreen implements Screen {
                     }
                     AudioManager.get().playSound(AudioEnum.SFX_CLICK, 1f);
                 }
-                return false; // don't consume the event
+                return false;
             }
         });
     }

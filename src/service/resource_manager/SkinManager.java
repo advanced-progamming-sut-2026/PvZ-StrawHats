@@ -37,6 +37,7 @@ public class SkinManager implements Disposable {
     }
 
     public enum FontEnum {
+        MAIN("assets/fonts/FBUSV8C5EI.TTF"),
         DEFAULT_FONT(AssetPaths.DEFAULT_FONT),
         TITLE_FONT(AssetPaths.DEFAULT_FONT),
         SMALL_FONT(AssetPaths.DEFAULT_FONT);
