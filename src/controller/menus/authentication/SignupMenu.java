@@ -32,6 +32,16 @@ public class SignupMenu extends Menu {
         return "SignUP Menu";
     }
 
+    /** True between a successful "register" and a successful "pick question". Read-only view onto the wizard state above - no behavior change. */
+    public static boolean isPendingSecurityAnswer() {
+        return isPendingSecurityAnswer;
+    }
+
+    /** The same fixed question list handleRegister()/handlePickQuestion() already use, so a view never has to duplicate this text. */
+    public static List<String> getSecurityQuestions() {
+        return SECURITY_QUESTIONS;
+    }
+
     @Override
     public void handleCommand(String text){
 

@@ -79,6 +79,8 @@ public class AudioManager implements Disposable {
         }
 
         String path = audio.getFilePath();
+        if (path == null || path.isEmpty()) return null; // e.g. SFX_CLICK("") before a real clip is wired up
+
         if (!gameAssetManager.isLoaded(path)) {
             gameAssetManager.loadSound(path);
             gameAssetManager.finishLoading();
@@ -116,6 +118,8 @@ public class AudioManager implements Disposable {
         }
 
         String path = audio.getFilePath();
+        if (path == null || path.isEmpty()) return null;
+
         if (!gameAssetManager.isLoaded(path)) {
             gameAssetManager.loadMusic(path);
             gameAssetManager.finishLoading();
