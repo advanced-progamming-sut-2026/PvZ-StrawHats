@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class AudioManager implements Disposable {
 
+    private static AudioManager instance;
     private final GameAssetManager gameAssetManager;
     private final Map<AudioEnum, Sound> soundCache;
     private final Map<AudioEnum, Music> musicCache;
@@ -24,7 +25,7 @@ public class AudioManager implements Disposable {
     private boolean musicMuted = false;
 
     public AudioManager() {
-        this.gameAssetManager = GameAssetManager.getInstance();
+        this.gameAssetManager = GameAssetManager.get();
         this.soundCache = new EnumMap<>(AudioEnum.class);
         this.musicCache = new EnumMap<>(AudioEnum.class);
     }
@@ -33,6 +34,13 @@ public class AudioManager implements Disposable {
         for (AudioEnum audio : AudioEnum.values()) {
             loadAudio(audio);
         }
+    }
+
+    public static AudioManager get() {
+        if (instance == null)
+            instance = new AudioManager();
+
+        return instance;
     }
 
     public void loadAudio(AudioEnum audio) {

@@ -16,7 +16,7 @@ public class MiniAudioManager implements Disposable {
     private boolean muted = false;
 
     public MiniAudioManager() {
-        this.gameAssetManager = GameAssetManager.getInstance();
+        this.gameAssetManager = GameAssetManager.get();
         this.soundMap = new EnumMap<>(MiniAudioEnum.class);
     }
 

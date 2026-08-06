@@ -59,7 +59,7 @@ public class SkinManager implements Disposable {
     private Skin currentSkin;
 
     public SkinManager() {
-        this.gameAssetManager = GameAssetManager.getInstance();
+        this.gameAssetManager = GameAssetManager.get();
         this.skinCache = new EnumMap<>(SkinEnum.class);
         this.customFonts = new HashMap<>();
         this.currentSkinEnum = SkinEnum.DEFAULT;

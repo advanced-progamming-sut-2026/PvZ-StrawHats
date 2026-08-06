@@ -20,7 +20,7 @@ public final class GameAssetManager {
         this.assetManager = new AssetManager();
     }
 
-    public static GameAssetManager getInstance() {
+    public static GameAssetManager get() {
         if (instance == null) {
             instance = new GameAssetManager();
         }

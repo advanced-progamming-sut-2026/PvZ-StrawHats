@@ -15,7 +15,7 @@ public class Main extends ApplicationAdapter {
             PlantFactory.autoInit();
             QuestLoader.loadTemplates("src/resource/Quest.json");
 
-            GameAssetManager.getInstance().initialize();
+            GameAssetManager.get().initialize();
 
             new Thread(() -> {
                 AppView.run();
@@ -32,7 +32,7 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         try {
-            GameAssetManager.getInstance().update();
+            GameAssetManager.get().update();
         } catch (Exception e) {
         }
     }
@@ -52,7 +52,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         try {
-            GameAssetManager.getInstance().dispose();
+            GameAssetManager.get().dispose();
             Gdx.app.log("Main", "Game disposed successfully.");
         } catch (Exception e) {
             Gdx.app.error("Main", "Error during dispose", e);
