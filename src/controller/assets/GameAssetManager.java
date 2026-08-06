@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public final class GameAssetManager {
 
@@ -15,6 +16,7 @@ public final class GameAssetManager {
 
     private final AssetManager assetManager;
     private boolean coreAssetsQueued = false;
+    private Skin skin;
 
     private GameAssetManager() {
         this.assetManager = new AssetManager();
@@ -134,5 +136,9 @@ public final class GameAssetManager {
     public void dispose() {
         assetManager.dispose();
         coreAssetsQueued = false;
+    }
+
+    public Skin getSkin() {
+        return skin;
     }
 }
