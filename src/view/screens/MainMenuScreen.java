@@ -1,9 +1,11 @@
 package view.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -16,6 +18,8 @@ import com.badlogic.gdx.utils.Align;
 
 import controller.NewsManager;
 import model.user_data.User;
+import service.resource_manager.AudioEnum;
+import service.resource_manager.AudioManager;
 
 public class MainMenuScreen extends AuthScreen {
 
@@ -24,6 +28,7 @@ public class MainMenuScreen extends AuthScreen {
     @Override
     public void show() {
         setBackground("assets/images/backg/mainmenu_background.png");
+        AudioManager.get().playMusic(AudioEnum.MENU_MUSIC, true);
         super.show();
         build();
     }
@@ -35,13 +40,10 @@ public class MainMenuScreen extends AuthScreen {
         Table topBar = new Table();
 
         Table topLeft = new Table();
-        // Asset Path: Profile
-        topLeft.add(createIconButton("assets/images/ui/reward4_bg.png", 72, 72, () -> runCommand("menu enter profile"))).padRight(16);
+        topLeft.add(createProfileButton(() -> runCommand("menu enter profile"))).size(72, 72).padRight(16);
 
-        // Asset Path: Settings
         topLeft.add(createIconButton("assets/images/ui/buttons_hud_settings_selected.png", 54, 54, () -> runCommand("menu enter settings"))).padRight(16);
 
-        // Asset Path: News
         topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_news_selected copy 2.png", 54, 54, "News", () -> runCommand("menu enter news")));
 
         Table topRight = new Table();
@@ -49,9 +51,7 @@ public class MainMenuScreen extends AuthScreen {
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
         int diamonds = (user != null && user.userState != null) ? user.userState.diamonds : 0;
 
-        // Asset Path: Coins
         topRight.add(createResourceWidget("assets/images/ui/buttons_coin_buy_normal.png", String.valueOf(coins))).padRight(15);
-        // Asset Path: Diamonds
         topRight.add(createResourceWidget("assets/images/ui/buttons_premium_normal.png", String.valueOf(diamonds)));
 
         topBar.add(topLeft).left().expandX();
@@ -60,7 +60,6 @@ public class MainMenuScreen extends AuthScreen {
         Table centerTable = new Table();
         Table carouselContent = new Table();
 
-        // Asset Paths: Game, Travel Log, Network Banners
         Actor gameBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
         Actor travelBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
         Actor networkBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Network", () -> runCommand("menu enter network"));
@@ -122,10 +121,39 @@ public class MainMenuScreen extends AuthScreen {
         }
     }
 
+    private Actor createProfileButton(Runnable action) {
+        Stack stack = new Stack();
+
+        Texture frameTex = loadTextureSafe("assets/images/ui/reward4_bg.png");
+        Image frameImg = new Image(frameTex);
+
+        User user = User.currentUser;
+        String avatarPath = (user != null && user.profilePicture != null && !user.profilePicture.isEmpty())
+                ? user.profilePicture
+                : "assets/images/ui/avatar_luffy.png";
+
+        Texture avatarTex = loadTextureSafe(avatarPath);
+        Image avatarImg = new Image(avatarTex);
+
+        Table avatarContainer = new Table();
+        avatarContainer.add(avatarImg).size(48, 48);
+
+        stack.add(frameImg);
+        stack.add(avatarContainer);
+
+        stack.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                action.run();
+            }
+        });
+
+        return stack;
+    }
+
     private Actor createBannerCard(String path, String title, Runnable action) {
         Stack stack = new Stack();
-        Texture texture = new Texture(Gdx.files.internal(path));
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        Texture texture = loadTextureSafe(path);
         TextureRegionDrawable drawable = new TextureRegionDrawable(texture);
         ImageButton button = new ImageButton(drawable);
 
@@ -149,8 +177,7 @@ public class MainMenuScreen extends AuthScreen {
     }
 
     private ImageButton createIconButton(String path, float width, float height, Runnable action) {
-        Texture texture = new Texture(Gdx.files.internal(path));
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        Texture texture = loadTextureSafe(path);
         TextureRegionDrawable drawable = new TextureRegionDrawable(texture);
         ImageButton button = new ImageButton(drawable);
         button.getImageCell().size(width, height);
@@ -183,8 +210,7 @@ public class MainMenuScreen extends AuthScreen {
 
     private Table createResourceWidget(String iconPath, String value) {
         Stack stack = new Stack();
-        Texture texture = new Texture(Gdx.files.internal(iconPath));
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        Texture texture = loadTextureSafe(iconPath);
 
         Table bgTable = new Table();
         bgTable.setBackground(new TextureRegionDrawable(texture));
@@ -201,6 +227,20 @@ public class MainMenuScreen extends AuthScreen {
         Table outer = new Table();
         outer.add(stack).size(130, 42);
         return outer;
+    }
+
+    private Texture loadTextureSafe(String path) {
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            Texture tex = new Texture(Gdx.files.internal(path));
+            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            return tex;
+        }
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0);
+        pixmap.fill();
+        Texture fallback = new Texture(pixmap);
+        pixmap.dispose();
+        return fallback;
     }
 
     private void confirmLogout() {

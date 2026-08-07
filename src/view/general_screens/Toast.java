@@ -1,11 +1,13 @@
 package view.general_screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
@@ -16,41 +18,62 @@ import java.util.WeakHashMap;
 
 public final class Toast extends Table {
 
-    private static final float DEFAULT_DURATION = 3f;
-    private static final float FADE_TIME = 0.4f;
+    private static final float DEFAULT_DURATION = 2.5f;
+    private static final float SLIDE_TIME = 0.4f;
+    private static final float MARGIN_RIGHT = 24f;
+    private static final float Y_OFFSET = -10f;
+    private static final float TOAST_WIDTH = 450f;
 
-    // Tracks the one currently-visible toast per stage, so a new message can replace it
-    // instantly instead of being silently dropped while the old one is still fading.
     private static final Map<Stage, Toast> activeByStage = new WeakHashMap<>();
 
     private Toast(String message, float duration, Stage stage) {
         super();
-        pad(10, 16, 10, 16);
 
-        Label label = new Label(message, GameAssetManager.get().getSkin(), "default");
-        label.setColor(Color.WHITE);
+        Skin skin = GameAssetManager.get().getSkin();
+        Label.LabelStyle labelStyle = skin.has("main", Label.LabelStyle.class)
+                ? skin.get("main", Label.LabelStyle.class)
+                : skin.get(Label.LabelStyle.class);
+
+        Label label = new Label(message, labelStyle);
+        label.setColor(Color.BLACK);
         label.setWrap(true);
-        add(label).width(BaseScreen.SCREEN_WIDTH / 4f);
 
-        setBackground(backgroundDrawable());
+        TextureRegionDrawable bg = backgroundDrawable();
+        if (bg != null) {
+            setBackground(bg);
+            float bgHeight = bg.getRegion().getRegionHeight();
+            pad(bgHeight * 0.22f, 32f, bgHeight * 0.18f, 32f);
+            add(label).width(TOAST_WIDTH - 64f).center();
+        } else {
+            pad(18, 36, 18, 36);
+            add(label).width(TOAST_WIDTH - 72f).center();
+        }
 
-        getColor().a = 0f;
+        pack();
+
+        float startX = stage.getWidth() - getWidth() - MARGIN_RIGHT;
+        float startY = -getHeight();
+        float targetY = Y_OFFSET - 5f;
+
+        setPosition(startX, startY);
+
         addAction(Actions.sequence(
-                Actions.fadeIn(FADE_TIME),
+                Actions.moveTo(startX, targetY, SLIDE_TIME, Interpolation.pow2Out),
                 Actions.delay(duration),
-                Actions.fadeOut(FADE_TIME),
+                Actions.moveTo(startX, startY, SLIDE_TIME, Interpolation.pow2In),
                 Actions.removeActor(),
                 Actions.run(() -> activeByStage.remove(stage, this))
         ));
     }
 
     private static TextureRegionDrawable backgroundDrawable() {
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0f, 0f, 0f, 0.75f);
-        pixmap.fill();
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return new TextureRegionDrawable(texture);
+        String path = "assets/images/ui/bundlestab_down.png";
+        if (Gdx.files.internal(path).exists()) {
+            Texture texture = new Texture(Gdx.files.internal(path), true);
+            texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+            return new TextureRegionDrawable(texture);
+        }
+        return null;
     }
 
     public static void show(Stage stage, String message) {
@@ -61,9 +84,7 @@ public final class Toast extends Table {
         if (previous != null) {
             previous.remove();
         }
-        Toast toast = new Toast("\u2726 " + message, DEFAULT_DURATION, stage);
-        toast.pack();
-        toast.setPosition(stage.getWidth() - toast.getWidth() - 24f, 24f);
+        Toast toast = new Toast(message, DEFAULT_DURATION, stage);
         stage.addActor(toast);
         activeByStage.put(stage, toast);
     }

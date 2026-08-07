@@ -2,6 +2,7 @@ package view.general_screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -35,6 +36,7 @@ public abstract class BaseScreen implements Screen {
     protected Stack modalStack;
     public Stack toastStack;
     protected Image backgroundImage;
+    protected Image globalBrightnessOverlay;
     protected InputMultiplexer multiplexer = new InputMultiplexer();
     protected ParticleCreator particles;
 
@@ -63,6 +65,8 @@ public abstract class BaseScreen implements Screen {
         rootStack.add(modalStack);
         rootStack.add(toastStack);
 
+        setupBrightnessOverlay();
+
         stage.addActor(rootStack);
 
         multiplexer.addProcessor(stage);
@@ -85,6 +89,40 @@ public abstract class BaseScreen implements Screen {
         });
 
         showLoading();
+    }
+
+    protected void setupBrightnessOverlay() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+
+        globalBrightnessOverlay = new Image(new TextureRegionDrawable(texture));
+        globalBrightnessOverlay.setFillParent(true);
+        globalBrightnessOverlay.setTouchable(Touchable.disabled);
+
+        rootStack.add(globalBrightnessOverlay);
+        updateBrightnessOverlay();
+    }
+
+    public void updateBrightnessOverlay() {
+        if (globalBrightnessOverlay == null) return;
+
+        Preferences prefs = Gdx.app.getPreferences("GamePreferences");
+        float brightness = prefs.getFloat("brightness", 100f);
+
+        if (brightness == 100f) {
+            globalBrightnessOverlay.setVisible(false);
+        } else if (brightness < 100f) {
+            float alpha = (100f - brightness) / 100f * 0.7f;
+            globalBrightnessOverlay.setColor(0f, 0f, 0f, alpha);
+            globalBrightnessOverlay.setVisible(true);
+        } else {
+            float alpha = (brightness - 100f) / 100f * 0.45f;
+            globalBrightnessOverlay.setColor(1f, 1f, 1f, alpha);
+            globalBrightnessOverlay.setVisible(true);
+        }
     }
 
     protected void setBackground(String path) {
@@ -160,14 +198,11 @@ public abstract class BaseScreen implements Screen {
     }
 
     @Override
-    public void pause() {
-    }
+    public void pause() {}
 
     @Override
-    public void resume() {
-    }
+    public void resume() {}
 
     @Override
-    public void hide() {
-    }
+    public void hide() {}
 }

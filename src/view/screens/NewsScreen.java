@@ -6,6 +6,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import model.news.News;
 import model.user_data.User;
+import service.resource_manager.AudioEnum;
+import service.resource_manager.AudioManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class NewsScreen extends AuthScreen {
     @Override
     public void show() {
         setBackground("assets/images/backg/newsmenu_background.png");
+        AudioManager.get().playMusic(AudioEnum.MENU_MUSIC, true);
         super.show();
         build();
     }
