@@ -1,6 +1,7 @@
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.graphics.glutils.HdpiMode;
 
 public class DesktopLauncher {
     public static void main(String[] args) {
@@ -8,10 +9,11 @@ public class DesktopLauncher {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setTitle("Plants vs Zombies - Straw Hats");
 
-        config.setWindowedMode(1280, 720);
+        config.setWindowedMode(1152, 648);
         config.setResizable(true);
+        config.setDecorated(true);
 
-        config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+        config.setHdpiMode(HdpiMode.Logical);
 
         config.setForegroundFPS(60);
 

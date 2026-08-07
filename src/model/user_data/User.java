@@ -25,6 +25,7 @@ public class User {
     public String username, passwordHash, nickname, email, gender, securityQuestion, securityAnswerHash;
     public boolean stayLoggedIn;
     public UserState userState;
+    public String profilePicture = "assets/images/ui/avatar_luffy.png";
 
     public User(String username, String password, String nickname, String email, String gender) {
         this.username = username;
@@ -33,6 +34,7 @@ public class User {
         this.email = email;
         this.gender = gender;
         this.stayLoggedIn = false;
+        this.profilePicture = "assets/images/ui/avatar_luffy.png";
         this.userState = new UserState(new ArrayList<>(), 0, 0, 0);
     }
 

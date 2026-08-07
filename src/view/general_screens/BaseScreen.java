@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
 
 import model.utils.GameSettings;
 import service.resource_manager.AudioEnum;
@@ -43,11 +43,13 @@ public abstract class BaseScreen implements Screen {
     @Override
     public void show() {
         Viewport viewport = createViewport();
-        stage = new Stage(viewport);
-        batch.setProjectionMatrix(viewport.getCamera().combined);
+        stage = new Stage(viewport, batch);
         setSkin();
 
         rootTable = new Table();
+        rootTable.setFillParent(true);
+        rootTable.pad(25f);
+
         modalStack = new Stack();
         toastStack = new Stack();
         rootStack = new Stack();
@@ -116,6 +118,9 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         stage.act(delta);
         stage.draw();
     }
@@ -132,9 +137,10 @@ public abstract class BaseScreen implements Screen {
 
     private void showLoading() {
         Image overlay;
-        if (loadingImagePath==null) return;
-        if (Gdx.files.internal(loadingImagePath).exists()) { //TODO: add loading pics
-            Texture texture = new Texture(Gdx.files.internal(""));
+        if (loadingImagePath == null) return;
+        if (Gdx.files.internal(loadingImagePath).exists()) {
+            Texture texture = new Texture(Gdx.files.internal(loadingImagePath));
+            texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
             overlay = new Image(new TextureRegionDrawable(new TextureRegion(texture)));
         } else {
             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);

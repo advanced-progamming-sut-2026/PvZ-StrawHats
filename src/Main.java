@@ -2,7 +2,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.GL20;
 
 import controller.assets.GameAssetManager;
 import controller.assets.ScreenManager;
@@ -23,7 +22,6 @@ public class Main extends ApplicationAdapter {
         } catch (Exception e) {
             Gdx.app.error("Main", "Error during initialization", e);
         }
-
     }
 
     @Override
@@ -31,9 +29,6 @@ public class Main extends ApplicationAdapter {
         if (Gdx.input.isKeyJustPressed(Input.Keys.F10)) {
             toggleFullscreen();
         }
-
-        Gdx.gl.glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         try {
             GameAssetManager.get().update();
@@ -45,7 +40,7 @@ public class Main extends ApplicationAdapter {
 
     private void toggleFullscreen() {
         if (Gdx.graphics.isFullscreen()) {
-            Gdx.graphics.setWindowedMode(1280, 720);
+            Gdx.graphics.setWindowedMode(1152, 648);
         } else {
             Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
             Gdx.graphics.setFullscreenMode(currentMode);

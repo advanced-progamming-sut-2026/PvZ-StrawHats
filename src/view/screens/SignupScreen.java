@@ -43,9 +43,12 @@ public class SignupScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+
+        card.pad(12, 25, 12, 25).defaults().pad(2);
+
         addTitleImage(card);
-        card.add(new Label("Create your account", skin, "title")).colspan(2).padBottom(18).row();
+        card.add(new Label("Create your account", skin, "title")).colspan(2).padBottom(4).row();
+
         addRow(card, "Username", username);
         addRow(card, "Password", password);
         addRow(card, "Confirm password", confirmPassword);
@@ -53,8 +56,8 @@ public class SignupScreen extends AuthScreen {
         addRow(card, "Email", email);
 
         Table genderRow = new Table();
-        genderRow.add(male).pad(4).width(150);
-        genderRow.add(female).pad(4).width(150);
+        genderRow.add(male).pad(2).width(130).height(30);
+        genderRow.add(female).pad(2).width(130).height(30);
         card.add(new Label("Gender", skin, "main")).left();
         card.add(genderRow).left().row();
 
@@ -65,11 +68,11 @@ public class SignupScreen extends AuthScreen {
                     + " -n " + nickname.getText()
                     + " -e " + email.getText()
                     + " -g " + gender);
-        })).colspan(2).padTop(12).width(380).row();
+        })).colspan(2).padTop(6).width(350).height(34).row();
 
         card.add(secondaryButton("Already have an account? Log in", () -> runCommand("menu enter login")))
-                .colspan(2).padTop(10).width(380).row();
-        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(4).width(380).row();
+                .colspan(2).padTop(3).width(350).height(30).row();
+        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(3).width(350).height(30).row();
 
         rootTable.add(card);
     }
@@ -85,15 +88,15 @@ public class SignupScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+        card.pad(15).defaults().pad(4);
         addTitleImage(card);
-        card.add(new Label("Pick a security question", skin, "title")).colspan(2).padBottom(18).row();
+        card.add(new Label("Pick a security question", skin, "title")).colspan(2).padBottom(8).row();
 
         for (String q : questions) {
             TextButton questionButton = new TextButton(q, skin, "main");
             questionButton.getLabel().setWrap(true);
             group.add(questionButton);
-            card.add(questionButton).colspan(2).width(460).left().row();
+            card.add(questionButton).colspan(2).width(420).left().row();
         }
         if (!group.getButtons().isEmpty()) {
             group.getButtons().first().setChecked(true);
@@ -107,7 +110,7 @@ public class SignupScreen extends AuthScreen {
         card.add(primaryButton("Submit", () -> {
             int questionNumber = group.getCheckedIndex() + 1;
             runCommand("pick question -q " + questionNumber + " -a " + answer.getText() + " -c " + confirmAnswer.getText());
-        })).colspan(2).padTop(12).width(380).row();
+        })).colspan(2).padTop(8).width(350).height(34).row();
 
         rootTable.add(card);
     }
