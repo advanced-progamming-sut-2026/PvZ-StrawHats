@@ -21,7 +21,7 @@ public final class Toast extends Table {
         super();
         pad(10, 16, 10, 16);
 
-        Label label = new Label(message, GameAssetManager.get().getSkin(), "main");
+        Label label = new Label(message, GameAssetManager.get().getSkin(), "default");
         label.setColor(Color.WHITE);
         label.setWrap(true);
         add(label).width(BaseScreen.SCREEN_WIDTH / 4f);

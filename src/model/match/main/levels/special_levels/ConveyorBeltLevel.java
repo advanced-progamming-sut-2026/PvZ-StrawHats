@@ -25,9 +25,6 @@ public class ConveyorBeltLevel extends Level {
         offerNextPlant();
     }
 
-    /**
-     * Advances the conveyor clock; call once per tick while the player is in this level.
-     */
     public void tickConveyor(double deltaSeconds) {
         if (currentPlant != null) return;
 

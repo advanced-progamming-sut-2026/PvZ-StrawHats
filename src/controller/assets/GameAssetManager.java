@@ -263,6 +263,8 @@ public final class GameAssetManager {
 
         skin.add("default", new Window.WindowStyle(titleFont, greenDark, panel));
 
+        skin.add("modal-background", panel, Drawable.class);
+
         return skin;
     }
 

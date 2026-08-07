@@ -113,7 +113,8 @@ public class SignupScreen extends AuthScreen {
     }
 
     private void confirmQuit() {
-        new ConfirmQuitModal(() -> runCommand("menu exit")).show();
+        new ConfirmModal("Quit Plants vs. Zombies?", "Any unsaved progress will be lost.", "Quit",
+                () -> runCommand("menu exit")).show();
     }
 
     @Override
