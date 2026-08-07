@@ -138,6 +138,9 @@ public final class GameAssetManager {
     public TextureRegion getZombieRegion(String zombieAlias) {
         return findRegion(AssetPaths.ZOMBIES_ATLAS, AssetPaths.zombieRegion(zombieAlias));
     }
+    public TextureRegion getItemRegion(String name) {
+        return findRegion(AssetPaths.ITEMS_ATLAS, AssetPaths.uiRegion(name));
+    }
 
     private TextureRegion findRegion(String atlasPath, String regionName) {
         TextureAtlas atlas = getAtlas(atlasPath);
@@ -305,4 +308,9 @@ public final class GameAssetManager {
         pixmap.fillCircle(x + radius, y + h - radius - 1, radius);
         pixmap.fillCircle(x + w - radius - 1, y + h - radius - 1, radius);
     }
+
+    public TextureRegion getUiRegion(String name) {
+        return findRegion(AssetPaths.UI_ATLAS, AssetPaths.uiRegion(name));
+    }
+
 }

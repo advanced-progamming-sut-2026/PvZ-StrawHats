@@ -69,4 +69,8 @@ public final class AssetPaths {
     public static String musicPath(String trackName) {
         return MUSIC + slug(trackName) + ".mp3";
     }
+
+    public static String uiRegion(String name) {
+        return slug(name);
+    }
 }
