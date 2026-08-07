@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -33,6 +34,17 @@ import view.general_screens.Toast;
 import java.util.function.Consumer;
 
 public abstract class AuthScreen extends BaseScreen {
+
+    protected static final float SPACE_XS = 2f;
+    protected static final float SPACE_SM = 8f;
+    protected static final float SPACE_MD = 10f;
+    protected static final float SPACE_LG = 14f;
+    protected static final float SPACE_XL = 22f;
+
+    protected static final float CARD_PAD = 12f;
+    protected static final float LABEL_WIDTH = 120f;
+    protected static final float FIELD_WIDTH = 212f;
+    protected static final float BUTTON_WIDTH = 270f;
 
     private final Consumer<String> printerListener = this::onMessage;
 
@@ -155,10 +167,18 @@ public abstract class AuthScreen extends BaseScreen {
             Texture titleTexture = loadLinearTexture(titlePath);
             Image titleImg = new Image(titleTexture);
             titleImg.setScaling(Scaling.fit);
-            card.add(titleImg).colspan(2).size(220, 110).padBottom(10).row();
+            card.add(titleImg).colspan(2).size(150, 55).padBottom(SPACE_MD).row();
         } else {
-            card.add(new Label("Plants vs Zombies", skin, "title")).colspan(2).padBottom(10).row();
+            card.add(new Label("Plants vs Zombies", skin, "title")).colspan(2).padBottom(SPACE_MD).row();
         }
+    }
+
+    protected ScrollPane scrollable(Table content) {
+        ScrollPane pane = new ScrollPane(content);
+        pane.setScrollingDisabled(true, false);
+        pane.setFadeScrollBars(false);
+        pane.setOverscroll(false, false);
+        return pane;
     }
 
     @Override
@@ -187,8 +207,9 @@ public abstract class AuthScreen extends BaseScreen {
     }
 
     private void onMessage(String message) {
-        if (stage != null)
+        if (stage != null) {
             Toast.show(stage, message);
+        }
     }
 
     protected void runCommand(String command) {
@@ -219,8 +240,8 @@ public abstract class AuthScreen extends BaseScreen {
     }
 
     protected void addRow(Table card, String labelText, Actor field) {
-        card.add(new Label(labelText, skin, "main")).left();
-        card.add(field).width(360).left().row();
+        card.add(new Label(labelText, skin, "main")).width(LABEL_WIDTH).left();
+        card.add(field).width(FIELD_WIDTH).left().row();
     }
 
     protected TextButton primaryButton(String text, Runnable action) {

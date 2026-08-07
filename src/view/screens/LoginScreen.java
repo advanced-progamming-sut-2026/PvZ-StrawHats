@@ -30,12 +30,12 @@ public class LoginScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
         addTitleImage(card);
-        card.add(new Label("Welcome back", skin, "title")).colspan(2).padBottom(18).row();
+        card.add(new Label("Welcome back", skin, "title")).colspan(2).padBottom(SPACE_LG).row();
         addRow(card, "Username", username);
         addRow(card, "Password", password);
-        card.add(stayLoggedIn).colspan(2).left().padTop(4).row();
+        card.add(stayLoggedIn).colspan(2).left().padTop(SPACE_XS).row();
 
         card.add(primaryButton("Log in", () -> {
             String cmd = "login -u " + username.getText() + " -p " + password.getText();
@@ -43,11 +43,11 @@ public class LoginScreen extends AuthScreen {
                 cmd += " -stay-logged-in";
             }
             runCommand(cmd);
-        })).colspan(2).padTop(12).width(360).row();
+        })).colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
 
-        card.add(secondaryButton("Forgot password?", this::buildForgotPasswordStep)).colspan(2).padTop(10).width(360).row();
+        card.add(secondaryButton("Forgot password?", this::buildForgotPasswordStep)).colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
         card.add(secondaryButton("New here? Create an account", () -> runCommand("menu exit")))
-                .colspan(2).padTop(4).width(360).row();
+                .colspan(2).padTop(SPACE_XS).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }
@@ -61,16 +61,16 @@ public class LoginScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
         addTitleImage(card);
-        card.add(new Label("Reset your password", skin, "title")).colspan(2).padBottom(18).row();
+        card.add(new Label("Reset your password", skin, "title")).colspan(2).padBottom(SPACE_LG).row();
         addRow(card, "Username", username);
         addRow(card, "Email", email);
 
         card.add(primaryButton("Continue", () ->
                         runCommand("forget password -u " + username.getText() + " -e " + email.getText())))
-                .colspan(2).padTop(12).width(360).row();
-        card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(10).width(360).row();
+                .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
+        card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }
@@ -83,19 +83,19 @@ public class LoginScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
         addTitleImage(card);
-        card.add(new Label("Security question", skin, "title")).colspan(2).padBottom(12).row();
+        card.add(new Label("Security question", skin, "title")).colspan(2).padBottom(SPACE_MD).row();
 
         Label question = new Label(String.valueOf(LoginMenu.getPendingSecurityQuestion()), skin, "muted");
         question.setWrap(true);
-        card.add(question).colspan(2).width(440).padBottom(12).row();
+        card.add(question).colspan(2).width(440).padBottom(SPACE_MD).row();
 
         addRow(card, "Answer", answer);
 
         card.add(primaryButton("Submit", () -> runCommand("answer -a " + answer.getText())))
-                .colspan(2).padTop(12).width(360).row();
-        card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(10).width(360).row();
+                .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
+        card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }
@@ -108,13 +108,13 @@ public class LoginScreen extends AuthScreen {
 
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
         addTitleImage(card);
-        card.add(new Label("Choose a new password", skin, "title")).colspan(2).padBottom(18).row();
+        card.add(new Label("Choose a new password", skin, "title")).colspan(2).padBottom(SPACE_LG).row();
         addRow(card, "New password", newPassword);
 
         card.add(primaryButton("Save password", () -> runCommand(newPassword.getText())))
-                .colspan(2).padTop(12).width(360).row();
+                .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }

@@ -41,22 +41,26 @@ public class SignupScreen extends AuthScreen {
         genderGroup.setMaxCheckCount(1);
         genderGroup.add(male, female);
 
-        Table card = new Table();
-        card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
-        addTitleImage(card);
-        card.add(new Label("Create your account", skin, "title")).colspan(2).padBottom(18).row();
-        addRow(card, "Username", username);
-        addRow(card, "Password", password);
-        addRow(card, "Confirm password", confirmPassword);
-        addRow(card, "Nickname", nickname);
-        addRow(card, "Email", email);
+        Table fields = new Table();
+        fields.defaults().space(SPACE_SM);
+        addRow(fields, "Username", username);
+        addRow(fields, "Password", password);
+        addRow(fields, "Confirm password", confirmPassword);
+        addRow(fields, "Nickname", nickname);
+        addRow(fields, "Email", email);
 
         Table genderRow = new Table();
-        genderRow.add(male).pad(4).width(150);
-        genderRow.add(female).pad(4).width(150);
-        card.add(new Label("Gender", skin, "main")).left();
-        card.add(genderRow).left().row();
+        genderRow.add(male).width(150).padRight(SPACE_SM);
+        genderRow.add(female).width(150);
+        fields.add(new Label("Gender", skin, "main")).width(LABEL_WIDTH).left();
+        fields.add(genderRow).left().row();
+
+        Table card = new Table();
+        card.setBackground(skin.getDrawable("card-background"));
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
+        addTitleImage(card);
+        card.add(new Label("Create your account", skin, "title")).colspan(2).padBottom(SPACE_MD).row();
+        card.add(scrollable(fields)).colspan(2).width(400).height(300).padBottom(SPACE_SM).row();
 
         card.add(primaryButton("Register", () -> {
             String gender = male.isChecked() ? "male" : "female";
@@ -65,11 +69,11 @@ public class SignupScreen extends AuthScreen {
                     + " -n " + nickname.getText()
                     + " -e " + email.getText()
                     + " -g " + gender);
-        })).colspan(2).padTop(12).width(380).row();
+        })).colspan(2).width(BUTTON_WIDTH).row();
 
         card.add(secondaryButton("Already have an account? Log in", () -> runCommand("menu enter login")))
-                .colspan(2).padTop(10).width(380).row();
-        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(4).width(380).row();
+                .colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
+        card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }
@@ -83,17 +87,13 @@ public class SignupScreen extends AuthScreen {
         group.setMinCheckCount(1);
         group.setMaxCheckCount(1);
 
-        Table card = new Table();
-        card.setBackground(skin.getDrawable("card-background"));
-        card.pad(40).defaults().pad(8);
-        addTitleImage(card);
-        card.add(new Label("Pick a security question", skin, "title")).colspan(2).padBottom(18).row();
-
+        Table content = new Table();
+        content.defaults().space(SPACE_SM);
         for (String q : questions) {
             TextButton questionButton = new TextButton(q, skin, "main");
             questionButton.getLabel().setWrap(true);
             group.add(questionButton);
-            card.add(questionButton).colspan(2).width(460).left().row();
+            content.add(questionButton).width(400).left().row();
         }
         if (!group.getButtons().isEmpty()) {
             group.getButtons().first().setChecked(true);
@@ -101,13 +101,21 @@ public class SignupScreen extends AuthScreen {
 
         TextField answer = field(false);
         TextField confirmAnswer = field(false);
-        addRow(card, "Answer", answer);
-        addRow(card, "Confirm answer", confirmAnswer);
+        content.row();
+        addRow(content, "Answer", answer);
+        addRow(content, "Confirm answer", confirmAnswer);
+
+        Table card = new Table();
+        card.setBackground(skin.getDrawable("card-background"));
+        card.pad(CARD_PAD).defaults().space(SPACE_SM);
+        addTitleImage(card);
+        card.add(new Label("Pick a security question", skin, "title")).colspan(2).padBottom(SPACE_MD).row();
+        card.add(scrollable(content)).colspan(2).width(420).height(320).padBottom(SPACE_SM).row();
 
         card.add(primaryButton("Submit", () -> {
             int questionNumber = group.getCheckedIndex() + 1;
             runCommand("pick question -q " + questionNumber + " -a " + answer.getText() + " -c " + confirmAnswer.getText());
-        })).colspan(2).padTop(12).width(380).row();
+        })).colspan(2).width(BUTTON_WIDTH).row();
 
         rootTable.add(card);
     }
