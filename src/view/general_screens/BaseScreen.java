@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 
@@ -101,7 +101,7 @@ public abstract class BaseScreen implements Screen {
     }
 
     protected Viewport createViewport() {
-        return new ExtendViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
+        return new FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
     @Override

@@ -1,8 +1,9 @@
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import controller.assets.GameAssetManager;
 import controller.assets.ScreenManager;
 import model.collections.plant.PlantFactory;
@@ -27,6 +28,10 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void render() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F10)) {
+            toggleFullscreen();
+        }
+
         Gdx.gl.glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -36,6 +41,15 @@ public class Main extends ApplicationAdapter {
         }
 
         ScreenManager.render(Gdx.graphics.getDeltaTime());
+    }
+
+    private void toggleFullscreen() {
+        if (Gdx.graphics.isFullscreen()) {
+            Gdx.graphics.setWindowedMode(1280, 720);
+        } else {
+            Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+            Gdx.graphics.setFullscreenMode(currentMode);
+        }
     }
 
     @Override
