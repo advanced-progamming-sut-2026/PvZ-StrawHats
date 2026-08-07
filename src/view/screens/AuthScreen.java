@@ -187,9 +187,8 @@ public abstract class AuthScreen extends BaseScreen {
     }
 
     private void onMessage(String message) {
-        if (stage != null) {
+        if (stage != null)
             Toast.show(stage, message);
-        }
     }
 
     protected void runCommand(String command) {
