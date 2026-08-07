@@ -147,7 +147,7 @@ public abstract class BaseScreen implements Screen {
         overlay.setFillParent(true);
         rootStack.addActor(overlay);
         overlay.addAction(Actions.sequence(
-                Actions.delay(DEFAULT_LOADING_DURATION),
+                Actions.delay(loadingDuration),
                 Actions.fadeOut(0.05f),
                 Actions.removeActor()
         ));
