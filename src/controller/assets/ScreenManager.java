@@ -2,6 +2,7 @@ package controller.assets;
 
 import controller.menus.MainMenu;
 import controller.menus.Menu;
+import controller.menus.NewsMenu;
 import controller.menus.ProfileMenu;
 import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
@@ -9,6 +10,7 @@ import model.App;
 import view.general_screens.BaseScreen;
 import view.screens.LoginScreen;
 import view.screens.MainMenuScreen;
+import view.screens.NewsScreen;
 import view.screens.PlaceholderScreen;
 import view.screens.ProfileMenuScreen;
 import view.screens.SignupScreen;
@@ -54,6 +56,9 @@ public final class ScreenManager {
         }
         if (menu instanceof ProfileMenu) {
             return new ProfileMenuScreen();
+        }
+        if (menu instanceof NewsMenu) {
+            return new NewsScreen();
         }
         return new PlaceholderScreen(menu);
     }

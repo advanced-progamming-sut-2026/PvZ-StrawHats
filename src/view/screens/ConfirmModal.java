@@ -17,7 +17,7 @@ class ConfirmModal extends Modal {
         add(messageLabel).colspan(2).width(400).padBottom(18).row();
 
         TextButton cancel = new TextButton("Cancel", skin, "secondary");
-        TextButton confirm = new TextButton(confirmLabel, skin, "default");
+        TextButton confirm = new TextButton(confirmLabel, skin, "main");
 
         cancel.addListener(new ClickListener() {
             @Override
