@@ -24,8 +24,9 @@ public abstract class BaseScreen implements Screen {
     protected String[] particlePaths = null;
     public abstract void initParticles();
     protected static final float DEFAULT_LOADING_DURATION = 1f;
-    protected static String loadingImagePath;
 
+    protected static float loadingDuration = DEFAULT_LOADING_DURATION;
+    protected static String loadingImagePath;
     public Stage stage;
     protected Skin skin;
     protected SpriteBatch batch = new SpriteBatch();
@@ -131,7 +132,8 @@ public abstract class BaseScreen implements Screen {
 
     private void showLoading() {
         Image overlay;
-        if (loadingImagePath != null && Gdx.files.internal(loadingImagePath).exists()) { //TODO: add loading pics
+        if (loadingImagePath==null) return;
+        if (Gdx.files.internal(loadingImagePath).exists()) { //TODO: add loading pics
             Texture texture = new Texture(Gdx.files.internal(""));
             overlay = new Image(new TextureRegionDrawable(new TextureRegion(texture)));
         } else {
