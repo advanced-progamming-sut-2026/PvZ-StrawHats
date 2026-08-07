@@ -16,18 +16,12 @@ public class TimedWarLevel extends Level {
         if (timeLimit != null) timeLimit.reset(configuredTimeLimitSeconds);
     }
 
-    /**
-     * Call once per tick while the player is in this level.
-     */
     public void tickTimer(double deltaSeconds) {
         if (timeLimit != null) {
             timeLimit.tick(deltaSeconds);
         }
     }
 
-    /**
-     * To be called whenever a zombie dies while this level is active.
-     */
     public void recordZombieKill() {
         zombiesKilledSoFar++;
     }
