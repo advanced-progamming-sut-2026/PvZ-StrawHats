@@ -63,6 +63,10 @@ public final class ScreenManager {
         if (menu instanceof SettingMenu) {
             return new SettingsScreen();
         }
+        if (menu instanceof LeaderboardMenu) {
+            return new LeaderboardScreen();
+        }
+        
         if (menu instanceof MatchMenu) {
             Level selected = MatchMenu.selectedLevel;
             if (selected != null && selected.getSeason().getName().equalsIgnoreCase("Egypt")) {
