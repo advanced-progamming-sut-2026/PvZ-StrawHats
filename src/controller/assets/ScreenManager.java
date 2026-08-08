@@ -52,6 +52,9 @@ public final class ScreenManager {
         if (menu instanceof NewsMenu) {
             return new NewsScreen();
         }
+        if (menu instanceof TravelLogMenu) {
+            return new TravelLogScreen();
+        }
         if (menu instanceof SettingMenu) {
             return new SettingsScreen();
         }
