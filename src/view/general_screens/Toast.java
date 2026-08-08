@@ -21,7 +21,7 @@ public final class Toast extends Table {
     private static final float DEFAULT_DURATION = 2.5f;
     private static final float SLIDE_TIME = 0.4f;
     private static final float MARGIN_RIGHT = 24f;
-    private static final float Y_OFFSET = -10f;
+    private static final float Y_OFFSET = 24f;
     private static final float TOAST_WIDTH = 450f;
 
     private static final Map<Stage, Toast> activeByStage = new WeakHashMap<>();
@@ -53,7 +53,7 @@ public final class Toast extends Table {
 
         float startX = stage.getWidth() - getWidth() - MARGIN_RIGHT;
         float startY = -getHeight();
-        float targetY = Y_OFFSET - 5f;
+        float targetY = Y_OFFSET;
 
         setPosition(startX, startY);
 
@@ -67,7 +67,7 @@ public final class Toast extends Table {
     }
 
     private static TextureRegionDrawable backgroundDrawable() {
-        String path = "assets/images/ui/bundlestab_down.png";
+        String path = "assets/images/ui/pop up.png";
         if (Gdx.files.internal(path).exists()) {
             Texture texture = new Texture(Gdx.files.internal(path), true);
             texture.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
