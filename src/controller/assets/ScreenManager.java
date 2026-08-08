@@ -3,7 +3,9 @@ package controller.assets;
 import controller.menus.*;
 import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
+import controller.menus.match.MatchMenu;
 import model.App;
+import model.match.main.levels.Level;
 import view.general_screens.BaseScreen;
 import view.screens.*;
 
@@ -60,6 +62,12 @@ public final class ScreenManager {
         }
         if (menu instanceof SettingMenu) {
             return new SettingsScreen();
+        }
+        if (menu instanceof MatchMenu) {
+            Level selected = MatchMenu.selectedLevel;
+            if (selected != null && selected.getSeason().getName().equalsIgnoreCase("Egypt")) {
+                return new EgyptStagesScreen();
+            }
         }
         return new PlaceholderScreen(menu);
     }

@@ -126,7 +126,7 @@ public abstract class BaseScreen implements Screen {
     }
 
     protected void setBackground(String path) {
-        if (!Gdx.files.internal(path).exists()) {
+        if (path == null || path.isEmpty() || !Gdx.files.internal(path).exists()) {
             return;
         }
         Texture texture = new Texture(Gdx.files.internal(path));
