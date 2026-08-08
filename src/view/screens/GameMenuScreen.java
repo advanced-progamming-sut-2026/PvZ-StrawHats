@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
@@ -37,8 +38,13 @@ public class GameMenuScreen extends UiScreen {
             "assets/images/chapters/dark.png"
     };
 
+    private static final float CARD_WIDTH = 280f;
     private static final float CARD_HEIGHT = 230f;
-    private static final float CARD_PAD = 0f;
+    private static final float CHAPTER_CARD_PAD = 20f;
+    private static final float CAROUSEL_VIEWPORT_WIDTH = 1150f;
+    private static final float UNIT_WIDTH = (CARD_WIDTH + CHAPTER_CARD_PAD * 2) * CHAPTERS.length;
+
+    private ScrollPane carouselPane;
 
     @Override
     public void show() {
@@ -52,18 +58,49 @@ public class GameMenuScreen extends UiScreen {
         rootTable.clear();
 
         rootTable.add(buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
-        rootTable.add(new Label("Choose a Chapter", skin, "title")).padTop(SPACE_LG).row();
 
+        Table centerTable = new Table();
+        centerTable.add(buildChapterCarousel());
+
+        rootTable.add(centerTable).expand().center().row();
+    }
+
+    private Table buildChapterCarousel() {
         Map<String, Boolean> unlockStatus = computeChapterUnlockStatus();
 
-        Table content = new Table();
-        for (int i = 0; i < CHAPTERS.length; i++) {
-            String chapter = CHAPTERS[i];
-            content.add(createChapterCard(chapter, CHAPTER_ART[i], unlockStatus.getOrDefault(chapter, false)))
-                    .expandX().fillX().height(CARD_HEIGHT).pad(CARD_PAD);
+        Table carouselContent = new Table();
+        for (int lap = 0; lap < 3; lap++) {
+            for (int i = 0; i < CHAPTERS.length; i++) {
+                String chapter = CHAPTERS[i];
+                carouselContent.add(createChapterCard(chapter, CHAPTER_ART[i], unlockStatus.getOrDefault(chapter, false)))
+                        .size(CARD_WIDTH, CARD_HEIGHT).pad(0, CHAPTER_CARD_PAD, 0, CHAPTER_CARD_PAD);
+            }
         }
 
-        rootTable.add(content).fillX().padTop(SPACE_SM).padLeft(20).padRight(20).row();
+        carouselPane = new ScrollPane(carouselContent);
+        carouselPane.setOverscroll(false, false);
+        carouselPane.setFlickScroll(true);
+        carouselPane.setScrollingDisabled(false, true);
+
+        Table viewport = new Table();
+        viewport.add(carouselPane).width(CAROUSEL_VIEWPORT_WIDTH).height(CARD_HEIGHT);
+
+        Gdx.app.postRunnable(() -> carouselPane.setScrollX(UNIT_WIDTH));
+
+        return viewport;
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+        if (carouselPane != null) {
+            float currentX = carouselPane.getScrollX();
+            if (currentX < UNIT_WIDTH * 0.5f) {
+                carouselPane.setScrollX(currentX + UNIT_WIDTH);
+            } else if (currentX > UNIT_WIDTH * 2.5f) {
+                carouselPane.setScrollX(currentX - UNIT_WIDTH);
+            }
+        }
     }
 
     private Table buildTopBar() {
