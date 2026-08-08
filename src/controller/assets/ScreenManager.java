@@ -76,6 +76,9 @@ public final class ScreenManager {
             if (seasonName != null && seasonName.equalsIgnoreCase("Frostbite Caves")) {
                 return new FrostbiteCavesStagesScreen();
             }
+            if (seasonName != null && seasonName.equalsIgnoreCase("Big Wave Beach")) {
+                return new BigWaveBeachStagesScreen();
+            }
         }
         return new PlaceholderScreen(menu);
     }
