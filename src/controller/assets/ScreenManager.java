@@ -69,8 +69,12 @@ public final class ScreenManager {
         
         if (menu instanceof MatchMenu) {
             Level selected = MatchMenu.selectedLevel;
-            if (selected != null && selected.getSeason().getName().equalsIgnoreCase("Egypt")) {
+            String seasonName = selected != null ? selected.getSeason().getName() : null;
+            if (seasonName != null && seasonName.equalsIgnoreCase("Egypt")) {
                 return new EgyptStagesScreen();
+            }
+            if (seasonName != null && seasonName.equalsIgnoreCase("Frostbite Caves")) {
+                return new FrostbiteCavesStagesScreen();
             }
         }
         return new PlaceholderScreen(menu);
