@@ -52,7 +52,9 @@ public class MainMenu extends Menu{
         User.save();
         App.currentMenu = new LoginMenu();
         App.currentUser = null;
-        User.currentUser.stayLoggedIn = false;
+        if (User.currentUser != null) {
+            User.currentUser.stayLoggedIn = false;
+        }
         User.currentUser = null;
         GeneralPrinter.print("Logged out successfully.");
     }

@@ -22,11 +22,12 @@ import model.user_data.User;
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 import view.general_screens.ParticleCreator;
+import view.general_screens.UiScreen;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewsScreen extends AuthScreen {
+public class NewsScreen extends UiScreen {
 
     private enum TabState { NONE, UNREAD, ALL }
 

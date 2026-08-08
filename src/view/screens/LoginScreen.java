@@ -6,8 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
 import controller.menus.authentication.LoginMenu;
+import view.general_screens.UiScreen;
 
-public class LoginScreen extends AuthScreen {
+public class LoginScreen extends UiScreen {
 
     private enum Step { LOGIN, FORGOT_PASSWORD, SECURITY_ANSWER, NEW_PASSWORD }
 

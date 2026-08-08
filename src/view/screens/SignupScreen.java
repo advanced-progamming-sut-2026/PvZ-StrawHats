@@ -7,10 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
 import controller.menus.authentication.SignupMenu;
+import view.general_screens.UiScreen;
 
 import java.util.List;
 
-public class SignupScreen extends AuthScreen {
+public class SignupScreen extends UiScreen {
 
     private enum Step { REGISTER, SECURITY_QUESTION }
 

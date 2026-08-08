@@ -24,8 +24,9 @@ import model.utils.GameSettings;
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 import view.GeneralPrinter;
+import view.general_screens.UiScreen;
 
-public class SettingsScreen extends AuthScreen {
+public class SettingsScreen extends UiScreen {
 
     private static final int MIN_DIFFICULTY = 1;
     private static final int MAX_DIFFICULTY = 5;

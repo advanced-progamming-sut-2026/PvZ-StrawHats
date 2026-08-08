@@ -1,4 +1,4 @@
-package view.screens;
+package view.general_screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -27,13 +27,10 @@ import controller.assets.ScreenManager;
 import model.App;
 import model.game_exceptions.GameException;
 import view.GeneralPrinter;
-import view.general_screens.BaseScreen;
-import view.general_screens.ParticleCreator;
-import view.general_screens.Toast;
 
 import java.util.function.Consumer;
 
-public abstract class AuthScreen extends BaseScreen {
+public abstract class UiScreen extends BaseScreen {
 
     protected static final float SPACE_XS = 2f;
     protected static final float SPACE_SM = 8f;

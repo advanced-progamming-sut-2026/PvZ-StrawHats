@@ -19,8 +19,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import model.user_data.User;
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
+import view.general_screens.UiScreen;
 
-public class ProfileMenuScreen extends AuthScreen {
+public class ProfileMenuScreen extends UiScreen {
 
     @Override
     public void show() {

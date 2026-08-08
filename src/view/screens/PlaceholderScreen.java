@@ -6,8 +6,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 
 import controller.menus.Menu;
+import view.general_screens.UiScreen;
 
-public class PlaceholderScreen extends AuthScreen {
+public class PlaceholderScreen extends UiScreen {
 
     private final Menu menu;
 
