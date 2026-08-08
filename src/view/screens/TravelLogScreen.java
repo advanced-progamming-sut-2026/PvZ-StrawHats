@@ -44,11 +44,11 @@ public class TravelLogScreen extends UiScreen {
             "Vasebreaker", "Wallnut Bowling", "I, Zombie", "Beghouled", "Zombotany"
     };
     private static final String[] MINIGAME_ICONS = {
-            "assets/images/ui/minigame_vasebreaker_icon.png",
-            "assets/images/ui/minigame_wallnutbowling_icon.png",
-            "assets/images/ui/minigame_izombie_icon.png",
-            "assets/images/ui/minigame_beghouled_icon.png",
-            "assets/images/ui/minigame_zombotany_icon.png"
+            "assets/images/ui/travel_log/vasebreaker_icon.png",
+            "assets/images/ui/travel_log/wallnutbowling_icon.png",
+            "assets/images/ui/travel_log/izombie_icon.png",
+            "assets/images/ui/travel_log/beghouled_icon.png",
+            "assets/images/ui/travel_log/zombotany_icon.png"
     };
 
     private Category currentCategory = Category.DAILY;
