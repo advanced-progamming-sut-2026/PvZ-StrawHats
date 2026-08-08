@@ -75,8 +75,8 @@ public class NewsScreen extends AuthScreen {
             return;
         }
 
-        TextureRegionDrawable woodBoardBg = createTextureDrawable("assets/images/backg/ChatGPT Image Aug 7, 2026, 01_30_40 PM.png");
-        TextureRegionDrawable tornPaperBg = createTextureDrawable("assets/images/backg/ChatGPT_Image_Aug_7__2026__02_01_18_PM-removebg-preview.png");
+        TextureRegionDrawable woodBoardBg = createTextureDrawable("assets/images/backg/wood board.png");
+        TextureRegionDrawable tornPaperBg = createTextureDrawable("assets/images/backg/notif bg.png");
         TextureRegionDrawable tabBg = createTextureDrawable("assets/images/ui/zombies_active.png");
         TextureRegionDrawable arrowDown = createTextureDrawable("assets/images/ui/zombies_active.png");
 
