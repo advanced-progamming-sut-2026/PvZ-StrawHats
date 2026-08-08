@@ -46,6 +46,9 @@ public final class ScreenManager {
         if (menu instanceof MainMenu) {
             return new MainMenuScreen();
         }
+        if (menu instanceof GameMenu) {
+            return new GameMenuScreen();
+        }
         if (menu instanceof ProfileMenu) {
             return new ProfileMenuScreen();
         }
