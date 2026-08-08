@@ -75,7 +75,7 @@ public class SignupScreen extends UiScreen {
                 .colspan(2).padTop(3).width(350).height(30).row();
         card.add(secondaryButton("Quit", this::confirmQuit)).colspan(2).padTop(3).width(350).height(30).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     private void buildSecurityQuestionStep() {
@@ -113,7 +113,7 @@ public class SignupScreen extends UiScreen {
             runCommand("pick question -q " + questionNumber + " -a " + answer.getText() + " -c " + confirmAnswer.getText());
         })).colspan(2).padTop(8).width(350).height(34).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     private void confirmQuit() {

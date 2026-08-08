@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public final class GameAssetManager {
@@ -47,15 +49,10 @@ public final class GameAssetManager {
         loadAtlas(AssetPaths.ZOMBIES_ATLAS);
         loadAtlas(AssetPaths.ITEMS_ATLAS);
         loadAtlas(AssetPaths.TILES_ATLAS);
-        // UI_ATLAS is intentionally not queued here yet - see initializeSkin(): until a real
-        // atlas + skin JSON exist, getSkin() is served by a small procedurally-generated skin
-        // instead, so screens have working buttons/fields/labels from day one.
         loadFont(AssetPaths.DEFAULT_FONT);
         coreAssetsQueued = true;
         initializeSkin();
     }
-
-    // ---- loading (each is a no-op, not a crash, if the file isn't on disk yet) ----
 
     public void loadAtlas(String path) {
         if (!assetManager.isLoaded(path) && exists(path)) {
@@ -174,16 +171,6 @@ public final class GameAssetManager {
         return skin;
     }
 
-    // ---- skin ----
-
-    /**
-     * Populates {@link #skin} so {@code Toast}/{@code Modal}/every new screen has a working
-     * "default" Label/TextButton/TextField/CheckBox/Window style from the moment the app boots,
-     * with no packed atlas required. Once a real {@code assets/atlases/ui.atlas} + skin JSON
-     * exist, swap the body of this method for {@code new Skin(Gdx.files.internal("assets/ui/skin.json"))}
-     * and every screen that reads styles by name ("default", "secondary", "title", "muted")
-     * keeps working unchanged.
-     */
     private void initializeSkin() {
         if (skin != null) {
             return;
@@ -212,17 +199,17 @@ public final class GameAssetManager {
         Color textDark = Color.valueOf("2E2A1F");
         Color textMuted = Color.valueOf("6E6553");
 
-        Drawable panel = roundedDrawable(560, 10, 18, parchment, border, 3);
-        Drawable buttonUp = roundedDrawable(240, 56, 14, sun, sunDark, 2);
-        Drawable buttonDown = roundedDrawable(240, 56, 14, sunDark, sunDark, 2);
-        Drawable buttonOver = roundedDrawable(240, 56, 14, lighten(sun), sunDark, 2);
-        Drawable buttonChecked = roundedDrawable(240, 56, 14, green, greenDark, 2);
-        Drawable buttonDisabled = roundedDrawable(240, 56, 14, Color.valueOf("D8D2C1"), Color.valueOf("BDB59E"), 2);
-        Drawable fieldBg = roundedDrawable(340, 56, 12, Color.WHITE, border, 2);
+        Drawable panel = roundedPatch(64, 18, 3, parchment, border);
+        Drawable buttonUp = roundedPatch(56, 14, 2, sun, sunDark);
+        Drawable buttonDown = roundedPatch(56, 14, 2, sunDark, sunDark);
+        Drawable buttonOver = roundedPatch(56, 14, 2, lighten(sun), sunDark);
+        Drawable buttonChecked = roundedPatch(56, 14, 2, green, greenDark);
+        Drawable buttonDisabled = roundedPatch(56, 14, 2, Color.valueOf("D8D2C1"), Color.valueOf("BDB59E"));
+        Drawable fieldBg = roundedPatch(48, 12, 2, Color.WHITE, border);
         Drawable cursor = solidDrawable(2, 34, textDark);
         Drawable selection = solidDrawable(2, 34, sun);
-        Drawable checkOn = roundedDrawable(30, 30, 7, green, greenDark, 2);
-        Drawable checkOff = roundedDrawable(30, 30, 7, Color.WHITE, border, 2);
+        Drawable checkOn = roundedPatch(28, 7, 2, green, greenDark);
+        Drawable checkOff = roundedPatch(28, 7, 2, Color.WHITE, border);
 
         skin.add("default", new Label.LabelStyle(font, textDark));
         skin.add("title", new Label.LabelStyle(titleFont, greenDark));
@@ -241,9 +228,9 @@ public final class GameAssetManager {
         skin.add("default", buttonStyle);
 
         TextButton.TextButtonStyle secondaryStyle = new TextButton.TextButtonStyle(buttonStyle);
-        secondaryStyle.up = roundedDrawable(240, 56, 14, parchment, border, 2);
-        secondaryStyle.down = roundedDrawable(240, 56, 14, border, border, 2);
-        secondaryStyle.over = roundedDrawable(240, 56, 14, Color.WHITE, border, 2);
+        secondaryStyle.up = roundedPatch(56, 14, 2, parchment, border);
+        secondaryStyle.down = roundedPatch(56, 14, 2, border, border);
+        secondaryStyle.over = roundedPatch(56, 14, 2, Color.WHITE, border);
         secondaryStyle.fontColor = greenDark;
         skin.add("secondary", secondaryStyle);
 
@@ -275,21 +262,25 @@ public final class GameAssetManager {
         return new Color(Math.min(1f, c.r + 0.08f), Math.min(1f, c.g + 0.08f), Math.min(1f, c.b + 0.08f), c.a);
     }
 
-    private Drawable roundedDrawable(int width, int height, int radius, Color fill, Color border, int borderWidth) {
-        Pixmap outer = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+    private Drawable roundedPatch(int tile, int radius, int borderWidth, Color fill, Color border) {
+        Pixmap outer = new Pixmap(tile, tile, Pixmap.Format.RGBA8888);
         outer.setColor(border);
-        fillRounded(outer, 0, 0, width, height, radius);
+        fillRounded(outer, 0, 0, tile, tile, radius);
 
-        Pixmap inner = new Pixmap(width - borderWidth * 2, height - borderWidth * 2, Pixmap.Format.RGBA8888);
+        int innerSize = tile - borderWidth * 2;
+        Pixmap inner = new Pixmap(innerSize, innerSize, Pixmap.Format.RGBA8888);
         inner.setColor(fill);
-        fillRounded(inner, 0, 0, width - borderWidth * 2, height - borderWidth * 2, Math.max(0, radius - borderWidth));
+        fillRounded(inner, 0, 0, innerSize, innerSize, Math.max(0, radius - borderWidth));
         outer.drawPixmap(inner, borderWidth, borderWidth);
         inner.dispose();
 
         Texture texture = new Texture(outer);
         texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         outer.dispose();
-        return new TextureRegionDrawable(new TextureRegion(texture));
+
+        int inset = Math.max(borderWidth + 1, radius);
+        NinePatch patch = new NinePatch(texture, inset, inset, inset, inset);
+        return new NinePatchDrawable(patch);
     }
 
     private Drawable solidDrawable(int width, int height, Color color) {

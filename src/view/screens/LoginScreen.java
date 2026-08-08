@@ -50,7 +50,7 @@ public class LoginScreen extends UiScreen {
         card.add(secondaryButton("New here? Create an account", () -> runCommand("menu exit")))
                 .colspan(2).padTop(SPACE_XS).width(BUTTON_WIDTH).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     private void buildForgotPasswordStep() {
@@ -73,7 +73,7 @@ public class LoginScreen extends UiScreen {
                 .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
         card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     private void buildSecurityAnswerStep() {
@@ -98,7 +98,7 @@ public class LoginScreen extends UiScreen {
                 .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
         card.add(secondaryButton("Back to login", this::buildLoginStep)).colspan(2).padTop(SPACE_SM).width(BUTTON_WIDTH).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     private void buildNewPasswordStep() {
@@ -117,7 +117,7 @@ public class LoginScreen extends UiScreen {
         card.add(primaryButton("Save password", () -> runCommand(newPassword.getText())))
                 .colspan(2).padTop(SPACE_LG).width(BUTTON_WIDTH).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 
     @Override

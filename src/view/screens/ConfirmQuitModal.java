@@ -9,14 +9,15 @@ import view.general_screens.Modal;
 
 class ConfirmQuitModal extends Modal {
 
+    private static final float BUTTON_WIDTH = 170f;
+
     ConfirmQuitModal(Runnable onConfirm) {
-        pad(24);
-        add(new Label("PvZ", skin, "title")).colspan(2).padBottom(8).row();
-        add(new Label("Quit Plants vs. Zombies?", skin, "title")).colspan(2).padBottom(12).row();
-        add(new Label("Any unsaved progress will be lost.", skin, "muted")).colspan(2).padBottom(16).row();
+        content.add(new Label("PvZ", skin, "title")).colspan(2).padBottom(8).row();
+        content.add(new Label("Quit Plants vs. Zombies?", skin, "title")).colspan(2).padBottom(12).row();
+        content.add(new Label("Any unsaved progress will be lost.", skin, "muted")).colspan(2).padBottom(16).row();
 
         TextButton cancel = new TextButton("Cancel", skin, "secondary");
-        TextButton quit = new TextButton("Quit", skin, "main");
+        TextButton quit = new TextButton("Quit", skin, "default");
 
         cancel.addListener(new ClickListener() {
             @Override
@@ -31,7 +32,7 @@ class ConfirmQuitModal extends Modal {
             }
         });
 
-        add(cancel).width(160).padRight(8);
-        add(quit).width(160);
+        content.add(cancel).width(BUTTON_WIDTH).padRight(8);
+        content.add(quit).width(BUTTON_WIDTH);
     }
 }

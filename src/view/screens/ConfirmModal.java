@@ -9,15 +9,18 @@ import view.general_screens.Modal;
 
 class ConfirmModal extends Modal {
 
+    private static final float MESSAGE_WIDTH = 380f;
+    private static final float BUTTON_WIDTH = 170f;
+
     ConfirmModal(String title, String message, String confirmLabel, Runnable onConfirm) {
-        pad(24);
-        add(new Label(title, skin, "title")).colspan(2).padBottom(10).row();
+        content.add(new Label(title, skin, "title")).colspan(2).padBottom(10).row();
+
         Label messageLabel = new Label(message, skin, "muted");
         messageLabel.setWrap(true);
-        add(messageLabel).colspan(2).width(400).padBottom(18).row();
+        content.add(messageLabel).colspan(2).width(MESSAGE_WIDTH).padBottom(18).row();
 
         TextButton cancel = new TextButton("Cancel", skin, "secondary");
-        TextButton confirm = new TextButton(confirmLabel, skin, "main");
+        TextButton confirm = new TextButton(confirmLabel, skin, "default");
 
         cancel.addListener(new ClickListener() {
             @Override
@@ -33,7 +36,7 @@ class ConfirmModal extends Modal {
             }
         });
 
-        add(cancel).width(160).padRight(8);
-        add(confirm).width(160);
+        content.add(cancel).width(BUTTON_WIDTH).padRight(8);
+        content.add(confirm).width(BUTTON_WIDTH);
     }
 }

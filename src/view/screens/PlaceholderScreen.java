@@ -44,6 +44,6 @@ public class PlaceholderScreen extends UiScreen {
         card.add(primaryButton("Run", () -> runCommand(commandField.getText())))
                 .colspan(2).padTop(12).width(220).row();
 
-        rootTable.add(card);
+        showCard(card);
     }
 }

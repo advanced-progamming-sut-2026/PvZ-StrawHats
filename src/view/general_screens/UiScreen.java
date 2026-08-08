@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 
@@ -43,12 +45,22 @@ public abstract class UiScreen extends BaseScreen {
     protected static final float FIELD_WIDTH = 212f;
     protected static final float BUTTON_WIDTH = 270f;
 
+    protected static final float CARD_MAX_HEIGHT = SCREEN_HEIGHT - 64f;
+
     private final Consumer<String> printerListener = this::onMessage;
 
     private Texture loadLinearTexture(String path) {
+        if (!Gdx.files.internal(path).exists()) {
+            return null;
+        }
         Texture texture = new Texture(Gdx.files.internal(path));
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         return texture;
+    }
+
+    private Drawable loadDrawable(String path) {
+        Texture texture = loadLinearTexture(path);
+        return texture == null ? null : new TextureRegionDrawable(texture);
     }
 
     @Override
@@ -65,38 +77,60 @@ public abstract class UiScreen extends BaseScreen {
             generator.dispose();
         } else {
             font = new BitmapFont();
+            font.getData().setScale(1.15f);
         }
         skin.add("default-font", font);
 
-        Drawable goldenCardDrawable = createGoldenDrawable(520, 440);
-        skin.add("card-background", goldenCardDrawable, Drawable.class);
-        skin.add("modal-background", goldenCardDrawable, Drawable.class);
+        Drawable panel = loadDrawable("assets/images/ui/card_panel.png");
+        if (panel == null) {
+            panel = roundedPanel(64, 16, 3,
+                    new Color(0.16f, 0.13f, 0.06f, 0.93f), new Color(0.62f, 0.47f, 0.16f, 1f));
+        }
+        skin.add("card-background", panel, Drawable.class);
+        skin.add("modal-background", panel, Drawable.class);
 
-        Texture tfBack = loadLinearTexture("assets/images/ui/free_coins_button_large_golden_505x130_2.png");
-        TextureRegionDrawable tfDrawable = new TextureRegionDrawable(tfBack);
-        tfDrawable.setLeftWidth(16);
-        tfDrawable.setRightWidth(16);
-        skin.add("textfield-bg", tfDrawable, Drawable.class);
+        Drawable fieldBg = loadDrawable("assets/images/ui/textfield_bg.png");
+        if (fieldBg == null) {
+            fieldBg = roundedPanel(48, 10, 2,
+                    new Color(0.09f, 0.08f, 0.05f, 0.9f), new Color(0.62f, 0.47f, 0.16f, 1f));
+        }
+        skin.add("textfield-bg", fieldBg, Drawable.class);
 
-        Drawable wideCursor = createWideCursorDrawable(6, 26, Color.GOLD);
-        skin.add("cursor", wideCursor, Drawable.class);
+        skin.add("cursor", solidDrawable(3, 26, Color.GOLD), Drawable.class);
+        skin.add("selection", solidDrawable(4, 26, new Color(0.85f, 0.65f, 0.15f, 0.45f)), Drawable.class);
 
-        Texture selectionTex = loadLinearTexture("assets/images/ui/free_coins_button_large_golden_505x130_2.png");
-        skin.add("selection", new TextureRegionDrawable(selectionTex), Drawable.class);
+        Drawable buttonUp = loadDrawable("assets/images/ui/button_up.png");
+        Drawable buttonDown = loadDrawable("assets/images/ui/button_down.png");
+        Drawable buttonOver;
+        if (buttonUp == null || buttonDown == null) {
+            buttonUp = roundedPanel(48, 12, 2,
+                    new Color(0.80f, 0.60f, 0.16f, 1f), new Color(0.45f, 0.32f, 0.08f, 1f));
+            buttonDown = roundedPanel(48, 12, 2,
+                    new Color(0.55f, 0.40f, 0.10f, 1f), new Color(0.35f, 0.25f, 0.06f, 1f));
+            buttonOver = roundedPanel(48, 12, 2,
+                    new Color(0.90f, 0.70f, 0.22f, 1f), new Color(0.45f, 0.32f, 0.08f, 1f));
+        } else {
+            buttonOver = buttonUp;
+        }
+        skin.add("button-up", buttonUp, Drawable.class);
+        skin.add("button-down", buttonDown, Drawable.class);
+        skin.add("button-over", buttonOver, Drawable.class);
 
-        Texture btnUp = loadLinearTexture("assets/images/ui/quest_points_fillbar_fill.png");
-        Texture btnDown = loadLinearTexture("assets/images/ui/quest_points_fillbar_fill_green.png");
-        skin.add("button-up", new TextureRegionDrawable(btnUp), Drawable.class);
-        skin.add("button-down", new TextureRegionDrawable(btnDown), Drawable.class);
-
-        Texture checkOn = loadLinearTexture("assets/images/ui/checkbox_enabled.png");
-        Texture checkOff = loadLinearTexture("assets/images/ui/checkbox_disabled.png");
-        skin.add("checkbox-on", new TextureRegionDrawable(checkOn), Drawable.class);
-        skin.add("checkbox-off", new TextureRegionDrawable(checkOff), Drawable.class);
+        Drawable checkOn = loadDrawable("assets/images/ui/checkbox_enabled.png");
+        Drawable checkOff = loadDrawable("assets/images/ui/checkbox_disabled.png");
+        if (checkOn == null || checkOff == null) {
+            checkOn = roundedPanel(28, 6, 2,
+                    new Color(0.35f, 0.62f, 0.30f, 1f), new Color(0.20f, 0.40f, 0.18f, 1f));
+            checkOff = roundedPanel(28, 6, 2,
+                    new Color(0.14f, 0.13f, 0.10f, 1f), new Color(0.62f, 0.47f, 0.16f, 1f));
+        }
+        skin.add("checkbox-on", checkOn, Drawable.class);
+        skin.add("checkbox-off", checkOff, Drawable.class);
 
         skin.add("title", new Label.LabelStyle(font, Color.WHITE));
         skin.add("main", new Label.LabelStyle(font, Color.LIGHT_GRAY));
         skin.add("muted", new Label.LabelStyle(font, Color.GRAY));
+        skin.add("default", new Label.LabelStyle(font, Color.LIGHT_GRAY));
 
         TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
         textFieldStyle.font = font;
@@ -104,6 +138,8 @@ public abstract class UiScreen extends BaseScreen {
         textFieldStyle.background = skin.getDrawable("textfield-bg");
         textFieldStyle.cursor = skin.getDrawable("cursor");
         textFieldStyle.selection = skin.getDrawable("selection");
+        textFieldStyle.messageFont = font;
+        textFieldStyle.messageFontColor = Color.LIGHT_GRAY;
         skin.add("main", textFieldStyle);
 
         TextButton.TextButtonStyle mainButtonStyle = new TextButton.TextButtonStyle();
@@ -111,20 +147,15 @@ public abstract class UiScreen extends BaseScreen {
         mainButtonStyle.fontColor = Color.WHITE;
         mainButtonStyle.up = skin.getDrawable("button-up");
         mainButtonStyle.down = skin.getDrawable("button-down");
+        mainButtonStyle.over = skin.getDrawable("button-over");
         skin.add("main", mainButtonStyle);
+        skin.add("default", mainButtonStyle);
 
-        TextButton.TextButtonStyle secButtonStyle = new TextButton.TextButtonStyle();
-        secButtonStyle.font = font;
+        TextButton.TextButtonStyle secButtonStyle = new TextButton.TextButtonStyle(mainButtonStyle);
         secButtonStyle.fontColor = Color.LIGHT_GRAY;
-        secButtonStyle.up = skin.getDrawable("button-up");
-        secButtonStyle.down = skin.getDrawable("button-down");
         skin.add("secondary", secButtonStyle);
 
-        TextButton.TextButtonStyle genderBtnStyle = new TextButton.TextButtonStyle();
-        genderBtnStyle.font = font;
-        genderBtnStyle.fontColor = Color.WHITE;
-        genderBtnStyle.up = skin.getDrawable("button-up");
-        genderBtnStyle.down = skin.getDrawable("button-down");
+        TextButton.TextButtonStyle genderBtnStyle = new TextButton.TextButtonStyle(mainButtonStyle);
         genderBtnStyle.checked = skin.getDrawable("button-down");
         skin.add("gender-button", genderBtnStyle);
 
@@ -134,22 +165,42 @@ public abstract class UiScreen extends BaseScreen {
         checkBoxStyle.checkboxOn = skin.getDrawable("checkbox-on");
         checkBoxStyle.checkboxOff = skin.getDrawable("checkbox-off");
         skin.add("main", checkBoxStyle);
+        skin.add("default", checkBoxStyle);
     }
 
-    private Drawable createGoldenDrawable(int width, int height) {
-        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-        pixmap.setColor(new Color(0.45f, 0.34f, 0.10f, 0.90f));
-        pixmap.fill();
-        pixmap.setColor(new Color(0.22f, 0.18f, 0.08f, 0.88f));
-        pixmap.fillRectangle(4, 4, width - 8, height - 8);
-        Texture texture = new Texture(pixmap);
+    private Drawable roundedPanel(int tile, int radius, int border, Color fill, Color borderColor) {
+        Pixmap outer = new Pixmap(tile, tile, Pixmap.Format.RGBA8888);
+        outer.setColor(borderColor);
+        fillRounded(outer, 0, 0, tile, tile, radius);
+
+        int innerSize = tile - border * 2;
+        Pixmap inner = new Pixmap(innerSize, innerSize, Pixmap.Format.RGBA8888);
+        inner.setColor(fill);
+        fillRounded(inner, 0, 0, innerSize, innerSize, Math.max(0, radius - border));
+        outer.drawPixmap(inner, border, border);
+        inner.dispose();
+
+        Texture texture = new Texture(outer);
         texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pixmap.dispose();
-        return new TextureRegionDrawable(texture);
+        outer.dispose();
+
+        int inset = Math.max(border + 1, radius);
+        NinePatch patch = new NinePatch(texture, inset, inset, inset, inset);
+        return new NinePatchDrawable(patch);
     }
 
-    private Drawable createWideCursorDrawable(int width, int height, Color color) {
-        Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+    private void fillRounded(Pixmap pixmap, int x, int y, int w, int h, int radius) {
+        radius = Math.max(0, Math.min(radius, Math.min(w, h) / 2));
+        pixmap.fillRectangle(x + radius, y, w - 2 * radius, h);
+        pixmap.fillRectangle(x, y + radius, w, h - 2 * radius);
+        pixmap.fillCircle(x + radius, y + radius, radius);
+        pixmap.fillCircle(x + w - radius - 1, y + radius, radius);
+        pixmap.fillCircle(x + radius, y + h - radius - 1, radius);
+        pixmap.fillCircle(x + w - radius - 1, y + h - radius - 1, radius);
+    }
+
+    private Drawable solidDrawable(int width, int height, Color color) {
+        Pixmap pixmap = new Pixmap(Math.max(1, width), Math.max(1, height), Pixmap.Format.RGBA8888);
         pixmap.setColor(color);
         pixmap.fill();
         Texture texture = new Texture(pixmap);
@@ -176,6 +227,13 @@ public abstract class UiScreen extends BaseScreen {
         pane.setFadeScrollBars(false);
         pane.setOverscroll(false, false);
         return pane;
+    }
+
+    protected void showCard(Table card) {
+        card.pack();
+        float height = Math.min(card.getPrefHeight(), CARD_MAX_HEIGHT);
+        ScrollPane outer = scrollable(card);
+        rootTable.add(outer).width(card.getPrefWidth()).height(height);
     }
 
     @Override
