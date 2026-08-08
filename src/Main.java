@@ -2,6 +2,8 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 
 import controller.assets.GameAssetManager;
 import controller.assets.ScreenManager;
@@ -19,8 +21,49 @@ public class Main extends ApplicationAdapter {
             GameAssetManager.get().initialize();
             ScreenManager.syncWithCurrentMenu();
 
+            setupCustomCursor();
+
         } catch (Exception e) {
             Gdx.app.error("Main", "Error during initialization", e);
+        }
+    }
+
+    private void setupCustomCursor() {
+        String cursorPath = "images/ui/Gemini_Generated_Image_oy54csoy54csoy54-removebg-preview.png"; // مسیر است کرسر را اینجا قرار دهید
+
+        int desiredWidth = 64;
+        int desiredHeight = 50;
+
+        int xHotspot = 0;
+        int yHotspot = 0;
+
+        if (!Gdx.files.internal(cursorPath).exists()) {
+            cursorPath = "assets/" + cursorPath;
+        }
+
+        if (Gdx.files.internal(cursorPath).exists()) {
+            Pixmap originalPixmap = new Pixmap(Gdx.files.internal(cursorPath));
+
+            int canvasSize = 64;
+            if (desiredWidth > 64 || desiredHeight > 64) {
+                canvasSize = 128;
+            }
+
+            Pixmap cursorCanvas = new Pixmap(canvasSize, canvasSize, Pixmap.Format.RGBA8888);
+            cursorCanvas.setBlending(Pixmap.Blending.None);
+
+            cursorCanvas.drawPixmap(originalPixmap,
+                    0, 0, originalPixmap.getWidth(), originalPixmap.getHeight(),
+                    0, 0, desiredWidth, desiredHeight);
+
+            Cursor cursor = Gdx.graphics.newCursor(cursorCanvas, xHotspot, yHotspot);
+            Gdx.graphics.setCursor(cursor);
+
+            originalPixmap.dispose();
+            cursorCanvas.dispose();
+            Gdx.app.log("Main", "Custom cursor loaded successfully.");
+        } else {
+            Gdx.app.error("Main", "Cursor image file not found at: " + cursorPath);
         }
     }
 
