@@ -197,7 +197,7 @@ public class TravelLogMenu extends Menu {
 
     @Override
     public void exitMenu() {
-        App.currentMenu = new GameMenu();
+        App.currentMenu = new MainMenu();
     }
 
     @Override
