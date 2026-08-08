@@ -112,11 +112,12 @@ public class MainMenuScreen extends UiScreen {
         super.render(delta);
         if (carouselPane != null) {
             float unitWidth = (420 + 40) * 3;
+            float maxX = carouselPane.getMaxX();
             float currentX = carouselPane.getScrollX();
-            if (currentX < unitWidth * 0.5f) {
-                carouselPane.setScrollX(currentX + unitWidth);
-            } else if (currentX > unitWidth * 2.5f) {
-                carouselPane.setScrollX(currentX - unitWidth);
+            if (currentX <= 0f) {
+                carouselPane.setScrollX(Math.min(currentX + unitWidth, maxX));
+            } else if (currentX >= maxX) {
+                carouselPane.setScrollX(Math.max(currentX - unitWidth, 0f));
             }
         }
     }

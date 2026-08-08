@@ -60,6 +60,7 @@ public class GameMenuScreen extends UiScreen {
         rootTable.add(buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
 
         Table centerTable = new Table();
+        centerTable.add(new Label("Choose a Chapter", skin, "title")).padBottom(SPACE_LG).row();
         centerTable.add(buildChapterCarousel());
 
         rootTable.add(centerTable).expand().center().row();
@@ -94,11 +95,12 @@ public class GameMenuScreen extends UiScreen {
     public void render(float delta) {
         super.render(delta);
         if (carouselPane != null) {
+            float maxX = carouselPane.getMaxX();
             float currentX = carouselPane.getScrollX();
-            if (currentX < UNIT_WIDTH * 0.5f) {
-                carouselPane.setScrollX(currentX + UNIT_WIDTH);
-            } else if (currentX > UNIT_WIDTH * 2.5f) {
-                carouselPane.setScrollX(currentX - UNIT_WIDTH);
+            if (currentX <= 0f) {
+                carouselPane.setScrollX(Math.min(currentX + UNIT_WIDTH, maxX));
+            } else if (currentX >= maxX) {
+                carouselPane.setScrollX(Math.max(currentX - UNIT_WIDTH, 0f));
             }
         }
     }
