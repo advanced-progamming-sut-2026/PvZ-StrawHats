@@ -79,6 +79,9 @@ public final class ScreenManager {
             if (seasonName != null && seasonName.equalsIgnoreCase("Big Wave Beach")) {
                 return new BigWaveBeachStagesScreen();
             }
+            if (seasonName != null && seasonName.equalsIgnoreCase("Dark Ages")) {
+                return new DarkAgesStagesScreen();
+            }
         }
         return new PlaceholderScreen(menu);
     }
