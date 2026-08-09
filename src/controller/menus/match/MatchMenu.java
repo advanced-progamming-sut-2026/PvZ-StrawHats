@@ -3,7 +3,9 @@ package controller.menus.match;
 import controller.CollectionManager;
 import controller.NewsManager;
 import controller.menus.GameMenu;
+import controller.menus.LeaderboardMenu;
 import controller.menus.Menu;
+import controller.menus.greenhouse.GreenhouseMenu;
 import model.App;
 import model.Regex;
 import model.collections.plant.Plant;
@@ -69,6 +71,10 @@ public class MatchMenu extends Menu {
             }
         } else if (Regex.MENU_EXIT.getMatcherRaw(text).matches()) {
             exitMenu();
+        } else if (Regex.MENU_GREENHOUSE.getMatcherRaw(text).matches()) {
+            App.currentMenu = new GreenhouseMenu();
+        } else if (Regex.MENU_LEADERBOARD.getMatcherRaw(text).matches()) {
+            App.currentMenu = new LeaderboardMenu();
         } else {
             GeneralPrinter.print("Not Valid. Type 'menu show current' to see the commands available here.");
         }
@@ -82,8 +88,8 @@ public class MatchMenu extends Menu {
         if (chosen == null) {
             throw new model.game_exceptions.GameException("stage is locked or does not exist.");
         }
-            selectedLevel = chosen;
-            GeneralPrinter.print("Selected " + chosen.getName()
+        selectedLevel = chosen;
+        GeneralPrinter.print("Selected " + chosen.getName()
                 + " (Game mode: " + chosen.getGameMode() + "). Use 'start game' to enter this stage.");
     }
 

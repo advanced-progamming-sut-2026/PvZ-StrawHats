@@ -366,7 +366,7 @@ public class EgyptStagesScreen extends UiScreen {
         scrollPane.setFadeScrollBars(true);
         scrollPane.setOverscroll(false, false);
 
-        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(-100).padBottom(-100);
+        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(0).padBottom(-100);
         return wrap;
     }
 
