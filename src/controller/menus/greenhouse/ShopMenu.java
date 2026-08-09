@@ -6,7 +6,7 @@ import model.Regex;
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.game_exceptions.GameException;
-import model.greenhouse.store.Store;
+import model.greenhouse.shop.Shop;
 import model.user_data.User;
 import model.user_data.UserState;
 import view.GeneralPrinter;
@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 
 public class ShopMenu extends Menu {
 
-    private static final Store STORE = new Store();
+    private static final Shop STORE = new Shop();
 
     @Override
     public String getName() {

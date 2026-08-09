@@ -1,4 +1,4 @@
-package model.greenhouse.store;
+package model.greenhouse.shop;
 
 public enum Product {
     POT("pot", "Vase (Pot)", 2000, 0),

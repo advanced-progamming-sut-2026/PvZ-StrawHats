@@ -1,9 +1,10 @@
-package model.greenhouse.store;
+package model.greenhouse.shop;
 
 import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.match_mechanisms.seed_packets.RandomSeedPacket;
 import model.match_mechanisms.seed_packets.SelectableSeedPacket;
+import model.user_data.User;
 import model.user_data.UserState;
 
 import java.time.Duration;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class Store {
+public class Shop {
 
     private static final Random RANDOM = new Random();
 
@@ -71,6 +72,8 @@ public class Store {
         state.dailyOfferPurchased = false;
 
         state.dailyOfferPlantId = candidates.isEmpty() ? null : candidates.get(RANDOM.nextInt(candidates.size()));
+
+        User.save();
     }
 
     public String buy(UserState state, String itemId, int count, Integer plantTypeId) {
@@ -78,7 +81,7 @@ public class Store {
         if (product == null) return "Error: unknown item id '" + itemId + "'.";
         if (count <= 0) return "Error: count must be positive.";
 
-        return switch (product) {
+        String result = switch (product) {
             case POT -> buyPot(state, count);
             case PLANT_FOOD -> buyPlantFood(state, count);
             case SEED_RANDOM -> buyRandomSeedPacket(state, count);
@@ -86,6 +89,11 @@ public class Store {
             case CURRENCY_EXCHANGE -> exchange(state, count);
             case DAILY_OFFER -> buyDailyOffer(state);
         };
+
+        if (!result.startsWith("Error")) {
+            User.save();
+        }
+        return result;
     }
 
     private String buyPot(UserState state, int count) {

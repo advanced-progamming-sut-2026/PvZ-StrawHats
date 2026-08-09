@@ -18,8 +18,8 @@ import model.collections.plant.PlantFactory;
 import model.collections.plant.PlantJsonParser;
 import model.greenhouse.Greenhouse;
 import model.greenhouse.Pot;
-import model.greenhouse.store.Product;
-import model.greenhouse.store.Store;
+import model.greenhouse.shop.Product;
+import model.greenhouse.shop.Shop;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.resource_manager.AudioEnum;
@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class ShopScreen extends UiScreen {
 
-    private static final Store STORE = new Store();
+    private static final Shop STORE = new Shop();
 
     private static final float TAB_W = 200f;
     private static final float TAB_H = 55f;

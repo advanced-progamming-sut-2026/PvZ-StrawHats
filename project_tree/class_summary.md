@@ -671,7 +671,7 @@ Imports:
   - model.collections.plant.PlantFactory
   - model.collections.plant.PlantJsonParser
   - model.game_exceptions.GameException
-  - model.greenhouse.store.Store
+  - model.greenhouse.shop.Shop
   - model.user_data.User
   - model.user_data.UserState
   - view.GeneralPrinter
@@ -2992,10 +2992,10 @@ Methods:
 
 # d:\College\AP\project gitlab\src\model\greenhouse\store\Product.java
 
-Package: model.greenhouse.store
+Package: model.greenhouse.shop
 # d:\College\AP\project gitlab\src\model\greenhouse\store\Store.java
 
-Package: model.greenhouse.store
+Package: model.greenhouse.shop
 Class: Store
 
 Imports:
