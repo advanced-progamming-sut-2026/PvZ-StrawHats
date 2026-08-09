@@ -1,6 +1,5 @@
 package view.general_screens;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -13,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import controller.assets.GameAssetManager;
-import controller.assets.ScreenManager;
+import controller.ScreenManager;
 
 public class Modal extends Table {
 

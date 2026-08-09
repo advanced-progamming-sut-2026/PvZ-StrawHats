@@ -25,7 +25,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 
-import controller.assets.ScreenManager;
+import controller.ScreenManager;
 import model.App;
 import model.game_exceptions.GameException;
 import view.GeneralPrinter;

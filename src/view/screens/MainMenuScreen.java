@@ -89,7 +89,7 @@ public class MainMenuScreen extends UiScreen {
         carouselPane.setFlickScroll(true);
         carouselPane.setScrollingDisabled(false, true);
 
-        centerTable.add(carouselPane).width(1150).height(300);
+        centerTable.add(carouselPane).width(1270).height(300);
 
         Table bottomBar = new Table();
         TextButton logoutBtn = secondaryButton("Log out", this::confirmLogout);

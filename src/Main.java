@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 
 import controller.assets.GameAssetManager;
-import controller.assets.ScreenManager;
+import controller.ScreenManager;
 import model.collections.plant.PlantFactory;
 import model.quests.QuestLoader;
 

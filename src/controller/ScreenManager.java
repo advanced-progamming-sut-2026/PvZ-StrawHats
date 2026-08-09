@@ -1,4 +1,4 @@
-package controller.assets;
+package controller;
 
 import controller.menus.*;
 import controller.menus.authentication.LoginMenu;
