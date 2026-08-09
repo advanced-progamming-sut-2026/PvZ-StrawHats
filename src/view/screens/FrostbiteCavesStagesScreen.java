@@ -84,13 +84,13 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
     }
 
     private static final DecorTuning LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.34f, 27f, 44f);
-    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.53f, 35f, 25f);
-    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.15f, 70f, -215f);
-    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.30f, 37f, 140f);
+    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.53f, 45f, 25f);
+    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.40f, 90f, -150f);
+    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.50f, 37f, 160f);
     private static final DecorTuning BLIZZARD_TUNING = new DecorTuning(250f, 300f, 0.30f, -83f, -24f);
     private static final DecorTuning ICE_CHUNK_TUNING = new DecorTuning(100f, 100f, 0.22f, 0f, 0f);
     private static final DecorTuning SNOW_DUST_TUNING = new DecorTuning(200f, 150f, 0.50f, 10f, 45f);
-    private static final DecorTuning CRYSTAL_TUNING = new DecorTuning(25f, 25f, 0.30f, 0f, 0f);
+    private static final DecorTuning CRYSTAL_TUNING = new DecorTuning(25f, 25f, 0.40f, 0f, 0f);
 
     private List<Level> allLevels = new ArrayList<>();
     private List<Level> chapterLevels = new ArrayList<>();
@@ -144,14 +144,18 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         SMALL_ISLAND_4("images/chapters/frostbite_cave/island6.png", false),
         SMALL_ISLAND_5("images/chapters/frostbite_cave/island7.png", false),
 
+        SMALL_ISLAND_6("assets/images/chapters/frostbite_cave/anim28_271x337.png", false),
+
+        SMALL_ISLAND_7("assets/images/chapters/frostbite_cave/island11.png", false),
+
         BIG_BOSS_DECOR_ISLAND("images/chapters/frostbite_cave/island8.png", false),
         LEVEL_NODE("768/INITIAL/WORLDMAP/LEVEL_NODE/LEVEL_NODE.PAM", true),
 
         FLOATING_ICE_ANIM_1("768/FULL/WORLDMAP/ICEAGE/ANIM27/ANIM27.PAM", true),
         FLOATING_ICE_ANIM_2("768/FULL/WORLDMAP/ICEAGE/ANIM26/ANIM26.PAM", true),
-        FLOATING_ICE_ANIM_3("768/INITIAL/EFFECTS/COLD_SNAPDRAGON_ICE/COLD_SNAPDRAGON_ICE.PAM", true),
+        FLOATING_ICE_ANIM_3("768/FULL/WORLDMAP/ICEAGE/ANIM17/ANIM17.PAM", true),
 
-        DANGER_NODE_ANIM("768/FULL/WORLDMAP/ICEAGE/ANIM28/ANIM28.PAM", true),
+        DANGER_NODE_ANIM("768/FULL/WORLDMAP/DANGER_NODE_ICEAGE/DANGER_NODE_ICEAGE.PAM", true),
 
         BLIZZARD_ANIM("768/FULL/EFFECTS/HOTPOTATO_ICEBLOCK_STEAMFX/HOTPOTATO_ICEBLOCK_STEAMFX.PAM", true),
         TWINKLING_CRYSTAL_ANIM("768/INITIAL/EFFECTS/PRIZE_TWINKLE/PRIZE_TWINKLE.PAM", true),
@@ -527,7 +531,8 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             float[][] crystalCoords = {
                     {110f, 45f}, {320f, 330f}, {540f, 50f}, {760f, 310f}, {910f, 70f},
                     {210f, 270f}, {460f, 190f}, {650f, 35f}, {870f, 330f}, {140f, 170f},
-                    {380f, 85f}, {590f, 320f}, {830f, 175f}, {260f, 345f}, {980f, 220f}
+                    {380f, 85f}, {590f, 320f}, {830f, 175f}, {260f, 345f}, {980f, 220f},
+                    {500f, 400f}, {350f, 180f}
             };
             for (float[] coord : crystalCoords) {
                 addActor(createAnchoredAnimation(MapObjectType.TWINKLING_CRYSTAL_ANIM, CRYSTAL_TUNING, "animation",
@@ -543,7 +548,8 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
                     {180f, 310f}, {480f, 320f}, {750f, 300f},
                     {120f, 150f}, {350f, 450f}, {600f, 120f},
                     {820f, 480f}, {1020f, 280f}, {400f, 250f},
-                    {250f, 550f}, {680f, 500f}, {920f, 550f}
+                    {250f, 550f}, {680f, 500f}, {920f, 550f},
+                    {300f, 500f}, {100f, 200f}, {600f, 400f}
             };
             for (int i = 0; i < iceCoords.length; i++) {
                 MapObjectType selectedIce = iceTypes[i % iceTypes.length];
@@ -561,6 +567,14 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 770, 240, 40, 60));
             placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 155, 270, 40, 60));
             placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 450, 120, 40, 60));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 270, 160, 55, 42));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 700, 180, 60, 45));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 950, 110, 50, 38));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 460, 300, 60, 120));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 770, 20, 90, 180));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 75, 105, 90, 180));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 600, 80, 52, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 350, 70, 100, 200));
 
             for (MapObjectPlacement p : placements) {
                 MapDecorationActor actor = new MapDecorationActor(p.type, p.width, p.height, "idle");
@@ -581,8 +595,9 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
         private void addForegroundEffects() {
             DangerNodeState dState = calculateDangerNodeState();
-            String zombossState = (dState == DangerNodeState.UNLOCKED_IDLE) ? "defeated" : "idle";
+            String zombossState = (dState == DangerNodeState.UNLOCKED_IDLE) ? "idle" : "idle";
             addActor(createAnchoredAnimation(MapObjectType.BIG_BOSS_DECOR_ISLAND, ZOMBOSS_TUNING, zombossState, zombossNodeX - 60f, zombossNodeY - 160f));
+
             addActor(createAnchoredAnimation(MapObjectType.DANGER_NODE_ANIM, DANGER_NODE_TUNING, dState.getPamState(), dangerNodeAnchorX, dangerNodeAnchorY));
 
             if (chapterLevels.size() > 0) {
