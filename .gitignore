@@ -7,3 +7,4 @@ out/
 .gradle/
 build/
 Data.json
+*.zip
