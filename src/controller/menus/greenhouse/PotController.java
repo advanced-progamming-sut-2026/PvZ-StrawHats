@@ -2,6 +2,7 @@ package controller.menus.greenhouse;
 
 import model.greenhouse.Pot;
 import model.greenhouse.PotPlant;
+import model.user_data.User;
 import model.user_data.UserState;
 
 public class PotController {
@@ -28,6 +29,7 @@ public class PotController {
         }
 
         removePlant();
+        User.save();
         return message;
     }
 
@@ -52,6 +54,7 @@ public class PotController {
 
         state.diamonds -= cost;
         plant.growInstantly();
+        User.save();
         return "Growth accelerated for " + cost + " diamond(s); " + state.diamonds + " diamonds remaining.";
     }
 
