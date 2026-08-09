@@ -1,5 +1,7 @@
 package service.resource_manager;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.Disposable;
@@ -28,6 +30,10 @@ public class AudioManager implements Disposable {
         this.gameAssetManager = GameAssetManager.get();
         this.soundCache = new EnumMap<>(AudioEnum.class);
         this.musicCache = new EnumMap<>(AudioEnum.class);
+
+        Preferences prefs = Gdx.app.getPreferences("GamePreferences");
+        this.musicMuted = prefs.getBoolean("music_muted", false);
+        this.soundMuted = prefs.getBoolean("sound_muted", false);
     }
 
     public void loadAll() {

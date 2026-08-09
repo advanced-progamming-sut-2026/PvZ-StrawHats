@@ -109,7 +109,7 @@ public class SettingsScreen extends UiScreen {
     private Table musicVolumeRow() {
         Table row = new Table();
         float currentVol = prefs.getFloat("music_volume", AudioManager.get().getMusicVolume() * 100f);
-        Slider slider = new Slider(0f, 100f, 1f, false, safeSliderStyle);
+        Slider slider = new Slider(0, 100, 1f, false, safeSliderStyle);
         slider.setValue(currentVol);
 
         Label valueLabel = new Label((int) currentVol + "%", skin, "main");
@@ -119,7 +119,7 @@ public class SettingsScreen extends UiScreen {
             public void changed(ChangeEvent event, Actor actor) {
                 int val = (int) slider.getValue();
                 valueLabel.setText(val + "%");
-                float volFraction = slider.getValue() / 100f;
+                float volFraction = slider.getValue() / 100;
                 AudioManager.get().setMusicVolume(volFraction);
                 prefs.putFloat("music_volume", slider.getValue());
                 prefs.flush();
