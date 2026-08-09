@@ -31,23 +31,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static view.screens.GreenhouseScreen.SEED_PACKET_BG;
+import static view.screens.GreenhouseScreen.SEED_PACKET_ICON;
+
 public class ShopScreen extends UiScreen {
 
     private static final Shop STORE = new Shop();
 
-    private static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
-    private static final String SEED_PACKET_ICON = "assets/images/ui/seedpacket.png";
 
-    private static final float TAB_W = 200f;
-    private static final float TAB_H = 55f;
-    private static final float TAB_SPACING = 20f;
-    private static final float BOARD_PAD_LEFT = 40f;
-    private static final float ARROW_W = 36f;
-    private static final float ARROW_H = 26f;
+    private static final String TAB_ICON_PLANTS = "assets/images/shop/event_icon_potw_down.png";
+    private static final String TAB_ICON_CURRENCY = "assets/images/shop/moneybag.png";
+    private static final String INFO_ICON = "assets/images/shop/info_icon.png";
 
-    private enum ShopTab { DAILY, ITEMS }
+    private static final float TAB_ICON_SIZE = 46f;
 
-    private ShopTab currentTab = ShopTab.DAILY;
+    private static final float CARD_W = 200f;
+    private static final float CARD_H = 300f;
+    private static final float CARD_IMAGE_SIZE = 130f;
+
+    private static final float DAILY_BOX_W = 260f;
+    private static final float ITEMS_BOX_W = 700f;
+    private static final float PANEL_H = 380f;
+
+    private enum ShopTab { PLANTS, CURRENCY }
+
+    private ShopTab currentTab = ShopTab.PLANTS;
 
     @Override
     public void show() {
@@ -69,164 +77,161 @@ public class ShopScreen extends UiScreen {
         Label title = new Label("Shop", skin, "title");
         title.setFontScale(1.6f);
         centerTable.add(title).padBottom(SPACE_MD).row();
-        centerTable.add(buildTabbedBoard(state));
+
+        centerTable.add(buildCategoryTabs()).left().padBottom(SPACE_SM).row();
+
+        Table board = new Table();
+        board.setBackground(skin.getDrawable("card-background"));
+        board.pad(SPACE_MD);
+        board.add(buildDailyOfferBox(state)).width(DAILY_BOX_W).height(PANEL_H).top().padRight(SPACE_MD);
+        board.add(buildItemsBox(state)).width(ITEMS_BOX_W).height(PANEL_H).top();
+        centerTable.add(board);
 
         rootTable.add(centerTable).expand().center().row();
     }
 
-    private Stack buildTabbedBoard(UserState state) {
-        TextureRegionDrawable woodBoardBg = createTextureDrawable("assets/images/backg/wood board.png");
-        TextureRegionDrawable tabBg = createTextureDrawable("assets/images/ui/zombies_active.png");
-        TextureRegionDrawable arrowDown = createTextureDrawable("assets/images/ui/zombies_active.png");
-
-        float arrowPadTop = TAB_H - 8f;
-        float padLeftArrow1 = BOARD_PAD_LEFT + (TAB_W / 2f) - (ARROW_W / 2f);
-        float padLeftArrow2 = TAB_SPACING + TAB_W - ARROW_W;
-
-        Table inArrows = new Table();
-        inArrows.top().left();
-        Image arrowDailyIn = new Image(arrowDown);
-        Image arrowItemsIn = new Image(arrowDown);
-        arrowDailyIn.setVisible(currentTab != ShopTab.DAILY);
-        arrowItemsIn.setVisible(currentTab != ShopTab.ITEMS);
-        inArrows.add(arrowDailyIn).size(ARROW_W, ARROW_H).padTop(arrowPadTop).padLeft(padLeftArrow1);
-        inArrows.add(arrowItemsIn).size(ARROW_W, ARROW_H).padTop(arrowPadTop).padLeft(padLeftArrow2);
-
-        Table woodLayer = new Table();
-        woodLayer.padTop(TAB_H - 12f);
-        Table boardWrapper = new Table();
-        boardWrapper.setBackground(woodBoardBg);
-        boardWrapper.pad(40);
-        woodLayer.add(boardWrapper).width(780).height(480);
-
-        Table outArrows = new Table();
-        outArrows.top().left();
-        Image arrowDailyAct = new Image(arrowDown);
-        Image arrowItemsAct = new Image(arrowDown);
-        arrowDailyAct.setVisible(currentTab == ShopTab.DAILY);
-        arrowItemsAct.setVisible(currentTab == ShopTab.ITEMS);
-        outArrows.add(arrowDailyAct).size(ARROW_W, ARROW_H).padTop(arrowPadTop).padLeft(padLeftArrow1);
-        outArrows.add(arrowItemsAct).size(ARROW_W, ARROW_H).padTop(arrowPadTop).padLeft(padLeftArrow2);
-
-        Table tabsLayer = new Table();
-        tabsLayer.top().left();
-        tabsLayer.padTop(0).padLeft(BOARD_PAD_LEFT);
-
-        Table dailyTab = new Table();
-        dailyTab.setBackground(tabBg);
-        Label dailyLabel = new Label("Daily Offer", skin, "title");
-        dailyLabel.setFontScale(0.85f);
-        dailyTab.add(dailyLabel).center();
-        dailyTab.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                currentTab = ShopTab.DAILY;
-                build();
-            }
-        });
-
-        Table itemsTab = new Table();
-        itemsTab.setBackground(tabBg);
-        Label itemsLabel = new Label("Shop Items", skin, "title");
-        itemsLabel.setFontScale(0.85f);
-        itemsTab.add(itemsLabel).center();
-        itemsTab.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                currentTab = ShopTab.ITEMS;
-                build();
-            }
-        });
-
-        tabsLayer.add(dailyTab).size(TAB_W, TAB_H).padRight(TAB_SPACING);
-        tabsLayer.add(itemsTab).size(TAB_W, TAB_H);
-
-        Table list = currentTab == ShopTab.DAILY ? buildDailyOfferList(state) : buildItemsList(state);
-        ScrollPane scrollPane = new ScrollPane(list);
-        scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false);
-        boardWrapper.add(scrollPane).expand().fill();
-
-        Stack mainStack = new Stack();
-        mainStack.add(inArrows);
-        mainStack.add(woodLayer);
-        mainStack.add(outArrows);
-        mainStack.add(tabsLayer);
-        return mainStack;
+    private Table buildCategoryTabs() {
+        Table tabs = new Table();
+        tabs.add(buildCategoryTab(TAB_ICON_PLANTS, "Plants", ShopTab.PLANTS)).padRight(SPACE_MD);
+        tabs.add(buildCategoryTab(TAB_ICON_CURRENCY, "Coins & Gems", ShopTab.CURRENCY));
+        return tabs;
     }
 
-    private Table buildDailyOfferList(UserState state) {
-        Table list = new Table();
-        list.top();
-        list.add(buildDailyOfferCard(state)).width(680).row();
-        return list;
-    }
-
-    private Table buildItemsList(UserState state) {
-        Table list = new Table();
-        list.top();
-        for (Product product : Product.values()) {
-            if (product == Product.DAILY_OFFER) continue;
-            list.add(buildProductCard(product, state)).width(680).padBottom(SPACE_MD).row();
+    private Table buildCategoryTab(String iconPath, String label, ShopTab tab) {
+        Table container = new Table();
+        if (tab == currentTab) {
+            container.setBackground(skin.getDrawable("card-background"));
         }
-        return list;
+        container.pad(SPACE_XS, SPACE_SM, SPACE_XS, SPACE_SM);
+
+        Image icon = new Image(loadTextureSafe(iconPath));
+        container.add(icon).size(TAB_ICON_SIZE, TAB_ICON_SIZE).row();
+
+        Label tabLabel = new Label(label, skin, tab == currentTab ? "title" : "muted");
+        tabLabel.setFontScale(0.8f);
+        container.add(tabLabel).padTop(2);
+
+        container.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                currentTab = tab;
+                build();
+            }
+        });
+        return container;
+    }
+
+    private Table buildDailyOfferBox(UserState state) {
+        Table box = new Table();
+        box.top();
+
+        Label header = new Label("Daily Offer", skin, "title");
+        header.setFontScale(0.9f);
+        box.add(header).left().padBottom(SPACE_SM).row();
+
+        Table list = new Table();
+        list.top();
+        list.add(buildDailyOfferCard(state)).width(CARD_W).row();
+
+        ScrollPane scrollPane = scrollable(list);
+        box.add(scrollPane).expand().fill();
+        return box;
+    }
+
+    private Table buildItemsBox(UserState state) {
+        Table box = new Table();
+        box.top();
+
+        String header = currentTab == ShopTab.PLANTS ? "Plants" : "Coins & Gems";
+        Label headerLabel = new Label(header, skin, "title");
+        headerLabel.setFontScale(0.9f);
+        box.add(headerLabel).left().padBottom(SPACE_SM).row();
+
+        Table row = new Table();
+        row.left();
+        for (Product product : productsForTab(currentTab)) {
+            row.add(buildItemCard(product, state)).width(CARD_W).height(CARD_H).padRight(SPACE_MD);
+        }
+
+        ScrollPane scrollPane = new ScrollPane(row);
+        scrollPane.setScrollingDisabled(false, true);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setOverscroll(false, false);
+        box.add(scrollPane).expand().fill();
+        return box;
+    }
+
+    private List<Product> productsForTab(ShopTab tab) {
+        return switch (tab) {
+            case PLANTS -> List.of(Product.SEED_RANDOM, Product.SEED_CHOICE);
+            case CURRENCY -> List.of(Product.POT, Product.PLANT_FOOD, Product.CURRENCY_EXCHANGE);
+        };
     }
 
     private Table buildDailyOfferCard(UserState state) {
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(SPACE_MD);
+        card.pad(SPACE_SM);
+        card.top();
+
+        Table headerRow = new Table();
+        String plantName = plantName(state.dailyOfferPlantId);
+        Label nameLabel = new Label(plantName, skin, "main");
+        nameLabel.setFontScale(0.85f);
+        nameLabel.setWrap(true);
+        headerRow.add(nameLabel).expandX().left().width(CARD_W - 60f);
+        headerRow.add(new Image(loadTextureSafe(INFO_ICON))).size(22, 22).right();
+        card.add(headerRow).fillX().row();
 
         Image icon = new Image(loadTextureSafe(""));
-        card.add(icon).size(64, 64).padRight(SPACE_MD);
-
-        Table info = new Table();
-        info.left();
-
-        String plantName = plantName(state.dailyOfferPlantId);
-        Label nameLabel = new Label("Daily Offer: " + plantName, skin, "main");
-        info.add(nameLabel).left().row();
+        card.add(icon).size(CARD_IMAGE_SIZE, CARD_IMAGE_SIZE).padTop(SPACE_SM).padBottom(SPACE_SM).row();
 
         Label subLabel = new Label(state.dailyOfferPurchased
                 ? "Already purchased today - come back tomorrow."
-                : "10 seed packs for " + Product.DAILY_OFFER.getCoinCost() + " coins.",
+                : "10 seed packs, once a day.",
                 skin, "muted");
+        subLabel.setFontScale(0.85f);
         subLabel.setWrap(true);
-        info.add(subLabel).width(380).left().padTop(SPACE_XS);
-
-        card.add(info).expandX().fillX().left();
+        card.add(subLabel).width(CARD_W - 40f).padBottom(SPACE_SM).row();
 
         boolean canBuy = !state.dailyOfferPurchased && state.dailyOfferPlantId != null;
-        TextButton buyBtn = primaryButton(state.dailyOfferPurchased ? "Bought" : "Buy",
-                () -> buy("daily-offer", 1, null));
+        TextButton buyBtn = primaryButton(state.dailyOfferPurchased
+                ? "Bought" : Product.DAILY_OFFER.getCoinCost() + " coins", () -> buy("daily-offer", 1, null));
         buyBtn.setDisabled(!canBuy);
-        card.add(buyBtn).width(120).height(46);
+        card.add(buyBtn).width(150).height(44);
 
         return card;
     }
 
-    private Table buildProductCard(Product product, UserState state) {
+    private Table buildItemCard(Product product, UserState state) {
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
-        card.pad(SPACE_MD);
+        card.pad(SPACE_SM);
+        card.top();
+
+        Table headerRow = new Table();
+        Label nameLabel = new Label(product.getDisplayName(), skin, "main");
+        nameLabel.setFontScale(0.85f);
+        nameLabel.setWrap(true);
+        headerRow.add(nameLabel).expandX().left().width(CARD_W - 60f);
+        headerRow.add(new Image(loadTextureSafe(INFO_ICON))).size(22, 22).right();
+        card.add(headerRow).fillX().row();
 
         Image icon = new Image(loadTextureSafe(iconFor(product)));
-        card.add(icon).size(56, 56).padRight(SPACE_MD);
+        card.add(icon).size(CARD_IMAGE_SIZE, CARD_IMAGE_SIZE).padTop(SPACE_SM).padBottom(SPACE_SM).row();
 
-        Table info = new Table();
-        info.left();
-        info.add(new Label(product.getDisplayName(), skin, "main")).left().row();
-        info.add(new Label(costLabel(product), skin, "muted")).left().padTop(SPACE_XS).row();
         String note = extraNote(product, state);
         if (note != null) {
             Label noteLabel = new Label(note, skin, "muted");
+            noteLabel.setFontScale(0.85f);
             noteLabel.setWrap(true);
-            info.add(noteLabel).width(360).left().padTop(SPACE_XS);
+            card.add(noteLabel).width(CARD_W - 40f).padBottom(SPACE_SM).row();
+        } else {
+            card.add().expandY().row();
         }
-        card.add(info).expandX().fillX().left();
 
-        TextButton buyBtn = primaryButton("Buy", () -> onBuyClicked(product, state));
-        card.add(buyBtn).width(120).height(46);
+        TextButton buyBtn = primaryButton(costLabel(product), () -> onBuyClicked(product, state));
+        card.add(buyBtn).width(150).height(44);
 
         return card;
     }
@@ -402,10 +407,6 @@ public class ShopScreen extends UiScreen {
         Table outer = new Table();
         outer.add(group).size(groupWidth, groupHeight);
         return outer;
-    }
-
-    private TextureRegionDrawable createTextureDrawable(String path) {
-        return new TextureRegionDrawable(loadTextureSafe(path));
     }
 
     private Texture loadTextureSafe(String path) {

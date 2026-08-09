@@ -166,7 +166,7 @@ public class LeaderboardScreen extends UiScreen {
         sortRows(rows);
 
         int rank = 1;
-        for (LeaderboardRow row : sort.ascending? rows:rows.reversed())
+        for (LeaderboardRow row : sort.ascending? rows : rows.reversed())
             list.add(buildRow(rank++, row)).width(ROW_WIDTH).padBottom(10).row();
 
         return list;
@@ -185,11 +185,8 @@ public class LeaderboardScreen extends UiScreen {
             case SCORE -> Comparator.comparingInt((LeaderboardRow r) -> r.highScore);
         };
 
-        if (comparator == null) {
-            if (!sort.ascending) Collections.reverse(rows);
-            return;
-        }
-        rows.sort(sort.ascending ? comparator : comparator.reversed());
+
+
     }
 
     private Table buildRow(int rank, LeaderboardRow row) {

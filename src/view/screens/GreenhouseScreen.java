@@ -34,8 +34,8 @@ public class GreenhouseScreen extends UiScreen {
     private static final String COLLECTION_ICON = "assets/images/ui/collection.png";
     private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
-    private static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
-    private static final String SEED_PACKET_ICON = "assets/images/ui/seedpacket.png";
+    static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
+    static final String SEED_PACKET_ICON = "assets/images/ui/seedpacket.png";
 
     private static final String GREENHOUSE_BACKGROUND = "assets/images/backg/mainmenu_background.png";
     private static final String POT_EMPTY_ICON = "";
