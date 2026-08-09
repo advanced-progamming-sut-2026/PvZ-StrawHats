@@ -4,6 +4,7 @@ import controller.menus.*;
 import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import controller.menus.match.MatchMenu;
+import controller.menus.greenhouse.GreenhouseMenu;
 import controller.menus.greenhouse.ShopMenu;
 import model.App;
 import model.match.main.levels.Level;
@@ -69,6 +70,9 @@ public final class ScreenManager {
         }
         if (menu instanceof ShopMenu) {
             return new ShopScreen();
+        }
+        if (menu instanceof GreenhouseMenu) {
+            return new GreenhouseScreen();
         }
 
         if (menu instanceof MatchMenu) {

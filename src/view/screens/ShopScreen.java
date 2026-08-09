@@ -3,6 +3,7 @@ package view.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -33,6 +34,9 @@ import java.util.Map;
 public class ShopScreen extends UiScreen {
 
     private static final Shop STORE = new Shop();
+
+    private static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
+    private static final String SEED_PACKET_ICON = "assets/images/ui/seedpacket.png";
 
     private static final float TAB_W = 200f;
     private static final float TAB_H = 55f;
@@ -302,17 +306,30 @@ public class ShopScreen extends UiScreen {
         User user = User.currentUser;
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
         int diamonds = (user != null && user.userState != null) ? user.userState.diamonds : 0;
+        int seedPackets = totalSeedPackets(user);
 
-        Table topRight = new Table();
-        topRight.add(createResourceWidget("assets/images/ui/buttons_coin_buy_normal.png",
+        Table currencyRow = new Table();
+        currencyRow.add(createResourceWidget("assets/images/ui/buttons_coin_buy_normal.png",
                 String.valueOf(coins))).padRight(15);
-        topRight.add(createResourceWidget("assets/images/ui/buttons_premium_normal.png",
+        currencyRow.add(createResourceWidget("assets/images/ui/buttons_premium_normal.png",
                 String.valueOf(diamonds)));
 
+        Table topRight = new Table();
+        topRight.add(currencyRow).right().row();
+        topRight.add(createResourceWidget(SEED_PACKET_BG, SEED_PACKET_ICON, String.valueOf(seedPackets), 130, 55))
+                .padTop(25).padBottom(-45).padRight(8).right();
+
         Table topBar = new Table();
-        topBar.add(topLeft).left().expandX();
-        topBar.add(topRight).right();
+        topBar.add(topLeft).left().expandX().padBottom(-110);
+        topBar.add(topRight).right().padBottom(-120);
         return topBar;
+    }
+
+    private int totalSeedPackets(User user) {
+        if (user == null || user.userState == null || user.userState.seedPacketInventory == null) {
+            return 0;
+        }
+        return user.userState.seedPacketInventory.values().stream().mapToInt(Integer::intValue).sum();
     }
 
     private ImageButton createIconButton(String path, float width, float height, Runnable action) {
@@ -358,6 +375,32 @@ public class ShopScreen extends UiScreen {
 
         Table outer = new Table();
         outer.add(stack).size(130, 42);
+        return outer;
+    }
+
+    private Table createResourceWidget(String bgPath, String iconPath, String value, float width, float height) {
+        float bgWidth = 110;
+        float bgHeight = 30;
+        float groupWidth = Math.max(width, bgWidth);
+        float groupHeight = Math.max(height, bgHeight);
+
+        Group group = new Group();
+        group.setSize(groupWidth, groupHeight);
+
+        Image bgImage = new Image(loadTextureSafe(bgPath));
+        bgImage.setSize(bgWidth, bgHeight);
+        bgImage.setPosition(((groupWidth - bgWidth) / 2f) + 10, (groupHeight - bgHeight) / 2f);
+        group.addActor(bgImage);
+
+        Table textTable = new Table();
+        textTable.add(new Image(loadTextureSafe(iconPath))).left().expand();
+        textTable.setSize(width, height);
+        textTable.setPosition((groupWidth - width) / 2f, (groupHeight - height) / 2f);
+        textTable.add(new Label(value, skin, "title")).center().expand();
+        group.addActor(textTable);
+
+        Table outer = new Table();
+        outer.add(group).size(groupWidth, groupHeight);
         return outer;
     }
 

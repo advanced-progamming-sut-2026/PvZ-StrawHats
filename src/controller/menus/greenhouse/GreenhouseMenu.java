@@ -29,28 +29,51 @@ public class GreenhouseMenu extends Menu {
         } else if (pot.getPotPlant() != null) {
             throw new GameException("that pot is already occupied.");
         } else {
+            UserState state = User.currentUser.userState;
+            int totalSeedPackets = state.seedPacketInventory.values().stream().mapToInt(Integer::intValue).sum();
+            if (totalSeedPackets <= 0) {
+                throw new GameException("you have no seed packets to plant.");
+            }
+
             PotPlant potPlant;
             Random random = new Random();
-            if (random.nextInt(100) < 50) {
-                potPlant = new Marigold(pot);
-            } else {
-                UserState state = User.currentUser.userState;
-                List<Integer> candidates = new ArrayList<>();
-                for (Map.Entry<Integer, PlantJsonParser.PlantConfig> entry : PlantFactory.getBlueprints().entrySet()) {
-                    if (state.isPlantUnlocked(entry.getKey()) && entry.getValue().plantFoodType != PlantFoodType.NONE) {
-                        candidates.add(entry.getKey());
-                    }
-                }
-                if (candidates.isEmpty()) {
-                    potPlant = new Marigold(pot);
-                } else {
-                    int plantId = candidates.get(random.nextInt(candidates.size()));
-                    potPlant = new GreenhousePlant(pot, plantId, PlantFactory.getBlueprints().get(plantId).name);
+            List<Integer> candidates = new ArrayList<>();
+            for (Map.Entry<Integer, PlantJsonParser.PlantConfig> entry : PlantFactory.getBlueprints().entrySet()) {
+                int plantId = entry.getKey();
+                boolean hasSeedPacket = state.seedPacketInventory.getOrDefault(plantId, 0) > 0;
+                if (hasSeedPacket && state.isPlantUnlocked(plantId) && entry.getValue().plantFoodType != PlantFoodType.NONE) {
+                    candidates.add(plantId);
                 }
             }
+
+            if (random.nextInt(100) < 50 || candidates.isEmpty()) {
+                potPlant = new Marigold(pot);
+                consumeAnySeedPacket(state);
+            } else {
+                int plantId = candidates.get(random.nextInt(candidates.size()));
+                potPlant = new GreenhousePlant(pot, plantId, PlantFactory.getBlueprints().get(plantId).name);
+                consumeSeedPacket(state, plantId);
+            }
+
             pot.setPotPlant(potPlant);
             GeneralPrinter.print("Planted " + potPlant.getPlantName() + " at (" + pot.getCol() + "," + pot.getRow() + ").");
             User.save();
+        }
+    }
+
+    private void consumeSeedPacket(UserState state, int plantId) {
+        state.seedPacketInventory.merge(plantId, -1, Integer::sum);
+        if (state.seedPacketInventory.get(plantId) <= 0) {
+            state.seedPacketInventory.remove(plantId);
+        }
+    }
+
+    private void consumeAnySeedPacket(UserState state) {
+        for (Map.Entry<Integer, Integer> entry : new ArrayList<>(state.seedPacketInventory.entrySet())) {
+            if (entry.getValue() > 0) {
+                consumeSeedPacket(state, entry.getKey());
+                return;
+            }
         }
     }
 
@@ -131,7 +154,4 @@ public class GreenhouseMenu extends Menu {
                 + "  enter shop\n"
                 + "  menu exit | menu show current";
     }
-
-
-
 }
