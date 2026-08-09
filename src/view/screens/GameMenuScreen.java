@@ -41,7 +41,7 @@ public class GameMenuScreen extends UiScreen {
     private static final float CARD_WIDTH = 280f;
     private static final float CARD_HEIGHT = 230f;
     private static final float CHAPTER_CARD_PAD = 20f;
-    private static final float CAROUSEL_VIEWPORT_WIDTH = 1150f;
+    private static final float CAROUSEL_VIEWPORT_WIDTH = 1270f;
     private static final float UNIT_WIDTH = (CARD_WIDTH + CHAPTER_CARD_PAD * 2) * CHAPTERS.length;
 
     private ScrollPane carouselPane;
@@ -60,7 +60,9 @@ public class GameMenuScreen extends UiScreen {
         rootTable.add(buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
 
         Table centerTable = new Table();
-        centerTable.add(new Label("Choose a Chapter", skin, "title")).padBottom(SPACE_LG).row();
+        Label label = new Label("Choose a Chapter", skin, "title");
+        label.setFontScale(1.9f);
+        centerTable.add(label).padTop(-210).padBottom(19).row();
         centerTable.add(buildChapterCarousel());
 
         rootTable.add(centerTable).expand().center().row();
