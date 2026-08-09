@@ -4,6 +4,7 @@ import controller.menus.*;
 import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import controller.menus.match.MatchMenu;
+import controller.menus.greenhouse.ShopMenu;
 import model.App;
 import model.match.main.levels.Level;
 import view.general_screens.BaseScreen;
@@ -66,7 +67,10 @@ public final class ScreenManager {
         if (menu instanceof LeaderboardMenu) {
             return new LeaderboardScreen();
         }
-        
+        if (menu instanceof ShopMenu) {
+            return new ShopScreen();
+        }
+
         if (menu instanceof MatchMenu) {
             Level selected = MatchMenu.selectedLevel;
             String seasonName = selected != null ? selected.getSeason().getName() : null;

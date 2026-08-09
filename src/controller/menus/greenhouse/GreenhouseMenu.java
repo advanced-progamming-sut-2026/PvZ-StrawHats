@@ -2,7 +2,6 @@ package controller.menus.greenhouse;
 
 import controller.menus.GameMenu;
 import controller.menus.Menu;
-import controller.menus.store.StoreMenu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantFactory;
@@ -64,7 +63,7 @@ public class GreenhouseMenu extends Menu {
     public void handleCommand(String text) {
         try {
             if (Regex.ENTER_SHOP.getMatcherRaw(text).matches()) {
-                App.currentMenu = new StoreMenu();
+                App.currentMenu = new ShopMenu();
                 return;
             }
             super.handleCommand(text);

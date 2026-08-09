@@ -257,7 +257,7 @@ Extends: Menu
 Imports:
   - controller.menus.GameMenu
   - controller.menus.Menu
-  - controller.menus.store.StoreMenu
+  - controller.menus.greenhouse.ShopMenu
   - model.App
   - model.Regex
   - model.collections.plant.PlantFactory

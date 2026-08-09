@@ -1,7 +1,6 @@
-package controller.menus.store;
+package controller.menus.greenhouse;
 
 import controller.menus.Menu;
-import controller.menus.greenhouse.GreenhouseMenu;
 import model.App;
 import model.Regex;
 import model.collections.plant.PlantFactory;
@@ -15,7 +14,7 @@ import view.GeneralPrinter;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-public class StoreMenu extends Menu {
+public class ShopMenu extends Menu {
 
     private static final Store STORE = new Store();
 
@@ -29,7 +28,6 @@ public class StoreMenu extends Menu {
         super.handleCommand(text);
         if (isGeneralCmd) return;
         handleStoreCommand(text);
-
     }
 
     private void handleStoreCommand(String text) {
