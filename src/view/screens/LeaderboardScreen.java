@@ -43,8 +43,7 @@ public class LeaderboardScreen extends UiScreen {
     private static final float COL_QUESTS = 90f;
     private static final float COL_SCORE = 90f;
 
-    private SortColumn sortColumn = SortColumn.SCORE;
-    private boolean ascending = false;
+    private final SortState sort = new SortState();
 
     @Override
     public void show() {
@@ -97,18 +96,20 @@ public class LeaderboardScreen extends UiScreen {
         for (SortColumn column : SortColumn.values()) {
             bar.add(sortChip(column)).width(112).height(38);
         }
-        bar.add(orderToggle()).width(90).height(38).padLeft(SPACE_LG);
+
+        bar.add(createOrderToggleButton()).size(48, 38).padLeft(SPACE_LG);
         return bar;
     }
 
     private TextButton sortChip(SortColumn column) {
-        Runnable select = () -> {
-            sortColumn = column;
-            build();
-        };
-        return column == sortColumn
-                ? primaryButton(chipLabel(column), select)
-                : secondaryButton(chipLabel(column), select);
+        return column == sort.column
+                ? primaryButton(chipLabel(column), () -> changeSort(column))
+                : secondaryButton(chipLabel(column), () -> changeSort(column));
+    }
+
+    private void changeSort(SortColumn column) {
+        sort.column = column;
+        build();
     }
 
     private String chipLabel(SortColumn column) {
@@ -122,13 +123,6 @@ public class LeaderboardScreen extends UiScreen {
             case QUESTS -> "Quests";
             case SCORE -> "Score";
         };
-    }
-
-    private TextButton orderToggle() {
-        return secondaryButton(ascending ? "Asc" : "Desc", () -> {
-            ascending = !ascending;
-            build();
-        });
     }
 
     private Table buildColumnHeader() {
@@ -172,14 +166,14 @@ public class LeaderboardScreen extends UiScreen {
         sortRows(rows);
 
         int rank = 1;
-        for (LeaderboardRow row : rows) {
+        for (LeaderboardRow row : sort.ascending? rows:rows.reversed())
             list.add(buildRow(rank++, row)).width(ROW_WIDTH).padBottom(10).row();
-        }
+
         return list;
     }
 
     private void sortRows(List<LeaderboardRow> rows) {
-        Comparator<LeaderboardRow> comparator = switch (sortColumn) {
+        Comparator<LeaderboardRow> comparator = switch (sort.column) {
             case RANK -> null;
             case USERNAME -> Comparator.comparing((LeaderboardRow r) -> r.user.username,
                     String.CASE_INSENSITIVE_ORDER);
@@ -192,10 +186,10 @@ public class LeaderboardScreen extends UiScreen {
         };
 
         if (comparator == null) {
-            if (!ascending) Collections.reverse(rows);
+            if (!sort.ascending) Collections.reverse(rows);
             return;
         }
-        rows.sort(ascending ? comparator : comparator.reversed());
+        rows.sort(sort.ascending ? comparator : comparator.reversed());
     }
 
     private Table buildRow(int rank, LeaderboardRow row) {
@@ -349,13 +343,47 @@ public class LeaderboardScreen extends UiScreen {
         return fallback;
     }
 
+
+    private Actor createOrderToggleButton() {
+        String iconPath = sort.ascending
+                ? "assets/images/ui/leaderboard/sort_ascending_down.png"
+                : "assets/images/ui/leaderboard/sort_descending_down.png";
+
+        Texture tex = loadTextureSafe(iconPath);
+        if (tex == null || !Gdx.files.internal(iconPath).exists()) {
+            return secondaryButton(sort.ascending ? "Asc" : "Desc", this::toggleOrder);
+        }
+
+        TextureRegionDrawable drawable = new TextureRegionDrawable(tex);
+        ImageButton button = new ImageButton(drawable);
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                toggleOrder();
+            }
+        });
+        return button;
+    }
+
+    private void toggleOrder() {
+        sort.ascending = !sort.ascending;
+        build();
+    }
+
+    private static class SortState {
+        private SortColumn column = SortColumn.SCORE;
+        private boolean ascending = false;
+    }
+
     @Override
     protected void onAfterCommand() {
         build();
     }
 
+
+
     private record LeaderboardRow(User user, String season, String chapter, String stage, int stageLevelId,
-                                   int miniGamesWon, int questsCompleted, int highScore) {
+                                  int miniGamesWon, int questsCompleted, int highScore) {
 
         static LeaderboardRow of(User user, List<Level> allLevels) {
             Level level = null;
