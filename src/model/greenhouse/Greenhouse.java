@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Greenhouse {
-    private static final int ROW_COUNT = 4;
-    private static final int COL_COUNT = 5;
+    private static final int ROW_COUNT = 3;
+    private static final int COL_COUNT = 4;
 
     private static Greenhouse instance;
     private Pot[][] pots;

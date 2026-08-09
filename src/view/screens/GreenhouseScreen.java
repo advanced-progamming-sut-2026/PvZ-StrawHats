@@ -37,15 +37,17 @@ public class GreenhouseScreen extends UiScreen {
     static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
     static final String SEED_PACKET_ICON = "assets/images/ui/seedpacket.png";
 
-    private static final String GREENHOUSE_BACKGROUND = "assets/images/backg/mainmenu_background.png";
-    private static final String POT_EMPTY_ICON = "";
-    private static final String POT_LOCKED_ICON = "";
-    private static final String POT_GROWING_ICON = "";
-    private static final String POT_MARIGOLD_ICON = "";
-    private static final String SPARKLE_ICON = "";
+    private static final String GREENHOUSE_BACKGROUND = "assets/images/backg/greenhouse.png";
+    private static final String POT_EMPTY_ICON = "assets/images/greenhouse/pot_empty.png";
+    private static final String POT_LOCKED_ICON = "assets/images/greenhouse/pot_empty.png";
+    private static final String POT_READY_ICON = "assets/images/greenhouse/pot_growing.png";
+    private static final String SPARKLE_ICON = "assets/images/greenhouse/sparkles.png";
     private static final String LOCK_ICON = "assets/images/greenhouse/lock_medium.png";
 
     private static final float POT_SIZE = 92f;
+    private static final float POT_CELL_EXTRA_WIDTH = 50f;
+    private static final float POT_CELL_EXTRA_HEIGHT = 40f;
+    private static final float POT_CELL_GAP = 8f;
 
     private Label statusLabel;
 
@@ -68,7 +70,7 @@ public class GreenhouseScreen extends UiScreen {
         statusLabel = new Label(greenhouse.countUnlockedPots() + " / " + total + " pots unlocked", skin, "muted");
         rootTable.add(statusLabel).padTop(SPACE_XS).row();
 
-        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).row();
+        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-135).row();
         rootTable.add(buildBottomBar()).padBottom(SPACE_MD);
     }
 
@@ -77,7 +79,9 @@ public class GreenhouseScreen extends UiScreen {
         for (int row = 1; row <= Greenhouse.getRowCount(); row++) {
             for (int col = 1; col <= Greenhouse.getColCount(); col++) {
                 Pot pot = greenhouse.getPot(col, row);
-                grid.add(buildPotCell(pot, col, row)).size(POT_SIZE + 30f, POT_SIZE + 42f).pad(SPACE_XS);
+                grid.add(buildPotCell(pot, col, row))
+                        .size(POT_SIZE + POT_CELL_EXTRA_WIDTH, POT_SIZE + POT_CELL_EXTRA_HEIGHT)
+                        .pad(POT_CELL_GAP);
             }
             grid.row();
         }
@@ -111,8 +115,8 @@ public class GreenhouseScreen extends UiScreen {
 
         String iconPath = switch (status) {
             case LOCKED -> POT_LOCKED_ICON;
-            case EMPTY -> POT_EMPTY_ICON;
-            case GROWING, READY -> (plant != null && plant.isMarigold()) ? POT_MARIGOLD_ICON : POT_GROWING_ICON;
+            case EMPTY, GROWING -> POT_EMPTY_ICON;
+            case READY -> POT_READY_ICON;
         };
         if (!iconPath.isEmpty() && Gdx.files.internal(iconPath).exists()) {
             stack.add(new Image(loadTextureSafe(iconPath)));
@@ -121,7 +125,9 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         if (status == PotStatus.LOCKED && !LOCK_ICON.isEmpty() && Gdx.files.internal(LOCK_ICON).exists()) {
-            stack.add(new Image(loadTextureSafe(LOCK_ICON)));
+            Table lockBadge = new Table();
+            lockBadge.add(new Image(loadTextureSafe(LOCK_ICON))).size(44, 64);
+            stack.add(lockBadge);
         }
 
         if (status == PotStatus.READY) {
@@ -302,7 +308,7 @@ public class GreenhouseScreen extends UiScreen {
     }
 
     private Table createResourceWidget(String bgPath, String iconPath, String value, float width, float height) {
-        float bgWidth = 110;
+        float bgWidth = 100;
         float bgHeight = 30;
         float groupWidth = Math.max(width, bgWidth);
         float groupHeight = Math.max(height, bgHeight);
@@ -312,11 +318,13 @@ public class GreenhouseScreen extends UiScreen {
 
         Image bgImage = new Image(loadTextureSafe(bgPath));
         bgImage.setSize(bgWidth, bgHeight);
-        bgImage.setPosition(((groupWidth - bgWidth) / 2f) + 10, (groupHeight - bgHeight) / 2f);
+        bgImage.setPosition(((groupWidth - bgWidth) / 2f) + 20, (groupHeight - bgHeight) / 2f);
         group.addActor(bgImage);
 
         Table textTable = new Table();
-        textTable.add(new Image(loadTextureSafe(iconPath))).left().expand();
+        Image iconImage = new Image(loadTextureSafe(iconPath));
+        iconImage.setSize(55,85);
+        textTable.add(iconImage).left().expand();
         textTable.setSize(width, height);
         textTable.setPosition((groupWidth - width) / 2f, (groupHeight - height) / 2f);
         textTable.add(new Label(value, skin, "title")).center().expand();

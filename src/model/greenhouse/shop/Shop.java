@@ -106,7 +106,10 @@ public class Shop {
             if (!greenhouse.unlockNextLockedPot()) break;
             unlocked++;
         }
-        if (unlocked == 0) return "Error: greenhouse is already at maximum capacity (20 pots).";
+        if (unlocked == 0) {
+            int total = model.greenhouse.Greenhouse.getRowCount() * model.greenhouse.Greenhouse.getColCount();
+            return "Error: greenhouse is already at maximum capacity (" + total + " pots).";
+        }
 
         state.coins -= Product.POT.getCoinCost() * unlocked;
         return "Purchased " + unlocked + " pot(s); " + state.coins + " coins remaining.";
