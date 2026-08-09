@@ -33,7 +33,7 @@ public class TravelLogScreen extends UiScreen {
 
     private enum Category { DAILY, MAIN, EPIC, ALL, MINIGAMES }
 
-    private static final float CARD_WIDTH = 900f;
+    private static final float CARD_WIDTH = 820f;
     private static final float BAR_WIDTH = 420f;
     private static final float BAR_HEIGHT = 22f;
 
@@ -44,11 +44,11 @@ public class TravelLogScreen extends UiScreen {
             "Vasebreaker", "Wallnut Bowling", "I, Zombie", "Beghouled", "Zombotany"
     };
     private static final String[] MINIGAME_ICONS = {
-            "assets/images/ui/travel_log/vasebreaker_icon.png",
-            "assets/images/ui/travel_log/wallnutbowling_icon.png",
-            "assets/images/ui/travel_log/izombie_icon.png",
-            "assets/images/ui/travel_log/beghouled_icon.png",
-            "assets/images/ui/travel_log/zombotany_icon.png"
+            "assets/images/ui/travel_log/zvase.jpg",
+            "assets/images/ui/travel_log/zwallnutb.jpg",
+            "assets/images/ui/travel_log/zizombie.jpg",
+            "assets/images/ui/travel_log/zbegho.jpg",
+            "assets/images/ui/travel_log/zombotany.jpg"
     };
 
     private Category currentCategory = Category.DAILY;
@@ -278,18 +278,14 @@ public class TravelLogScreen extends UiScreen {
 
     private Table buildMinigameCard(String key, String displayName, String iconPath) {
         Table card = new Table();
-        card.setBackground(skin.getDrawable("card-background"));
+        card.setBackground(loadRoundedTextureSafe(iconPath, 22));
         card.pad(CARD_PAD);
 
-        Image icon = new Image(loadTextureSafe(iconPath));
-        card.add(icon).size(72, 72).padRight(SPACE_LG);
-
         Table info = new Table();
-        info.add(new Label(displayName, skin, "title")).left().row();
-        info.add(createLabel("Choose a level to play.", "muted")).left().padTop(4).row();
-        info.add(buildLevelButtons(key)).left().padTop(10);
+        info.add(createLabel("Choose a level to play.", "title")).right().padRight(160).row();
+        info.add(buildLevelButtons(key)).right().padTop(10);
 
-        card.add(info).expandX().left();
+        card.add(info).expandX().right();
         return card;
     }
 
@@ -353,6 +349,50 @@ public class TravelLogScreen extends UiScreen {
         Texture fallback = new Texture(pixmap);
         pixmap.dispose();
         return fallback;
+    }
+
+    private Drawable loadRoundedTextureSafe(String path, int cornerRadius) {
+        if (path == null || path.isEmpty() || !Gdx.files.internal(path).exists()) {
+            return solidColorDrawable(new Color(0f, 0f, 0f, 0f));
+        }
+        Pixmap src = new Pixmap(Gdx.files.internal(path));
+        int w = src.getWidth();
+        int h = src.getHeight();
+        Pixmap dst = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+
+        int r = Math.min(cornerRadius, Math.min(w, h) / 2);
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                if (x < r && y < r) {
+                    int dx = r - x;
+                    int dy = r - y;
+                    if (dx * dx + dy * dy > r * r) continue;
+                }
+                if (x >= w - r && y < r) {
+                    int dx = x - (w - 1 - r);
+                    int dy = r - y;
+                    if (dx * dx + dy * dy > r * r) continue;
+                }
+                if (x < r && y >= h - r) {
+                    int dx = r - x;
+                    int dy = y - (h - 1 - r);
+                    if (dx * dx + dy * dy > r * r) continue;
+                }
+                if (x >= w - r && y >= h - r) {
+                    int dx = x - (w - 1 - r);
+                    int dy = y - (h - 1 - r);
+                    if (dx * dx + dy * dy > r * r) continue;
+                }
+                dst.drawPixel(x, y, src.getPixel(x, y));
+            }
+        }
+
+        Texture tex = new Texture(dst);
+        tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        src.dispose();
+        dst.dispose();
+        return new TextureRegionDrawable(tex);
     }
 
     @Override
