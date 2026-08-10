@@ -163,8 +163,8 @@ public class ShopScreen extends UiScreen {
 
     private List<Product> productsForTab(ShopTab tab) {
         return switch (tab) {
-            case PLANTS -> List.of(Product.SEED_RANDOM, Product.SEED_CHOICE);
-            case CURRENCY -> List.of(Product.POT, Product.PLANT_FOOD, Product.CURRENCY_EXCHANGE);
+            case PLANTS -> List.of(Product.POT, Product.PLANT_FOOD, Product.SEED_RANDOM, Product.SEED_CHOICE);
+            case CURRENCY -> List.of(Product.CURRENCY_EXCHANGE);
         };
     }
 
@@ -283,12 +283,12 @@ public class ShopScreen extends UiScreen {
 
     private String iconFor(Product product) {
         return switch (product) {
-            case POT -> "";
-            case PLANT_FOOD -> "";
-            case SEED_RANDOM -> "";
-            case SEED_CHOICE -> "";
-            case CURRENCY_EXCHANGE -> "assets/images/ui/buttons_premium_normal.png";
-            case DAILY_OFFER -> "";
+            case POT -> "assets/images/shop/pot.png";
+            case PLANT_FOOD -> "assets/images/shop/plantfood.png";
+            case SEED_RANDOM -> "assets/images/shop/random_seed.png";
+            case SEED_CHOICE -> "assets/images/shop/choice_seed.png";
+            case CURRENCY_EXCHANGE -> "assets/images/shop/exchange.png";
+            case DAILY_OFFER -> "assets/images/shop/daily.png";
         };
     }
 
