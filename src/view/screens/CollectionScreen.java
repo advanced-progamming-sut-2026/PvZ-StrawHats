@@ -36,7 +36,9 @@ import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.textures.TextureBank;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CollectionScreen extends UiScreen {
@@ -73,6 +75,7 @@ public class CollectionScreen extends UiScreen {
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
+    private Map<String,Boolean> visibility = new HashMap<>();
 
     @Override
     public void show() {
@@ -499,9 +502,19 @@ public class CollectionScreen extends UiScreen {
                 if (clipName == null) {
                     return;
                 }
+
                 ClipRef clip = pamPlayer.getClip(animationPath, clipName);
-                if (clip != null) {
-                    pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true);
+                if(!animationPath.contains("MAGNETSHROOM")) {
+
+                    if (clip != null) {
+                        pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true);
+                    }
+                }
+                else {
+                    visibility.put("Magnet_Item",false);
+                    if (clip != null) {
+                        pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true,visibility);
+                    }
                 }
             } catch (Throwable t) {
                 Gdx.app.error("CollectionScreen", "Failed to draw idle animation for path " + animationPath, t);
