@@ -135,7 +135,7 @@ public class AnimationFactory {
         // Best guess ("piercing" ~ spear) - double-check visually before relying on it.
         PLANT_NAME_OVERRIDES.put("PIERCE_MINT", "SPEARMINT");
         // Verified absent from animations.json - no "-pult" family entry for the corn plant.
-        PLANT_NAME_OVERRIDES.put("KERNEL_PULT", null);
+        PLANT_NAME_OVERRIDES.put("KERNEL_PULT", "KERNALPULT");
         // Verified absent - no CATTAIL/CAT_TAIL entry at all in animations.json.
         PLANT_NAME_OVERRIDES.put("CAT_TAIL", null);
         // Ambiguous: 5 unused *MINT entries remain (AILMINT, CONCEALMINT, CONTAINMINT,
