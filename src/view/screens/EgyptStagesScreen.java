@@ -577,7 +577,7 @@ public class EgyptStagesScreen extends UiScreen {
 
         private void addForegroundEffects() {
             PyramidState pState = calculatePyramidState();
-            String zombossState = (pState == PyramidState.UNLOCKED_IDLE) ? "defeated" : "idle";
+            String zombossState = (pState == PyramidState.UNLOCKED_IDLE) ? "defeated" : "active";
             addActor(createAnchoredAnimation(MapObjectType.BIG_BOSS_DECOR_ISLAND, ZOMBOSS_TUNING, zombossState, zombossNodeX, zombossNodeY));
             addActor(createAnchoredAnimation(MapObjectType.PYRAMID_ANIM, PYRAMID_TUNING, pState.getPamState(), pyramidAnchorX, pyramidAnchorY));
 
