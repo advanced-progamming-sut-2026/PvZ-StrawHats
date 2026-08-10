@@ -85,7 +85,7 @@ public class SeedPacketCardFactory implements Disposable {
             "tombtangler.png", "tools_projectile_bowlingbulb1.png", "tools_projectile_bowlingbulb2.png", "tools_projectile_bowlingbulb3.png", "tools_projectile_bowlingbulb_explode.png", "tools_projectile_bowlingbulb_mega.png",
             "torchwood.png", "tumbleweed.png", "turkeypult.png", "twinsunflower.png", "ultomato.png", "vamporcini.png",
             "voltsnapdragon.png", "wallnut.png", "wasabiwhip.png", "waterrabbit.png", "wintermelon.png", "wintermint.png",
-            "witchhazel.png", "xshot.png", "znakelily.png", "zoybeanpod.png"
+            "witchhazel.png", "xshot.png", "znakelily.png", "zoybeanpod.png", "rotorutbaga.png"
     };
 
     // Every seed packet background present in assets/images/ui/seedpackets_ui.
@@ -115,7 +115,7 @@ public class SeedPacketCardFactory implements Disposable {
     // these and a placeholder card is built instead. You'll need icon art from
     // elsewhere for: Rotobaga, Goo Peashooter, Cat-tail, catTail-mint.
     private static final java.util.Set<String> DISPLAY_NAMES_WITHOUT_ICON = java.util.Set.of(
-            "ROTOBAGA", "GOO_PEASHOOTER", "CAT_TAIL", "CATTAIL_MINT"
+            "GOO_PEASHOOTER", "CAT_TAIL", "CATTAIL_MINT"
     );
 
     /**
