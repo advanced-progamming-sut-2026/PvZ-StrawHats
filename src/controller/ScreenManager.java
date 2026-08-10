@@ -74,6 +74,9 @@ public final class ScreenManager {
         if (menu instanceof GreenhouseMenu) {
             return new GreenhouseScreen();
         }
+        if (menu instanceof CollectionMenu) {
+            return new CollectionScreen();
+        }
 
         if (menu instanceof MatchMenu) {
             Level selected = MatchMenu.selectedLevel;

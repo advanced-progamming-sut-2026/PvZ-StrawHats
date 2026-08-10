@@ -19,6 +19,10 @@ import java.util.stream.Collectors;
 public class CollectionManager {
     private static final int PURCHASE_COST = 2000;
 
+    public static int getPurchaseCost() {
+        return PURCHASE_COST;
+    }
+
     public List<PlantJsonParser.PlantConfig> getAllPlants() {
         return new ArrayList<>(PlantFactory.getBlueprints().values());
     }

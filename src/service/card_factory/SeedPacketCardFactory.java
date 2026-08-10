@@ -101,6 +101,110 @@ public class SeedPacketCardFactory implements Disposable {
     // Texture cache so the same packet/plant PNG isn't loaded from disk more than once.
     private final Map<String, Texture> textureCache = new HashMap<>();
 
+    // Known internal codename mismatches between a Plants.json display name and its
+    // plants_ui icon file - the same kind of gap model.collections.animations.AnimationFactory
+    // documents for Animations.json, checked independently against this icon set.
+    private static final Map<String, String> DISPLAY_NAME_ICON_OVERRIDES = Map.of(
+            "MEGA_GATLING_PEA", "megagatling.png",
+            "ICEBERG_LETTUCE", "headbutter.png",
+            "PIERCE_MINT", "spearmint.png"
+    );
+
+    // Plants.json display names with no matching file anywhere in plants_ui (checked
+    // against every normalization variant below) - resolveIconFile returns null for
+    // these and a placeholder card is built instead. You'll need icon art from
+    // elsewhere for: Rotobaga, Goo Peashooter, Cat-tail, catTail-mint.
+    private static final java.util.Set<String> DISPLAY_NAMES_WITHOUT_ICON = java.util.Set.of(
+            "ROTOBAGA", "GOO_PEASHOOTER", "CAT_TAIL", "CATTAIL_MINT"
+    );
+
+    /**
+     * Builds a card straight from a plant's Plants.json display name (e.g. "Snow Pea"),
+     * resolving it to the matching plants_ui icon file automatically. If no icon file
+     * can be found for the name, a plain placeholder card is returned instead (never
+     * null) and the gap is logged so it's easy to notice and fix.
+     */
+    public SeedPacketCard buildCardForDisplayName(String displayName) {
+        try {
+            String iconFile = resolveIconFile(displayName);
+            if (iconFile != null) {
+                SeedPacketCard card = buildCard(iconFile);
+                if (card != null) {
+                    return card;
+                }
+            }
+            return buildPlaceholderCard(displayName);
+        } catch (Throwable t) {
+            Gdx.app.error("SeedPacketCardFactory", "Failed to build card for '" + displayName + "'", t);
+            return buildPlaceholderCard(displayName);
+        }
+    }
+
+    private String resolveIconFile(String displayName) {
+        if (displayName == null || displayName.isBlank()) {
+            return null;
+        }
+        String key = normalizeKey(displayName, "_");
+        if (DISPLAY_NAMES_WITHOUT_ICON.contains(key)) {
+            return null;
+        }
+        String override = DISPLAY_NAME_ICON_OVERRIDES.get(key);
+        if (override != null) {
+            return override;
+        }
+        String underscored = normalizeKey(displayName, "_");
+        String concatenated = normalizeKey(displayName, "");
+        for (String iconFile : PLANT_ICON_FILES) {
+            String stem = stripExtension(iconFile);
+            if (stem.equalsIgnoreCase(underscored) || stem.equalsIgnoreCase(concatenated)) {
+                return iconFile;
+            }
+        }
+        return null;
+    }
+
+    private String normalizeKey(String raw, String separator) {
+        return raw.trim().toUpperCase()
+                .replace("-", separator)
+                .replace(" ", separator)
+                .replaceAll("[^A-Z0-9_]", "");
+    }
+
+    private SeedPacketCard buildPlaceholderCard(String displayName) {
+        String name = (displayName == null || displayName.isBlank()) ? "unknown" : displayName;
+        Gdx.app.error("SeedPacketCardFactory", "No plants_ui icon found for '" + name
+                + "' - showing a placeholder card. Add a matching PNG to plants_ui, or register it "
+                + "via DISPLAY_NAME_ICON_OVERRIDES.");
+
+        Texture packetTexture = loadTexture(SEEDPACKETS_UI_DIR + DEFAULT_PACKET_SKIN);
+        Texture placeholderTexture = placeholderIconTexture(name);
+        if (packetTexture == null || placeholderTexture == null) {
+            return null;
+        }
+        return new SeedPacketCard(name, "(placeholder)", DEFAULT_PACKET_SKIN,
+                packetTexture, placeholderTexture, CARD_WIDTH, CARD_HEIGHT);
+    }
+
+    private Texture placeholderIconTexture(String name) {
+        String cacheKey = "placeholder:" + name.toLowerCase();
+        Texture cached = textureCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+        int size = 128;
+        com.badlogic.gdx.graphics.Pixmap pixmap = new com.badlogic.gdx.graphics.Pixmap(
+                size, size, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        pixmap.setColor(0.25f, 0.45f, 0.20f, 1f);
+        pixmap.fillCircle(size / 2, size / 2, size / 2 - 4);
+        pixmap.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        pixmap.drawCircle(size / 2, size / 2, size / 2 - 4);
+        Texture texture = new Texture(pixmap);
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        pixmap.dispose();
+        textureCache.put(cacheKey, texture);
+        return texture;
+    }
+
     /**
      * Assigns a specific packet background to a plant, overriding the default
      * ("ready.png"). The packet file must be one of {@link #PACKET_SKIN_FILES}.
