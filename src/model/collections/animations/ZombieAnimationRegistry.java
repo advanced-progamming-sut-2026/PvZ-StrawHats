@@ -4,13 +4,13 @@ import java.util.Map;
 
 /**
  * Maps a zombie's Zombie.json alias (the key {@link model.collections.zombie.ZombieFactory}
- * creates zombies from, e.g. "ZombieDefault") to its animation name in Animations.json
+ * creates zombies from, e.g. "ZombieDefault") to its animation name in animations.json
  * (e.g. "ZOMBIE_TUTORIAL"). Zombies can't be resolved by normalizing a display name the way
  * plants can - Zombie.json only has internal aliases, no display names, and several worlds
  * reuse/rename basic zombies in non-obvious ways - so this is a hand-verified table instead.
  * <p>
  * Verified against all 31 aliases currently in Zombie.json using each alias's
- * ZombieArmorProps/Size fields plus the clip lists in Animations.json (e.g. ZOMBIE_TUTORIAL's
+ * ZombieArmorProps/Size fields plus the clip lists in animations.json (e.g. ZOMBIE_TUTORIAL's
  * clip set - idle/walk/eat/die/particles - matches every other "basic zombie" entry, confirming
  * it's the base Zombie).
  */
@@ -65,7 +65,7 @@ public class ZombieAnimationRegistry {
     );
 
     /**
-     * No matching entry anywhere in Animations.json - checked exhaustively, not just missed
+     * No matching entry anywhere in animations.json - checked exhaustively, not just missed
      * by a naming mismatch. You'll need art from elsewhere for these:
      * - ZombieDarkArmor3 (shoulder armor + crown - closest engine concept is
      *   {@code ZombieFactory.createKnightArmor()}, but no "knight" PAM exists in this pack)

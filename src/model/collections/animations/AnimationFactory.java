@@ -23,7 +23,7 @@ public class AnimationFactory {
     );
 
     /**
-     * Plants.json display names with NO entry anywhere in Animations.json (checked exhaustively -
+     * Plants.json display names with NO entry anywhere in animations.json (checked exhaustively -
      * this animation pack simply doesn't include them). resolveByDisplayName returns null for these;
      * you'll need art from elsewhere for: Cat-tail, catTail-mint, Kernel-pult.
      */
@@ -38,15 +38,15 @@ public class AnimationFactory {
 
     public static void autoInit() {
         if (loaded) return;
-        try (InputStream is = ResourceResolver.open("Animations.json")) {
+        try (InputStream is = ResourceResolver.open("pvz-assets/animations.json")) {
             if (is != null) {
                 init(is);
                 return;
             }
         } catch (java.io.IOException e) {
-            GeneralPrinter.print("Could not load Animations.json: " + e.getMessage());
+            GeneralPrinter.print("Could not load animations.json: " + e.getMessage());
         }
-        GeneralPrinter.print("Could not find Animations.json in any known location.");
+        GeneralPrinter.print("Could not find animations.json in any known location.");
     }
 
     public static Map<String, AnimationJsonParser.AnimationConfig> getLibrary() {
@@ -89,7 +89,7 @@ public class AnimationFactory {
     }
 
     /**
-     * Generates every normalization pattern seen across Plants.json / Animations.json:
+     * Generates every normalization pattern seen across Plants.json / animations.json:
      * plain underscore ("SNOW_PEA"), full concatenation ("SNOWPEA" - the dominant pattern
      * for two-word names), and "first word kept separate, rest concatenated"
      * ("PRIMAL_POTATOMINE" - used by every "Primal ..." plant), plus a two-token swap

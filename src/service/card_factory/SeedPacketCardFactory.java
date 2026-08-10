@@ -103,7 +103,7 @@ public class SeedPacketCardFactory implements Disposable {
 
     // Known internal codename mismatches between a Plants.json display name and its
     // plants_ui icon file - the same kind of gap model.collections.animations.AnimationFactory
-    // documents for Animations.json, checked independently against this icon set.
+    // documents for animations.json, checked independently against this icon set.
     private static final Map<String, String> DISPLAY_NAME_ICON_OVERRIDES = Map.of(
             "MEGA_GATLING_PEA", "megagatling.png",
             "ICEBERG_LETTUCE", "headbutter.png",
