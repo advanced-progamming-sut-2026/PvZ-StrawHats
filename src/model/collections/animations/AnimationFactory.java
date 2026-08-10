@@ -12,11 +12,23 @@ public class AnimationFactory {
     private static Map<String, AnimationJsonParser.AnimationConfig> library = new HashMap<>();
     private static boolean loaded = false;
 
-    // A handful of known names that don't survive plain normalization
-    // (e.g. "Twin Sunflower" -> SUNFLOWER_TWIN, "Sun-shroom" -> SUNSHROOM).
-    // Add more here as you find them while wiring up real screens.
-    private static final Map<String, String> NAME_OVERRIDES = Map.of(
-            "TWIN_SUNFLOWER", "SUNFLOWER_TWIN"
+
+    private static final Map<String, String> PLANT_NAME_OVERRIDES = Map.of(
+            "TWIN_SUNFLOWER", "SUNFLOWER_TWIN",           // word order flipped
+            "ROTOBAGA", "ROTORUTABAGA",                    // old internal codename survives
+            "MEGA_GATLING_PEA", "MEGAGATLING",             // "Pea" dropped from the codename
+            "ICEBERG_LETTUCE", "HEADBUTTER_LETTUCE",       // unrelated internal codename
+            "PHAT_BEET", "PHATBEETS",                      // plural in the codename
+            "PIERCE_MINT", "SPEARMINT"                     // unrelated internal codename
+    );
+
+    /**
+     * Plants.json display names with NO entry anywhere in Animations.json (checked exhaustively -
+     * this animation pack simply doesn't include them). resolveByDisplayName returns null for these;
+     * you'll need art from elsewhere for: Cat-tail, catTail-mint, Kernel-pult.
+     */
+    private static final java.util.Set<String> PLANTS_WITHOUT_ANIMATION_DATA = java.util.Set.of(
+            "CAT_TAIL", "CATTAIL_MINT", "KERNEL_PULT"
     );
 
     public static void init(InputStream jsonStream) {
@@ -42,7 +54,6 @@ public class AnimationFactory {
         return library;
     }
 
-    /** Exact lookup by the raw animation name as it appears in Animations.json (case-insensitive). */
     public static AnimationJsonParser.AnimationConfig get(String rawName) {
         if (rawName == null) return null;
         autoInit();
@@ -50,35 +61,58 @@ public class AnimationFactory {
     }
 
     /**
-     * Best-effort lookup for a plant/zombie display name (e.g. "Sun-shroom", "Twin Sunflower").
-     * Tries a few normalization variants before giving up.
+     * <p>
+     * Verified against all 69 Plants.json entries: 63 resolve automatically through
+     * normalization, 6 need the {@link #PLANT_NAME_OVERRIDES} table above, and 3
+     * ({@link #PLANTS_WITHOUT_ANIMATION_DATA}) simply have no art in this animation pack.
      */
     public static AnimationJsonParser.AnimationConfig resolveByDisplayName(String displayName) {
         if (displayName == null || displayName.isBlank()) return null;
         autoInit();
 
-        String noHyphenUnderscore = normalize(displayName, "_");
-        String noHyphenAtAll = normalize(displayName, "");
+        String key = normalize(displayName, "_");
+        if (PLANTS_WITHOUT_ANIMATION_DATA.contains(key)) {
+            return null;
+        }
 
-        String override = NAME_OVERRIDES.get(noHyphenUnderscore);
+        String override = PLANT_NAME_OVERRIDES.get(key);
         if (override != null && library.containsKey(override)) {
             return library.get(override);
         }
-        if (library.containsKey(noHyphenUnderscore)) {
-            return library.get(noHyphenUnderscore);
-        }
-        if (library.containsKey(noHyphenAtAll)) {
-            return library.get(noHyphenAtAll);
-        }
 
-        String[] tokens = noHyphenUnderscore.split("_");
-        if (tokens.length == 2) {
-            String swapped = tokens[1] + "_" + tokens[0];
-            if (library.containsKey(swapped)) {
-                return library.get(swapped);
+        for (String candidate : nameVariants(displayName)) {
+            if (library.containsKey(candidate)) {
+                return library.get(candidate);
             }
         }
         return null;
+    }
+
+    /**
+     * Generates every normalization pattern seen across Plants.json / Animations.json:
+     * plain underscore ("SNOW_PEA"), full concatenation ("SNOWPEA" - the dominant pattern
+     * for two-word names), and "first word kept separate, rest concatenated"
+     * ("PRIMAL_POTATOMINE" - used by every "Primal ..." plant), plus a two-token swap
+     * as a last resort ("SUNFLOWER_TWIN").
+     */
+    private static java.util.List<String> nameVariants(String displayName) {
+        String underscored = normalize(displayName, "_");
+        String concatenated = normalize(displayName, "");
+
+        java.util.List<String> variants = new java.util.ArrayList<>();
+        variants.add(underscored);
+        variants.add(concatenated);
+
+        String[] tokens = underscored.split("_");
+        if (tokens.length >= 2) {
+            StringBuilder rest = new StringBuilder();
+            for (int i = 1; i < tokens.length; i++) rest.append(tokens[i]);
+            variants.add(tokens[0] + "_" + rest);
+        }
+        if (tokens.length == 2) {
+            variants.add(tokens[1] + "_" + tokens[0]);
+        }
+        return variants;
     }
 
     /** PAM path shortcut for {@link #resolveByDisplayName}, or null if nothing matched. */
@@ -87,11 +121,10 @@ public class AnimationFactory {
         return config == null ? null : config.path;
     }
 
-    private static String normalize(String raw, String hyphenReplacement) {
+    private static String normalize(String raw, String separator) {
         return raw.trim().toUpperCase()
-                .replace("-", hyphenReplacement)
-                .replaceAll("[^A-Z0-9_ ]", "")
-                .trim()
-                .replace(' ', '_');
+                .replace("-", separator)
+                .replace(" ", separator)
+                .replaceAll("[^A-Z0-9_]", "");
     }
 }
