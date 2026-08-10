@@ -41,13 +41,15 @@ public class ShopScreen extends UiScreen {
 
     private static final String TAB_ICON_PLANTS = "assets/images/shop/event_icon_potw_down.png";
     private static final String TAB_ICON_CURRENCY = "assets/images/shop/moneybag.png";
-    private static final String INFO_ICON = "assets/images/shop/info_icon.png";
+    private static final String INFO_ICON = "assets/images/shop/info_on.png";
+    private static final String INFO_ICON_ACTIVE = "assets/images/shop/info_off.png";
 
     private static final float TAB_ICON_SIZE = 46f;
 
     private static final float CARD_W = 200f;
     private static final float CARD_H = 300f;
     private static final float CARD_IMAGE_SIZE = 130f;
+    private static final float DETAILS_H = 60f;
 
     private static final float DAILY_BOX_W = 260f;
     private static final float ITEMS_BOX_W = 700f;
@@ -56,6 +58,7 @@ public class ShopScreen extends UiScreen {
     private enum ShopTab { PLANTS, CURRENCY }
 
     private ShopTab currentTab = ShopTab.PLANTS;
+    private final java.util.Set<String> expandedDetails = new java.util.HashSet<>();
 
     @Override
     public void show() {
@@ -131,7 +134,7 @@ public class ShopScreen extends UiScreen {
 
         Table list = new Table();
         list.top();
-        list.add(buildDailyOfferCard(state)).width(CARD_W).row();
+        list.add(buildDailyOfferCard(state)).width(CARD_W).height(CARD_H).row();
 
         ScrollPane scrollPane = scrollable(list);
         box.add(scrollPane).expand().fill();
@@ -169,34 +172,39 @@ public class ShopScreen extends UiScreen {
     }
 
     private Table buildDailyOfferCard(UserState state) {
+        String cardId = "daily-offer";
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
         card.pad(SPACE_SM);
         card.top();
 
-        Table headerRow = new Table();
         String plantName = plantName(state.dailyOfferPlantId);
+        String detail = state.dailyOfferPurchased
+                ? "Already purchased today - come back tomorrow."
+                : "10 seed packs, once a day.";
+
+        Table detailsSlot = new Table();
+        detailsSlot.top();
+
+        Table headerRow = new Table();
         Label nameLabel = new Label(plantName, skin, "main");
         nameLabel.setFontScale(0.85f);
         nameLabel.setWrap(true);
         headerRow.add(nameLabel).expandX().left().width(CARD_W - 60f);
-        headerRow.add(new Image(loadTextureSafe(INFO_ICON))).size(22, 22).right();
+        headerRow.add(buildInfoButton(cardId, detailsSlot, detail)).size(22, 22).right();
         card.add(headerRow).fillX().row();
 
         Image icon = new Image(loadTextureSafe(iconFor(Product.DAILY_OFFER)));
         card.add(icon).size(CARD_IMAGE_SIZE, CARD_IMAGE_SIZE).padTop(SPACE_SM).padBottom(SPACE_SM).row();
 
-        Label subLabel = new Label(state.dailyOfferPurchased
-                ? "Already purchased today - come back tomorrow."
-                : "10 seed packs, once a day.",
-                skin, "muted");
-        subLabel.setFontScale(0.85f);
-        subLabel.setWrap(true);
-        card.add(subLabel).width(CARD_W - 40f).padBottom(SPACE_SM).row();
+        fillDetailsSlot(detailsSlot, cardId, detail);
+        card.add(detailsSlot).width(CARD_W - 40f).height(DETAILS_H).padBottom(SPACE_SM).row();
+        card.add().expandY().row();
 
         boolean canBuy = !state.dailyOfferPurchased && state.dailyOfferPlantId != null;
         TextButton buyBtn = primaryButton(state.dailyOfferPurchased
-                ? "Bought" : Product.DAILY_OFFER.getCoinCost() + " coins", () -> buy("daily-offer", 1, null));
+                ? "Bought" : Product.DAILY_OFFER.getCoinCost() + " coins",
+                () -> new ConfirmBuyModal(Product.DAILY_OFFER, () -> buy("daily-offer", 1, null)).show());
         buyBtn.setDisabled(!canBuy);
         card.add(buyBtn).width(150).height(44);
 
@@ -204,31 +212,31 @@ public class ShopScreen extends UiScreen {
     }
 
     private Table buildItemCard(Product product, UserState state) {
+        String cardId = product.getItemId();
         Table card = new Table();
         card.setBackground(skin.getDrawable("card-background"));
         card.pad(SPACE_SM);
         card.top();
+
+        String detail = extraNote(product, state);
+
+        Table detailsSlot = new Table();
+        detailsSlot.top();
 
         Table headerRow = new Table();
         Label nameLabel = new Label(product.getDisplayName(), skin, "main");
         nameLabel.setFontScale(0.85f);
         nameLabel.setWrap(true);
         headerRow.add(nameLabel).expandX().left().width(CARD_W - 60f);
-        headerRow.add(new Image(loadTextureSafe(INFO_ICON))).size(22, 22).right();
+        headerRow.add(buildInfoButton(cardId, detailsSlot, detail)).size(22, 22).right();
         card.add(headerRow).fillX().row();
 
         Image icon = new Image(loadTextureSafe(iconFor(product)));
         card.add(icon).size(CARD_IMAGE_SIZE, CARD_IMAGE_SIZE).padTop(SPACE_SM).padBottom(SPACE_SM).row();
 
-        String note = extraNote(product, state);
-        if (note != null) {
-            Label noteLabel = new Label(note, skin, "muted");
-            noteLabel.setFontScale(0.85f);
-            noteLabel.setWrap(true);
-            card.add(noteLabel).width(CARD_W - 40f).padBottom(SPACE_SM).row();
-        } else {
-            card.add().expandY().row();
-        }
+        fillDetailsSlot(detailsSlot, cardId, detail);
+        card.add(detailsSlot).width(CARD_W - 40f).height(DETAILS_H).padBottom(SPACE_SM).row();
+        card.add().expandY().row();
 
         TextButton buyBtn = primaryButton(costLabel(product), () -> onBuyClicked(product, state));
         card.add(buyBtn).width(150).height(44);
@@ -236,11 +244,45 @@ public class ShopScreen extends UiScreen {
         return card;
     }
 
+    private ImageButton buildInfoButton(String cardId, Table detailsSlot, String detail) {
+        TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(infoIconFor(cardId)));
+        ImageButton infoBtn = new ImageButton(drawable);
+        infoBtn.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (expandedDetails.contains(cardId)) {
+                    expandedDetails.remove(cardId);
+                } else {
+                    expandedDetails.add(cardId);
+                }
+                fillDetailsSlot(detailsSlot, cardId, detail);
+                infoBtn.getStyle().imageUp = new TextureRegionDrawable(loadTextureSafe(infoIconFor(cardId)));
+                infoBtn.getStyle().imageDown = infoBtn.getStyle().imageUp;
+            }
+        });
+        return infoBtn;
+    }
+
+    private String infoIconFor(String cardId) {
+        return expandedDetails.contains(cardId) ? INFO_ICON_ACTIVE : INFO_ICON;
+    }
+
+    private void fillDetailsSlot(Table detailsSlot, String cardId, String detail) {
+        detailsSlot.clear();
+        if (detail != null && expandedDetails.contains(cardId)) {
+            Label detailLabel = new Label(detail, skin, "muted");
+            detailLabel.setFontScale(0.85f);
+            detailLabel.setWrap(true);
+            detailsSlot.add(detailLabel).width(CARD_W - 40f).top();
+        }
+    }
+
     private void onBuyClicked(Product product, UserState state) {
         if (product == Product.SEED_CHOICE) {
-            new SeedChoiceModal(state, plantId -> buy(product.getItemId(), 1, plantId)).show();
+            new SeedChoiceModal(state, plantId -> new ConfirmBuyModal(product,
+                    () -> buy(product.getItemId(), 1, plantId)).show()).show();
         } else {
-            buy(product.getItemId(), 1, null);
+            new ConfirmBuyModal(product, () -> buy(product.getItemId(), 1, null)).show();
         }
     }
 
@@ -264,8 +306,14 @@ public class ShopScreen extends UiScreen {
         if (product == Product.PLANT_FOOD) {
             return "Holding: " + state.plantFoodCount + " / 3";
         }
+        if (product == Product.SEED_RANDOM) {
+            return "Gives seed packets for a random unlocked plant.";
+        }
         if (product == Product.SEED_CHOICE) {
             return "Choose which unlocked plant to buy seeds for.";
+        }
+        if (product == Product.CURRENCY_EXCHANGE) {
+            return "Exchange diamonds for 500 coins.";
         }
         return null;
     }
@@ -426,6 +474,26 @@ public class ShopScreen extends UiScreen {
     @Override
     protected void onAfterCommand() {
         build();
+    }
+
+    private class ConfirmBuyModal extends view.general_screens.Modal {
+
+        ConfirmBuyModal(Product product, Runnable onConfirm) {
+            content.add(new Label("Confirm Purchase", skin, "title")).padBottom(SPACE_SM).row();
+
+            Label message = new Label("Buy " + product.getDisplayName() + " for " + costLabel(product) + "?",
+                    skin, "main");
+            message.setWrap(true);
+            content.add(message).width(280).padBottom(SPACE_SM).row();
+
+            Table buttons = new Table();
+            buttons.add(secondaryButton("Cancel", this::hide)).width(130).height(44).padRight(SPACE_SM);
+            buttons.add(primaryButton("Confirm", () -> {
+                hide();
+                onConfirm.run();
+            })).width(130).height(44);
+            content.add(buttons).padTop(SPACE_SM);
+        }
     }
 
     private class SeedChoiceModal extends view.general_screens.Modal {
