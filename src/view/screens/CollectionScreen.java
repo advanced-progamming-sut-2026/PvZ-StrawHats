@@ -495,7 +495,11 @@ public class CollectionScreen extends UiScreen {
                 return;
             }
             try {
-                ClipRef clip = pamPlayer.getClip(animationPath, "idle");
+                String clipName = AnimationFactory.resolveClipNameForPath(animationPath, "idle");
+                if (clipName == null) {
+                    return;
+                }
+                ClipRef clip = pamPlayer.getClip(animationPath, clipName);
                 if (clip != null) {
                     pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true);
                 }

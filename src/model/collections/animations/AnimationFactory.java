@@ -4,35 +4,38 @@ import model.utils.ResourceResolver;
 import view.GeneralPrinter;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
+/**
+ * Resolves a plant display name (from Plants.json) or a zombie alias (from Zombie.json)
+ * to its matching entry in animations.json.
+ * <p>
+ * animations.json has no single consistent naming rule: most compound names are just
+ * concatenated with no separator ("Cherry Bomb" -> CHERRYBOMB), some keep an underscore
+ * ("Primal Sunflower" -> PRIMAL_SUNFLOWER, "Primal Potato Mine" -> PRIMAL_POTATOMINE),
+ * and a few are genuinely different words (e.g. "Rotobaga" -> ROTORUTABAGA). So resolution
+ * works in two passes: (1) a curated override table for the exceptions found by manually
+ * cross-referencing every plant/zombie against the animation list, checked first, then
+ * (2) a combinatorial fallback that tries every '' / '_' join of the name's word tokens.
+ */
 public class AnimationFactory {
 
     private static Map<String, AnimationJsonParser.AnimationConfig> library = new HashMap<>();
+    private static Map<String, AnimationJsonParser.AnimationConfig> byPath = new HashMap<>();
     private static boolean loaded = false;
-
-
-    private static final Map<String, String> PLANT_NAME_OVERRIDES = Map.of(
-            "TWIN_SUNFLOWER", "SUNFLOWER_TWIN",           // word order flipped
-            "ROTOBAGA", "ROTORUTABAGA",                    // old internal codename survives
-            "MEGA_GATLING_PEA", "MEGAGATLING",             // "Pea" dropped from the codename
-            "ICEBERG_LETTUCE", "HEADBUTTER_LETTUCE",       // unrelated internal codename
-            "PHAT_BEET", "PHATBEETS",                      // plural in the codename
-            "PIERCE_MINT", "SPEARMINT"                     // unrelated internal codename
-    );
-
-    /**
-     * Plants.json display names with NO entry anywhere in animations.json (checked exhaustively -
-     * this animation pack simply doesn't include them). resolveByDisplayName returns null for these;
-     * you'll need art from elsewhere for: Cat-tail, catTail-mint, Kernel-pult.
-     */
-    private static final java.util.Set<String> PLANTS_WITHOUT_ANIMATION_DATA = java.util.Set.of(
-            "CAT_TAIL", "CATTAIL_MINT", "KERNEL_PULT"
-    );
 
     public static void init(InputStream jsonStream) {
         library = AnimationJsonParser.loadConfigs(jsonStream);
+        byPath = new HashMap<>();
+        for (AnimationJsonParser.AnimationConfig config : library.values()) {
+            if (config.path != null) byPath.put(config.path, config);
+        }
         loaded = true;
     }
 
@@ -54,6 +57,7 @@ public class AnimationFactory {
         return library;
     }
 
+    /** Exact lookup by the raw animation name as it appears in animations.json (case-insensitive). */
     public static AnimationJsonParser.AnimationConfig get(String rawName) {
         if (rawName == null) return null;
         autoInit();
@@ -61,58 +65,105 @@ public class AnimationFactory {
     }
 
     /**
+     * Picks the best clip name to actually use from a resolved config for a requested state,
+     * since some PAM files don't have a clip literally named "idle"/"walk"/etc. Tries, in order:
+     * (1) an exact match for {@code preferredState}, (2) an exact "idle" clip, (3) an exact
+     * "default" clip, (4) any clip whose name contains {@code preferredState} as a substring,
+     * (5) any clip whose name contains "idle", (6) whatever clip happens to be first.
+     * Returns null only if the config itself is null or has no clips at all.
      * <p>
-     * Verified against all 69 Plants.json entries: 63 resolve automatically through
-     * normalization, 6 need the {@link #PLANT_NAME_OVERRIDES} table above, and 3
-     * ({@link #PLANTS_WITHOUT_ANIMATION_DATA}) simply have no art in this animation pack.
+     * This is the mechanism every resolver in this factory should route through - callers
+     * that used {@link #resolveByDisplayName} or {@link #resolveByZombieAlias} don't need to
+     * duplicate this fallback chain themselves.
      */
-    public static AnimationJsonParser.AnimationConfig resolveByDisplayName(String displayName) {
-        if (displayName == null || displayName.isBlank()) return null;
+    public static String resolveClipName(AnimationJsonParser.AnimationConfig config, String preferredState) {
+        if (config == null || config.clips == null || config.clips.isEmpty()) return null;
+
+        if (preferredState != null && config.clips.containsKey(preferredState)) {
+            return preferredState;
+        }
+        if (config.clips.containsKey("idle")) {
+            return "idle";
+        }
+        if (config.clips.containsKey("default")) {
+            return "default";
+        }
+        if (preferredState != null && !preferredState.isEmpty()) {
+            String byState = firstClipContaining(config, preferredState);
+            if (byState != null) return byState;
+        }
+        String byIdle = firstClipContaining(config, "idle");
+        if (byIdle != null) return byIdle;
+
+        return config.clips.keySet().iterator().next();
+    }
+
+    /** Same as {@link #resolveClipName} but looks the config up by its PAM path first. */
+    public static String resolveClipNameForPath(String pamPath, String preferredState) {
+        if (pamPath == null) return null;
         autoInit();
+        return resolveClipName(byPath.get(pamPath), preferredState);
+    }
 
-        String key = normalize(displayName, "_");
-        if (PLANTS_WITHOUT_ANIMATION_DATA.contains(key)) {
-            return null;
-        }
-
-        String override = PLANT_NAME_OVERRIDES.get(key);
-        if (override != null && library.containsKey(override)) {
-            return library.get(override);
-        }
-
-        for (String candidate : nameVariants(displayName)) {
-            if (library.containsKey(candidate)) {
-                return library.get(candidate);
+    private static String firstClipContaining(AnimationJsonParser.AnimationConfig config, String substring) {
+        if (config == null || config.clips == null || substring == null) return null;
+        String needle = substring.toLowerCase();
+        for (String clipName : config.clips.keySet()) {
+            if (clipName.toLowerCase().contains(needle)) {
+                return clipName;
             }
         }
         return null;
     }
 
+    // ------------------------------------------------------------------
+    // Plants (keyed by Plants.json "name", e.g. "Sun-shroom", "Twin Sunflower")
+    // ------------------------------------------------------------------
+
     /**
-     * Generates every normalization pattern seen across Plants.json / animations.json:
-     * plain underscore ("SNOW_PEA"), full concatenation ("SNOWPEA" - the dominant pattern
-     * for two-word names), and "first word kept separate, rest concatenated"
-     * ("PRIMAL_POTATOMINE" - used by every "Primal ..." plant), plus a two-token swap
-     * as a last resort ("SUNFLOWER_TWIN").
+     * Exceptions found by cross-checking all 69 Plants.json entries against animations.json.
+     * A null value means: verified there is genuinely no matching entry in animations.json
+     * (not just unresolved by the automatic algorithm) - callers should fall back to a
+     * placeholder icon rather than guess.
      */
-    private static java.util.List<String> nameVariants(String displayName) {
-        String underscored = normalize(displayName, "_");
-        String concatenated = normalize(displayName, "");
+    private static final Map<String, String> PLANT_NAME_OVERRIDES = new HashMap<>();
+    static {
+        PLANT_NAME_OVERRIDES.put("ROTOBAGA", "ROTORUTABAGA");
+        PLANT_NAME_OVERRIDES.put("MEGA_GATLING_PEA", "MEGAGATLING");
+        PLANT_NAME_OVERRIDES.put("ICEBERG_LETTUCE", "HEADBUTTER_LETTUCE");
+        PLANT_NAME_OVERRIDES.put("PHAT_BEET", "PHATBEETS");
+        // Best guess ("piercing" ~ spear) - double-check visually before relying on it.
+        PLANT_NAME_OVERRIDES.put("PIERCE_MINT", "SPEARMINT");
+        // Verified absent from animations.json - no "-pult" family entry for the corn plant.
+        PLANT_NAME_OVERRIDES.put("KERNEL_PULT", null);
+        // Verified absent - no CATTAIL/CAT_TAIL entry at all in animations.json.
+        PLANT_NAME_OVERRIDES.put("CAT_TAIL", null);
+        // Ambiguous: 5 unused *MINT entries remain (AILMINT, CONCEALMINT, CONTAINMINT,
+        // FILAMINT, WINTERMINT) and none obviously matches "cattail" mechanically.
+        // Left unresolved rather than guessing - assign manually once you know which is right.
+        PLANT_NAME_OVERRIDES.put("CATTAIL_MINT", null);
+    }
 
-        java.util.List<String> variants = new java.util.ArrayList<>();
-        variants.add(underscored);
-        variants.add(concatenated);
+    /**
+     * Best-effort lookup for a plant display name (e.g. "Sun-shroom", "Twin Sunflower").
+     * Checks {@link #PLANT_NAME_OVERRIDES} first, then falls back to combinatorial matching.
+     * Returns null if nothing matched (including for entries verified as genuinely absent).
+     */
+    public static AnimationJsonParser.AnimationConfig resolveByDisplayName(String displayName) {
+        if (displayName == null || displayName.isBlank()) return null;
+        autoInit();
 
-        String[] tokens = underscored.split("_");
-        if (tokens.length >= 2) {
-            StringBuilder rest = new StringBuilder();
-            for (int i = 1; i < tokens.length; i++) rest.append(tokens[i]);
-            variants.add(tokens[0] + "_" + rest);
+        String key = normalizeKey(displayName);
+        if (PLANT_NAME_OVERRIDES.containsKey(key)) {
+            String override = PLANT_NAME_OVERRIDES.get(key);
+            return override == null ? null : library.get(override);
         }
-        if (tokens.length == 2) {
-            variants.add(tokens[1] + "_" + tokens[0]);
+
+        String[] tokens = splitWords(displayName);
+        for (String candidate : joinVariants(tokens)) {
+            if (library.containsKey(candidate)) return library.get(candidate);
         }
-        return variants;
+        return null;
     }
 
     /** PAM path shortcut for {@link #resolveByDisplayName}, or null if nothing matched. */
@@ -121,10 +172,144 @@ public class AnimationFactory {
         return config == null ? null : config.path;
     }
 
-    private static String normalize(String raw, String separator) {
-        return raw.trim().toUpperCase()
-                .replace("-", separator)
-                .replace(" ", separator)
-                .replaceAll("[^A-Z0-9_]", "");
+    // ------------------------------------------------------------------
+    // Zombies (keyed by Zombie.json alias, e.g. "ZombieIceAgeTroglobite")
+    // ------------------------------------------------------------------
+
+    /**
+     * Exceptions found by cross-checking all 31 Zombie.json aliases against animations.json.
+     * A null value means the zombie's visuals are composited at runtime in the original game
+     * (a base body plus a separately-worn armor piece) and animations.json has no single
+     * matching entry for that combination - render the base zombie body and layer your own
+     * armor sprite/state on top instead of expecting one PAM clip to cover it.
+     */
+    private static final Map<String, String> ZOMBIE_ALIAS_OVERRIDES = new HashMap<>();
+    static {
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_DEFAULT", "ZOMBIE_TUTORIAL");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_IMP", "ZOMBIE_IMP_BARE");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_RA", "ZOMBIE_EGYPT_RA");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_TOMB_RAISER", "ZOMBIE_EGYPT_TOMBRAISER");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_ICE_AGE_DODO", "ZOMBIE_ICEAGE_DODORIDER");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_BEACH_SNORKEL", "ZOMBIE_BEACH_SNORKELER");
+        // Best guess (a juggler/jester are the same circus-performer archetype).
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_DARK_JUGGLER", "ZOMBIE_DARK_JESTER");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_WIZARD", "ZOMBIE_DARK_WIZARD");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_CRYSTAL_SKULL", "ZOMBIE_LOSTCITY_CRYSTALSKULL");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_NEWSPAPER", "ZOMBIE_MODERN_NEWSPAPER");
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_ARCADE", "ZOMBIE_80S_ARCADE");
+        // Armor variants: no generic cone/bucket/brick/knight overlay entry exists in
+        // animations.json - it's rendered as a separate attachment in the original game.
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_ARMOR_1", null);      // Cone
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_ARMOR_2", null);      // Bucket
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_ARMOR_4", null);      // Brick
+        ZOMBIE_ALIAS_OVERRIDES.put("ZOMBIE_DARK_ARMOR_3", null); // Knight (shoulder armor + crown)
+    }
+
+    /**
+     * Best-effort lookup for a Zombie.json alias (e.g. "ZombieIceAgeTroglobite", "ZombiePeashooter").
+     * Checks {@link #ZOMBIE_ALIAS_OVERRIDES} first, then falls back to combinatorial matching
+     * both with and without the "Zombie" prefix (some entries carry it, some don't - e.g. the
+     * costume zombies "ZombiePeashooter"/"ZombieWallnut" reuse the bare plant animation).
+     * Returns null if nothing matched (including verified-absent armor overlays).
+     */
+    public static AnimationJsonParser.AnimationConfig resolveByZombieAlias(String alias) {
+        if (alias == null || alias.isBlank()) return null;
+        autoInit();
+
+        String key = normalizeKey(splitCamelCase(alias));
+        if (ZOMBIE_ALIAS_OVERRIDES.containsKey(key)) {
+            String override = ZOMBIE_ALIAS_OVERRIDES.get(key);
+            return override == null ? null : library.get(override);
+        }
+
+        String[] tokens = camelTokens(alias);
+        String[] bodyTokens = (tokens.length > 0 && tokens[0].equalsIgnoreCase("zombie"))
+                ? java.util.Arrays.copyOfRange(tokens, 1, tokens.length)
+                : tokens;
+
+        List<String> candidates = new ArrayList<>();
+        candidates.addAll(joinVariants(tokens));                                 // e.g. ZOMBIE_ICEAGE_HUNTER
+        candidates.addAll(joinVariants(bodyTokens));                             // e.g. ICEAGE_HUNTER
+        for (String v : joinVariants(bodyTokens)) candidates.add("ZOMBIE_" + v); // e.g. ZOMBIE_ICEAGE_HUNTER
+
+        for (String candidate : candidates) {
+            if (library.containsKey(candidate)) return library.get(candidate);
+        }
+        return null;
+    }
+
+    /** PAM path shortcut for {@link #resolveByZombieAlias}, or null if nothing matched. */
+    public static String pathForZombieAlias(String alias) {
+        AnimationJsonParser.AnimationConfig config = resolveByZombieAlias(alias);
+        return config == null ? null : config.path;
+    }
+
+    // ------------------------------------------------------------------
+    // Shared tokenizing / matching helpers
+    // ------------------------------------------------------------------
+
+    private static final Pattern WORD_SPLIT = Pattern.compile("[ \\-]+");
+    private static final Pattern CAMEL_SPLIT = Pattern.compile("(?=[A-Z])");
+
+    private static String[] splitWords(String raw) {
+        String cleaned = raw.trim().replaceAll("[^A-Za-z0-9 \\-]", " ");
+        return WORD_SPLIT.split(cleaned.trim());
+    }
+
+    private static String[] camelTokens(String alias) {
+        String[] parts = CAMEL_SPLIT.split(alias);
+        List<String> tokens = new ArrayList<>();
+        for (String p : parts) {
+            if (!p.isBlank()) tokens.add(p);
+        }
+        return tokens.toArray(new String[0]);
+    }
+
+    private static String splitCamelCase(String alias) {
+        return String.join(" ", camelTokens(alias));
+    }
+
+    /** Normalizes a raw name into the override-map key format (upper snake_case). */
+    private static String normalizeKey(String raw) {
+        String[] tokens = splitWords(raw);
+        return String.join("_", tokens).toUpperCase();
+    }
+
+    /**
+     * All '' / '_' join combinations of the given tokens, uppercased, plus (for exactly
+     * two tokens) both orders - covers cases like "Twin Sunflower" -> SUNFLOWER_TWIN.
+     * Capped at 5 tokens to keep the combinatorics small; no plant/zombie name needs more.
+     */
+    private static Set<String> joinVariants(String[] tokens) {
+        Set<String> variants = new HashSet<>();
+        if (tokens.length == 0) return variants;
+
+        String[] upper = new String[tokens.length];
+        for (int i = 0; i < tokens.length; i++) upper[i] = tokens[i].toUpperCase();
+
+        if (upper.length == 1) {
+            variants.add(upper[0]);
+            return variants;
+        }
+        if (upper.length > 5) {
+            variants.add(String.join("", upper));
+            variants.add(String.join("_", upper));
+            return variants;
+        }
+
+        int combos = 1 << (upper.length - 1);
+        for (int mask = 0; mask < combos; mask++) {
+            StringBuilder sb = new StringBuilder(upper[0]);
+            for (int i = 1; i < upper.length; i++) {
+                sb.append(((mask >> (i - 1)) & 1) == 1 ? "_" : "").append(upper[i]);
+            }
+            variants.add(sb.toString());
+        }
+
+        if (upper.length == 2) {
+            variants.add(upper[1] + "_" + upper[0]);
+            variants.add(upper[1] + upper[0]);
+        }
+        return variants;
     }
 }
