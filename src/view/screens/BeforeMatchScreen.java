@@ -2,7 +2,9 @@ package view.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -13,11 +15,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
+import controller.CollectionManager;
 import controller.menus.match.BeforeMenu;
 import model.App;
+import model.collections.plant.PlantJsonParser;
 import model.game_exceptions.GameException;
 import model.match.main.levels.Level;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
@@ -30,22 +35,19 @@ import service.card_factory.SeedPacketCardFactory;
 import view.general_screens.UiScreen;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-/**
- * Graphical pre-match loadout screen.
- *
- * It intentionally uses the same SeedPacketCardFactory as CollectionScreen, so the
- * plant cards have exactly the same visual representation as the collection.
- * Selection itself remains owned by BeforeMenu.selectedPlants.
- */
 public class BeforeMatchScreen extends UiScreen {
 
     private static final String BACKGROUND = "assets/images/backg/mainmenu_background.png";
     private static final String BOARD = "assets/images/backg/wood board.png";
     private static final String BACK = "assets/images/ui/buttons_hud_back_normal.png";
+    private static final String LOCK_ICON = "assets/images/lock.png";
 
     private final SeedPacketCardFactory cardFactory = new SeedPacketCardFactory();
+    private final CollectionManager collectionManager = new CollectionManager();
     private final List<Actor> cards = new ArrayList<>();
 
     @Override
@@ -121,19 +123,9 @@ public class BeforeMatchScreen extends UiScreen {
 
     private Actor buildPlantGrid(Level level) {
         UserState state = User.currentUser.userState;
-        List<String> names = new ArrayList<>();
-        if (level.getAvailablePlants() != null) names.addAll(level.getAvailablePlants());
-
-        if (names.isEmpty()) {
-            // For normal levels the available list is the level's plant pool; if it is empty,
-            // fall back to the player's unlocked collection so the screen remains usable.
-            for (var config : new controller.CollectionManager().getUnlockedPlants(state)) {
-                names.add(config.name);
-            }
-        }
 
         if (level instanceof ConveyorBeltLevel conveyor) {
-            names.clear();
+            List<String> names = new ArrayList<>();
             if (conveyor.getConveyorPlants() != null) {
                 for (var plant : conveyor.getConveyorPlants()) {
                     if (plant != null && plant.getName() != null) {
@@ -141,86 +133,132 @@ public class BeforeMatchScreen extends UiScreen {
                     }
                 }
             }
+            return buildGridContainer(names, name -> false, name -> false);
         }
 
-        names = new ArrayList<>(names.stream().distinct().toList());
+        Set<String> availableNames = new LinkedHashSet<>();
+        if (level.getAvailablePlants() != null) availableNames.addAll(level.getAvailablePlants());
 
+        List<PlantJsonParser.PlantConfig> allPlants = collectionManager.getAllPlants();
+        List<String> names = new ArrayList<>();
+        for (PlantJsonParser.PlantConfig config : allPlants) {
+            names.add(config.name);
+        }
+
+        boolean restrictToAvailable = !availableNames.isEmpty();
+
+        return buildGridContainer(names,
+                name -> !state.isPlantUnlocked(findId(allPlants, name))
+                        || isLevelLocked(level, name)
+                        || (restrictToAvailable && !containsIgnoreCase(availableNames, name)),
+                name -> !state.isPlantUnlocked(findId(allPlants, name)));
+    }
+
+    private int findId(List<PlantJsonParser.PlantConfig> plants, String name) {
+        for (PlantJsonParser.PlantConfig config : plants) {
+            if (config.name.equalsIgnoreCase(name)) return config.id;
+        }
+        return -1;
+    }
+
+    private boolean containsIgnoreCase(Set<String> values, String target) {
+        for (String value : values) {
+            if (value.equalsIgnoreCase(target)) return true;
+        }
+        return false;
+    }
+
+    private Actor buildGridContainer(List<String> names, java.util.function.Predicate<String> darkened,
+                                      java.util.function.Predicate<String> showLockIcon) {
         Table grid = new Table();
         grid.top();
 
         Table row = null;
         int index = 0;
         for (String name : names) {
-            if (index % 4 == 0) {
+            if (index % 5 == 0) {
                 row = new Table();
-                grid.add(row).center().padBottom(10).row();
+                grid.add(row).center().padBottom(SPACE_MD).row();
             }
-            boolean locked = isLocked(level, name);
-            Actor card = buildCard(name, locked);
-            row.add(card).pad(5);
+            boolean isDarkened = darkened.test(name);
+            Actor card = buildCard(name, isDarkened, showLockIcon.test(name));
+            row.add(card).pad(SPACE_SM);
             index++;
         }
 
-        // The project's Skin is atlas-backed and does not register a ScrollPaneStyle.
-        // Keep the existing plant-card mechanism, but render the grid directly so this
-        // screen does not require an unavailable "default" ScrollPane style.
         Table gridContainer = new Table();
         gridContainer.top().left();
         gridContainer.add(grid).expandX().fillX().top().left();
         return gridContainer;
     }
 
-    private boolean isLocked(Level level, String name) {
+    private boolean isLevelLocked(Level level, String name) {
         if (level instanceof LockedPlantsLevel lockedLevel) {
             return lockedLevel.isPlantLocked(name);
         }
         return false;
     }
 
-    private Actor buildCard(String name, boolean locked) {
-        Table cell = new Table();
+    private Actor buildCard(String name, boolean darkened, boolean showLockIcon) {
+        Stack cardStack = new Stack();
+        float cardW = 150f;
+        float cardH = 190f;
+
         try {
             SeedPacketCard card = cardFactory.buildCardForDisplayName(name);
-            if (card == null) {
-                return fallbackCard(name, locked);
+            if (card != null) {
+                cardW = card.getWidth();
+                cardH = card.getHeight();
+                cardStack.add(card);
             }
-            cell.add(card).size(card.getWidth(), card.getHeight());
-            cards.add(cell);
-
-            cell.addListener(new ClickListener() {
-                @Override public void clicked(InputEvent event, float x, float y) {
-                    if (!locked) togglePlant(name);
-                }
-            });
         } catch (Throwable ignored) {
-            return fallbackCard(name, locked);
+        }
+        cardStack.setSize(cardW, cardH);
+
+        if (cardStack.getChildren().isEmpty()) {
+            Table fallback = new Table();
+            fallback.setBackground(skin.getDrawable("card-background"));
+            Label label = new Label(name, skin, "main");
+            label.setAlignment(Align.center);
+            label.setWrap(true);
+            fallback.add(label).size(cardW, cardH);
+            cardStack.add(fallback);
         }
 
-        cell.addAction(new com.badlogic.gdx.scenes.scene2d.Action() {
-            @Override public boolean act(float delta) {
-                cell.invalidateHierarchy();
-                return true;
-            }
-        });
+        if (darkened) {
+            Image dim = new Image(solidColorDrawable(new Color(0f, 0f, 0f, 0.55f)));
+            cardStack.add(dim);
+        }
+        if (showLockIcon) {
+            Image lockImage = new Image(loadTextureSafe(LOCK_ICON));
+            Container<Image> lockContainer = new Container<>(lockImage);
+            lockContainer.size(56f, 56f);
+            lockContainer.align(Align.center);
+            cardStack.add(lockContainer);
+        }
 
-        return cell;
-    }
-
-    private Actor fallbackCard(String name, boolean locked) {
         Table cell = new Table();
-        cell.setBackground(skin.getDrawable("card-background"));
-        Label label = new Label((locked ? "LOCKED\n" : "") + name, skin, "main");
-        label.setAlignment(Align.center);
-        label.setWrap(true);
-        cell.add(label).size(145, 150);
-        if (!locked) {
-            cell.addListener(new ClickListener() {
+        cell.add(cardStack).size(cardW, cardH);
+        cards.add(cell);
+
+        if (!darkened) {
+            cardStack.addListener(new ClickListener() {
                 @Override public void clicked(InputEvent event, float x, float y) {
                     togglePlant(name);
                 }
             });
         }
+
         return cell;
+    }
+
+    private Drawable solidColorDrawable(Color color) {
+        Pixmap pixmap = new Pixmap(4, 4, Pixmap.Format.RGBA8888);
+        pixmap.setColor(color);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return new TextureRegionDrawable(new TextureRegion(texture));
     }
 
     private Table buildLoadoutPanel(Level level) {
