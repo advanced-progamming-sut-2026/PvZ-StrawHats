@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -40,11 +41,11 @@ public class GameMenuScreen extends UiScreen {
 
     private static final float CARD_WIDTH = 280f;
     private static final float CARD_HEIGHT = 230f;
-    private static final float CHAPTER_CARD_PAD = 20f;
+    private static final float CHAPTER_CARD_PAD = 35f;
     private static final float CAROUSEL_VIEWPORT_WIDTH = 1270f;
-    private static final float UNIT_WIDTH = (CARD_WIDTH + CHAPTER_CARD_PAD * 2) * CHAPTERS.length;
 
     private ScrollPane carouselPane;
+    private Table carouselContent;
 
     @Override
     public void show() {
@@ -62,7 +63,7 @@ public class GameMenuScreen extends UiScreen {
         Table centerTable = new Table();
         Label label = new Label("Choose a Chapter", skin, "title");
         label.setFontScale(1.9f);
-        centerTable.add(label).padTop(-210).padBottom(19).row();
+        centerTable.add(label).padTop(-180).padBottom(25).row();
         centerTable.add(buildChapterCarousel());
 
         rootTable.add(centerTable).expand().center().row();
@@ -71,13 +72,19 @@ public class GameMenuScreen extends UiScreen {
     private Table buildChapterCarousel() {
         Map<String, Boolean> unlockStatus = computeChapterUnlockStatus();
 
-        Table carouselContent = new Table();
-        for (int lap = 0; lap < 3; lap++) {
-            for (int i = 0; i < CHAPTERS.length; i++) {
-                String chapter = CHAPTERS[i];
-                carouselContent.add(createChapterCard(chapter, CHAPTER_ART[i], unlockStatus.getOrDefault(chapter, false)))
-                        .size(CARD_WIDTH, CARD_HEIGHT).pad(0, CHAPTER_CARD_PAD, 0, CHAPTER_CARD_PAD);
-            }
+        carouselContent = new Table();
+
+        float sidePadding = (CAROUSEL_VIEWPORT_WIDTH - CARD_WIDTH) / 2f;
+
+        for (int i = 0; i < CHAPTERS.length; i++) {
+            String chapter = CHAPTERS[i];
+            float leftPad = (i == 0) ? sidePadding : CHAPTER_CARD_PAD;
+            float rightPad = (i == CHAPTERS.length - 1) ? sidePadding : CHAPTER_CARD_PAD;
+
+            carouselContent.add(createChapterCard(chapter, CHAPTER_ART[i], unlockStatus.getOrDefault(chapter, false)))
+                    .size(CARD_WIDTH, CARD_HEIGHT)
+                    .padLeft(leftPad)
+                    .padRight(rightPad);
         }
 
         carouselPane = new ScrollPane(carouselContent);
@@ -86,9 +93,7 @@ public class GameMenuScreen extends UiScreen {
         carouselPane.setScrollingDisabled(false, true);
 
         Table viewport = new Table();
-        viewport.add(carouselPane).width(CAROUSEL_VIEWPORT_WIDTH).height(CARD_HEIGHT);
-
-        Gdx.app.postRunnable(() -> carouselPane.setScrollX(UNIT_WIDTH));
+        viewport.add(carouselPane).width(CAROUSEL_VIEWPORT_WIDTH).height(CARD_HEIGHT + 90f);
 
         return viewport;
     }
@@ -96,14 +101,30 @@ public class GameMenuScreen extends UiScreen {
     @Override
     public void render(float delta) {
         super.render(delta);
-        if (carouselPane != null) {
-            float maxX = carouselPane.getMaxX();
-            float currentX = carouselPane.getScrollX();
-            if (currentX <= 0f) {
-                carouselPane.setScrollX(Math.min(currentX + UNIT_WIDTH, maxX));
-            } else if (currentX >= maxX) {
-                carouselPane.setScrollX(Math.max(currentX - UNIT_WIDTH, 0f));
+        updateCarouselScaling();
+    }
+
+    private void updateCarouselScaling() {
+        if (carouselPane == null || carouselContent == null) return;
+
+        float paneWidth = carouselPane.getWidth();
+        float scrollX = carouselPane.getScrollX();
+        float centerX = scrollX + paneWidth / 2f;
+
+        float maxDistance = 380f;
+
+        for (Actor child : carouselContent.getChildren()) {
+            float childCenterX = child.getX() + child.getWidth() / 2f;
+            float distance = Math.abs(centerX - childCenterX);
+
+            float scale = 1.0f;
+            if (distance < maxDistance) {
+                float factor = 1.0f - (distance / maxDistance);
+                scale = 1.0f + 0.30f * factor;
             }
+
+            child.setOrigin(Align.center);
+            child.setScale(scale);
         }
     }
 
@@ -156,21 +177,22 @@ public class GameMenuScreen extends UiScreen {
 
     private Actor createChapterCard(String chapter, String artPath, boolean unlocked) {
         Stack stack = new Stack();
+        stack.setTransform(true);
+        stack.setSize(CARD_WIDTH, CARD_HEIGHT);
+        stack.setOrigin(Align.center);
+
         TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(artPath));
         ImageButton button = new ImageButton(drawable);
 
-        Label titleLabel = new Label(chapter, skin, "title");
-        titleLabel.setAlignment(Align.center);
-        titleLabel.setWrap(true);
-        Label statusLabel = new Label(unlocked ? "Unlocked" : "Locked", skin, unlocked ? "main" : "muted");
-        statusLabel.setAlignment(Align.center);
-
-        Table textTable = new Table();
-        textTable.add(titleLabel).expandX().fillX().bottom().padBottom(30).padLeft(4).padRight(4).row();
-        textTable.add(statusLabel).expandX().bottom().padBottom(10);
-
         stack.add(button);
-        stack.add(textTable);
+
+        if (!unlocked) {
+            Texture lockTex = loadTextureSafe("assets/images/ui/collection/lock_small_gold.png");
+            Image lockImg = new Image(lockTex);
+            Table lockTable = new Table();
+            lockTable.add(lockImg).center();
+            stack.add(lockTable);
+        }
 
         stack.addListener(new ClickListener() {
             @Override
@@ -211,10 +233,6 @@ public class GameMenuScreen extends UiScreen {
         });
         return container;
     }
-
-    
-
-    
 
     @Override
     protected void onAfterCommand() {
