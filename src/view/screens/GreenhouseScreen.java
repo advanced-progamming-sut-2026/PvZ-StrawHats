@@ -1,9 +1,10 @@
 package view.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -18,6 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import controller.menus.greenhouse.PotController;
+import model.collections.animations.AnimationFactory;
+import model.collections.animations.AnimationJsonParser;
 import model.greenhouse.Greenhouse;
 import model.greenhouse.Pot;
 import model.greenhouse.PotPlant;
@@ -27,6 +30,11 @@ import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 import view.general_screens.Toast;
 import view.general_screens.UiScreen;
+
+
+import pvz.libpvz.pam.PamPlayer;
+import pvz.libpvz.pam.ClipRef;
+import pvz.libpvz.textures.TextureBank;
 
 public class GreenhouseScreen extends UiScreen {
 
@@ -49,14 +57,40 @@ public class GreenhouseScreen extends UiScreen {
     private static final float POT_CELL_EXTRA_HEIGHT = 40f;
     private static final float POT_CELL_GAP = 8f;
 
-    private Label statusLabel;
+    private TextureBank textureBank;
+    private PamPlayer pamPlayer;
 
     @Override
     public void show() {
         setBackground(GREENHOUSE_BACKGROUND);
         AudioManager.get().playMusic(AudioEnum.MENU_MUSIC, true);
+
+        if (textureBank == null) {
+            try {
+                FileHandle rootHandle = Gdx.files.internal("assets/pvz-assets");
+                textureBank = new TextureBank("atlases", rootHandle);
+                pamPlayer = new PamPlayer(textureBank, rootHandle);
+
+                Gdx.app.log("PAM_INIT", "PAM System and TextureBank initialized successfully!");
+            } catch (Throwable t) {
+                Gdx.app.error("PAM_INIT", "Failed to initialize PAM System", t);
+            }
+        }
+
         super.show();
         build();
+    }
+
+    @Override
+    public void render(float delta) {
+        if (textureBank != null) {
+            try {
+                textureBank.update();
+            } catch (Throwable t) {
+                Gdx.app.error("GreenhouseScreen", "textureBank.update() failed", t);
+            }
+        }
+        super.render(delta);
     }
 
     private void build() {
@@ -69,7 +103,7 @@ public class GreenhouseScreen extends UiScreen {
 
         Greenhouse greenhouse = Greenhouse.getInstance();
 
-        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-135).row();
+        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-195).row();
         rootTable.add(buildBottomBar()).padBottom(SPACE_MD);
     }
 
@@ -109,20 +143,30 @@ public class GreenhouseScreen extends UiScreen {
         Stack stack = new Stack();
         stack.setSize(POT_SIZE, POT_SIZE);
 
-        Image circle = new Image(potCircleDrawable(status, plant));
-        stack.add(circle);
-
+        
         String iconPath = switch (status) {
             case LOCKED -> POT_LOCKED_ICON;
             case EMPTY, GROWING -> POT_EMPTY_ICON;
             case READY -> POT_READY_ICON;
         };
+
+        
         if (!iconPath.isEmpty() && Gdx.files.internal(iconPath).exists()) {
             stack.add(new Image(loadTextureSafe(iconPath)));
         } else {
             stack.add(new Label(fallbackGlyph(status, plant), skin, "title"));
         }
 
+        if ((status == PotStatus.GROWING || status == PotStatus.READY) && plant != null && pamPlayer != null) {
+            AnimationJsonParser.AnimationConfig animConfig = AnimationFactory.resolveByDisplayName(plant.getPlantName());
+            if (animConfig != null && animConfig.path != null && !animConfig.path.isEmpty()) {
+                Actor plantVisual = new PlantIdleAnimationActor(animConfig.path,
+                        animConfig.canvasWidth(), animConfig.canvasHeight(), POT_SIZE);
+                stack.add(plantVisual);
+            }
+        }
+
+        
         if (status == PotStatus.LOCKED && !LOCK_ICON.isEmpty() && Gdx.files.internal(LOCK_ICON).exists()) {
             Table lockBadge = new Table();
             lockBadge.add(new Image(loadTextureSafe(LOCK_ICON))).size(44, 64);
@@ -135,7 +179,7 @@ public class GreenhouseScreen extends UiScreen {
                 readyGlow = new Image(loadTextureSafe(SPARKLE_ICON));
             } else {
                 Label ready = new Label("READY", skin, "title");
-                ready.setFontScale(0.55f);
+                ready.setFontScale(0.75f);
                 ready.setAlignment(Align.bottom);
                 readyGlow = ready;
             }
@@ -148,9 +192,8 @@ public class GreenhouseScreen extends UiScreen {
         Table column = new Table();
         column.add(stack).size(POT_SIZE, POT_SIZE).row();
 
-        Label captionLabel = new Label(captionFor(status, plant), skin, status == PotStatus.LOCKED ? "muted" : "main");
+        Label captionLabel = new Label(captionFor(status, plant), skin, "title");
         captionLabel.setAlignment(Align.center);
-        captionLabel.setFontScale(0.7f);
         captionLabel.setWrap(true);
         column.add(captionLabel).width(POT_SIZE + 26f).padTop(4);
 
@@ -187,8 +230,8 @@ public class GreenhouseScreen extends UiScreen {
         return switch (status) {
             case LOCKED -> "Locked";
             case EMPTY -> "Tap to plant";
-            case READY -> plant.getPlantName();
-            case GROWING -> plant.getPlantName() + "\n" + Greenhouse.formatDuration(plant.getRemainingSeconds());
+            case READY -> "Ready";
+            case GROWING -> Greenhouse.formatDuration(plant.getRemainingSeconds());
         };
     }
 
@@ -199,31 +242,6 @@ public class GreenhouseScreen extends UiScreen {
             case READY -> "!";
             case GROWING -> (plant != null && plant.isMarigold()) ? "M" : "P";
         };
-    }
-
-    private com.badlogic.gdx.scenes.scene2d.utils.Drawable potCircleDrawable(PotStatus status, PotPlant plant) {
-        Color fill = switch (status) {
-            case LOCKED -> new Color(0.35f, 0.33f, 0.28f, 1f);
-            case EMPTY -> new Color(0.55f, 0.40f, 0.24f, 1f);
-            case READY -> new Color(0.90f, 0.75f, 0.20f, 1f);
-            case GROWING -> (plant != null && plant.isMarigold())
-                    ? new Color(0.85f, 0.55f, 0.15f, 1f)
-                    : new Color(0.35f, 0.58f, 0.30f, 1f);
-        };
-        Color border = status == PotStatus.READY ? Color.WHITE : new Color(0.15f, 0.12f, 0.06f, 1f);
-        return circleDrawable((int) POT_SIZE, fill, border, status == PotStatus.READY ? 5 : 3);
-    }
-
-    private com.badlogic.gdx.scenes.scene2d.utils.Drawable circleDrawable(int diameter, Color fill, Color border, int borderWidth) {
-        Pixmap pixmap = new Pixmap(diameter, diameter, Pixmap.Format.RGBA8888);
-        pixmap.setColor(border);
-        pixmap.fillCircle(diameter / 2, diameter / 2, diameter / 2);
-        pixmap.setColor(fill);
-        pixmap.fillCircle(diameter / 2, diameter / 2, diameter / 2 - borderWidth);
-        Texture texture = new Texture(pixmap);
-        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        pixmap.dispose();
-        return new TextureRegionDrawable(texture);
     }
 
     private Table buildTopBar() {
@@ -334,7 +352,63 @@ public class GreenhouseScreen extends UiScreen {
         return outer;
     }
 
-    
+    private class PlantIdleAnimationActor extends Actor {
+        private final String animationPath;
+        private final float canvasWidth;
+        private final float canvasHeight;
+        private final float targetSize;
+        private float stateTime = 0f;
+
+        PlantIdleAnimationActor(String animationPath, float canvasWidth, float canvasHeight, float targetSize) {
+            this.animationPath = animationPath;
+            this.canvasWidth = canvasWidth > 0 ? canvasWidth : targetSize;
+            this.canvasHeight = canvasHeight > 0 ? canvasHeight : targetSize;
+            this.targetSize = targetSize;
+
+            setSize(targetSize, targetSize);
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            stateTime += delta;
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            if (pamPlayer == null || animationPath == null) {
+                return;
+            }
+            try {
+                String clipName = AnimationFactory.resolveClipNameForPath(animationPath, "idle");
+                if (clipName == null) return;
+
+                ClipRef clip = pamPlayer.getClip(animationPath, clipName);
+                if (clip == null) return;
+
+                float scale = (targetSize / Math.max(canvasWidth, canvasHeight)) * 2.35f;
+                float px = getX();
+                float py = getY();
+
+                
+                float pivotX = px + (targetSize / 2f) + 57;
+                float pivotY = py + (targetSize * 0.25f) + 125;
+
+                Matrix4 original = batch.getTransformMatrix().cpy();
+                Matrix4 scaled = new Matrix4(original)
+                        .translate(pivotX, pivotY, 0)
+                        .scale(scale, scale, 1f)
+                        .translate(-pivotX, -pivotY, 0);
+                batch.setTransformMatrix(scaled);
+
+                pamPlayer.draw(batch, clip, stateTime, px, py, true);
+
+                batch.setTransformMatrix(original);
+            } catch (Throwable t) {
+                Gdx.app.error("GreenhouseScreen", "Failed to draw idle animation", t);
+            }
+        }
+    }
 
     @Override
     protected void onAfterCommand() {
