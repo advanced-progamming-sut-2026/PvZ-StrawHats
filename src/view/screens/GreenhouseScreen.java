@@ -615,7 +615,10 @@ public class GreenhouseScreen extends UiScreen {
 
                 if ("actionCritical".equals(chosen)) {
                     actionTimer = 1.77f;
-                } else {
+                } else if ("action2".equals(chosen)) {
+                    actionTimer = 2.20f;
+                }
+                else {
                     actionTimer = 1.2f;
                 }
             }
