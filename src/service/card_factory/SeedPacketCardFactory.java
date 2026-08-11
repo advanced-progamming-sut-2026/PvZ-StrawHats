@@ -130,11 +130,14 @@ public class SeedPacketCardFactory implements Disposable {
     private static final Map<String, String> DISPLAY_NAME_ICON_OVERRIDES = Map.of(
             "MEGA_GATLING_PEA", "megagatling.png",
             "ICEBERG_LETTUCE", "headbutter.png",
-            "PIERCE_MINT", "spearmint.png"
+            "PIERCE_MINT", "spearmint.png",
+            "ROTOBAGA", "rotorutbaga.png",
+            "GOO_PEASHOOTER", "goopeashooter.png",
+            "CATTAIL_MINT", "concealmint.png",
+            "CAT_TAIL", "homingthistle.png"
     );
 
     private static final java.util.Set<String> DISPLAY_NAMES_WITHOUT_ICON = java.util.Set.of(
-            "GOO_PEASHOOTER", "CAT_TAIL", "CATTAIL_MINT"
     );
 
     public SeedPacketCard buildCardForDisplayName(String displayName) {
@@ -280,6 +283,10 @@ public class SeedPacketCardFactory implements Disposable {
             if (plantFile.equalsIgnoreCase(fileName)) {
                 return buildCard(plantFile);
             }
+        }
+        String overrideFile = resolveIconFile(plantName);
+        if (overrideFile != null) {
+            return buildCard(overrideFile);
         }
         return null;
     }

@@ -137,11 +137,9 @@ public class AnimationFactory {
         // Verified absent from animations.json - no "-pult" family entry for the corn plant.
         PLANT_NAME_OVERRIDES.put("KERNEL_PULT", "KERNALPULT");
         // Verified absent - no CATTAIL/CAT_TAIL entry at all in animations.json.
-        PLANT_NAME_OVERRIDES.put("CAT_TAIL", null);
-        // Ambiguous: 5 unused *MINT entries remain (AILMINT, CONCEALMINT, CONTAINMINT,
-        // FILAMINT, WINTERMINT) and none obviously matches "cattail" mechanically.
-        // Left unresolved rather than guessing - assign manually once you know which is right.
-        PLANT_NAME_OVERRIDES.put("CATTAIL_MINT", null);
+        PLANT_NAME_OVERRIDES.put("CAT_TAIL", "HOMINGTHISTLE");
+
+        PLANT_NAME_OVERRIDES.put("CATTAIL_MINT", "CONCEALMINT");
     }
 
     /**
