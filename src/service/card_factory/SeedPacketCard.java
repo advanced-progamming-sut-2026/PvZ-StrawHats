@@ -1,20 +1,22 @@
 package service.card_factory;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 
-/**
- * A single finished seed packet card: a seed packet background with a plant's
- * icon set on top of it, grouped together into one actor.
- * <p>
- * The card is named after the plant whose icon it uses - e.g. the card built
- * from "akee.png" is named "akee" (see {@link #getName()}).
- */
 public class SeedPacketCard extends Stack {
+
+    private static final float PLANT_SCALE_W = 0.83f;
+    private static final float PLANT_SCALE_H = 0.83f;
+    private static final float OFFSET_X = -40f;
+    private static final float OFFSET_Y = 7f;
+
+    private static final float CLIP_INSET = 1f;
 
     private final String name;
     private final String plantIconFile;
@@ -27,38 +29,70 @@ public class SeedPacketCard extends Stack {
         this.plantIconFile = plantIconFile;
         this.packetSkinFile = packetSkinFile;
 
-        setSize(cardWidth, cardHeight);
+        float aspect = (packetTexture != null && packetTexture.getWidth() > 0)
+                ? (float) packetTexture.getHeight() / (float) packetTexture.getWidth()
+                : (cardHeight / cardWidth);
+        float actualHeight = cardWidth * aspect;
 
-        // The seed packet is the background and fills the whole card.
+        setSize(cardWidth, actualHeight);
+
         Image packetImage = new Image(new TextureRegionDrawable(packetTexture));
         add(packetImage);
 
-        // The plant icon sits on top of the packet, scaled down and nudged
-        // toward the upper part of the packet (the usual seed-packet layout:
-        // plant art on top, cost/name area left clear near the bottom).
         Image plantImage = new Image(new TextureRegionDrawable(plantTexture));
-        plantImage.setScaling(com.badlogic.gdx.utils.Scaling.fit);
+        plantImage.setScaling(Scaling.fit);
         plantImage.setAlign(Align.center);
 
         Container<Image> plantContainer = new Container<>(plantImage);
-        plantContainer.size(cardWidth * 0.62f, cardHeight * 0.55f);
+        plantContainer.size(cardWidth * PLANT_SCALE_W, actualHeight * PLANT_SCALE_H);
         plantContainer.align(Align.top);
-        plantContainer.padTop(cardHeight * 0.12f);
+
+        if (OFFSET_X < 0) {
+            plantContainer.padRight(-OFFSET_X);
+        } else {
+            plantContainer.padLeft(OFFSET_X);
+        }
+        plantContainer.padTop(OFFSET_Y);
 
         add(plantContainer);
     }
 
-    /** The plant name this card is named after (e.g. "akee" for "akee.png"). */
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        validate();
+        boolean transform = isTransform();
+
+        if (transform) {
+            applyTransform(batch, computeTransform());
+        }
+
+        // انقباض ۱ واحدی محدوده برش از چهار طرف
+        float clipX = (transform ? 0 : getX()) + CLIP_INSET;
+        float clipY = (transform ? 0 : getY()) + CLIP_INSET;
+        float clipW = Math.max(0, getWidth() - (CLIP_INSET * 2f));
+        float clipH = Math.max(0, getHeight() - (CLIP_INSET * 2f));
+
+        if (clipBegin(clipX, clipY, clipW, clipH)) {
+            drawChildren(batch, parentAlpha);
+            batch.flush();
+            clipEnd();
+        } else {
+            drawChildren(batch, parentAlpha);
+        }
+
+        if (transform) {
+            resetTransform(batch);
+        }
+    }
+
     public String getName() {
         return name;
     }
 
-    /** File name (inside assets/images/ui/plants_ui) of the plant icon used for this card. */
     public String getPlantIconFile() {
         return plantIconFile;
     }
 
-    /** File name (inside assets/images/ui/seedpackets_ui) of the packet background used for this card. */
     public String getPacketSkinFile() {
         return packetSkinFile;
     }

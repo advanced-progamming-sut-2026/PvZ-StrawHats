@@ -31,7 +31,6 @@ import service.card_factory.SeedPacketCard;
 import service.card_factory.SeedPacketCardFactory;
 import view.general_screens.UiScreen;
 
-// --- PAM imports (same pattern as EgyptStagesScreen) ---
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.textures.TextureBank;
@@ -46,13 +45,15 @@ public class CollectionScreen extends UiScreen {
     private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
     private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
+    private static final String LOCK_ICON = "assets/images/lock.png";
+    private static final String UPGRADE_ICON = "assets/images/ui/collection/rift_perk_upgrade_uparrow.png";
 
-    // TODO: paste the real lock icon's asset path here, e.g. "assets/images/ui/xxxx_lock.png"
-    private static final String LOCK_ICON = "assets/images/ui/lock.png";
+    private static final String MAIN_BG = "assets/images/backg/mainmenu_background.png";
+    private static final String TAB_ACTIVE_BG = "assets/images/ui/zombies_active.png";
+    private static final String TAB_BOARD_BG = "assets/images/backg/wood board.png";
 
-    private static final int PLANTS_PER_ROW = 7;
-    private static final float CARD_W = 150f;
-    private static final float CARD_H = 190f;
+    private static final int PLANTS_PER_ROW = 5;
+    private static final float CARD_W = 135f;
     private static final float BAR_H = 14f;
 
     private static final Color YELLOW = new Color(0.95f, 0.80f, 0.15f, 1f);
@@ -66,12 +67,11 @@ public class CollectionScreen extends UiScreen {
     private final SeedPacketCardFactory cardFactory = new SeedPacketCardFactory();
     private final CollectionManager manager = new CollectionManager();
 
-    // Which plant's full-screen info popup is currently open, if any. Kept across
-    // rebuilds so purchase/upgrade actions can refresh the popup in place.
     private Integer openPlantId = null;
     private Actor popupOverlay;
 
     private final TextureRegion whitePixel = whitePixelRegion();
+    private Texture upgradeIconTexture;
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
@@ -81,7 +81,6 @@ public class CollectionScreen extends UiScreen {
     public void show() {
         if (textureBank == null) {
             try {
-                // Same PAM root/init pattern as EgyptStagesScreen.
                 FileHandle rootHandle = Gdx.files.internal("assets/pvz-assets");
                 textureBank = new TextureBank("atlases", rootHandle);
                 pamPlayer = new PamPlayer(textureBank, rootHandle);
@@ -90,6 +89,10 @@ public class CollectionScreen extends UiScreen {
             } catch (Throwable t) {
                 Gdx.app.error("PAM_INIT", "Failed to initialize PAM System", t);
             }
+        }
+
+        if (upgradeIconTexture == null) {
+            upgradeIconTexture = loadTextureSafe(UPGRADE_ICON);
         }
 
         super.show();
@@ -112,6 +115,9 @@ public class CollectionScreen extends UiScreen {
     public void dispose() {
         try {
             cardFactory.dispose();
+            if (upgradeIconTexture != null) {
+                upgradeIconTexture.dispose();
+            }
         } catch (Throwable t) {
             Gdx.app.error("CollectionScreen", "Failed to dispose card factory", t);
         }
@@ -120,22 +126,23 @@ public class CollectionScreen extends UiScreen {
 
     private void build() {
         rootTable.clear();
+        rootTable.setBackground(new TextureRegionDrawable(loadTextureSafe(MAIN_BG)));
 
-        rootTable.add(buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
-        rootTable.add(new Label("Collection", skin, "title")).padTop(SPACE_MD).row();
-        rootTable.add(buildTabs()).padTop(SPACE_SM).row();
+        Stack mainStack = new Stack();
+        Table boardContainer = new Table();
+        boardContainer.top();
+        Table contentBox = currentTab == CollectionTab.PLANTS ? buildPlantsTabBox() : buildZombiesTabBox();
+        boardContainer.add(contentBox).expand().fill().padTop(68f).padLeft(20f).padRight(20f).padBottom(20f);
 
-        Table board = new Table();
-        board.setBackground(skin.getDrawable("card-background"));
-        board.pad(SPACE_MD);
-        board.add(currentTab == CollectionTab.PLANTS ? buildPlantsTabBox() : buildZombiesTabBox())
-                .size(1180, 480);
-        rootTable.add(board).expand().padTop(SPACE_SM);
+        Table topBarContainer = new Table();
+        topBarContainer.top();
+        topBarContainer.add(buildTopBar()).expandX().fillX().padTop(12f).padLeft(20f).padRight(20f);
 
-        // A rebuild invalidates any popup actor currently on screen (it may be showing
-        // stale level/coin data), so it's torn down and, if one was open, rebuilt fresh
-        // for the same plant - this is what makes the purchase/upgrade button flip
-        // immediately after a successful command.
+        mainStack.add(boardContainer);
+        mainStack.add(topBarContainer);
+
+        rootTable.add(mainStack).expand().fill();
+
         if (popupOverlay != null) {
             popupOverlay.remove();
             popupOverlay = null;
@@ -150,23 +157,22 @@ public class CollectionScreen extends UiScreen {
         build();
     }
 
-    // ------------------------------------------------------------------
-    // Top bar / tabs
-    // ------------------------------------------------------------------
-
     private Table buildTopBar() {
         ImageButton backBtn = createIconButton(BACK_ICON, 54, 54, () -> runCommand("menu exit"));
 
         Table topLeft = new Table();
-        topLeft.add(backBtn);
+        topLeft.left();
+        topLeft.add(backBtn).padRight(20).top();
+        topLeft.add(buildTabs()).top();
 
         User user = User.currentUser;
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
         int diamonds = (user != null && user.userState != null) ? user.userState.diamonds : 0;
 
         Table topRight = new Table();
-        topRight.add(createResourceWidget(COIN_ICON, String.valueOf(coins))).padRight(15);
-        topRight.add(createResourceWidget(GEM_ICON, String.valueOf(diamonds)));
+        topRight.right();
+        topRight.add(createResourceWidget(COIN_ICON, String.valueOf(coins))).padRight(15).padTop(-70);
+        topRight.add(createResourceWidget(GEM_ICON, String.valueOf(diamonds))).padTop(-70);
 
         Table topBar = new Table();
         topBar.add(topLeft).left().expandX();
@@ -176,20 +182,31 @@ public class CollectionScreen extends UiScreen {
 
     private Table buildTabs() {
         Table tabs = new Table();
-        tabs.add(buildTab("Plants", CollectionTab.PLANTS)).padRight(SPACE_MD);
+        tabs.left();
+        tabs.add(buildTab("Plants", CollectionTab.PLANTS)).padRight(SPACE_SM);
         tabs.add(buildTab("Zombies", CollectionTab.ZOMBIES));
         return tabs;
     }
 
     private Table buildTab(String label, CollectionTab tab) {
         Table container = new Table();
-        if (tab == currentTab) {
-            container.setBackground(skin.getDrawable("card-background"));
-        }
-        container.pad(SPACE_XS, SPACE_LG, SPACE_XS, SPACE_LG);
 
-        Label tabLabel = new Label(label, skin, tab == currentTab ? "title" : "muted");
-        container.add(tabLabel);
+        if (tab == currentTab) {
+            container.setBackground(new TextureRegionDrawable(loadTextureSafe(TAB_ACTIVE_BG)));
+            container.pad(8, 22, 10, 22);
+
+            Label tabLabel = new Label(label, skin, "title");
+            container.add(tabLabel).center();
+        } else {
+            TextureRegionDrawable tabDrawable = new TextureRegionDrawable(loadTextureSafe(TAB_ACTIVE_BG));
+            Drawable inactiveDrawable = tabDrawable.tint(new Color(0.35f, 0.30f, 0.45f, 0.88f));
+            container.setBackground(inactiveDrawable);
+            container.pad(8, 22, 14, 22);
+
+            Label tabLabel = new Label(label, skin, "muted");
+            tabLabel.setColor(new Color(0.85f, 0.85f, 0.90f, 1f));
+            container.add(tabLabel).center();
+        }
 
         container.addListener(new ClickListener() {
             @Override
@@ -205,34 +222,30 @@ public class CollectionScreen extends UiScreen {
         return container;
     }
 
-    // ------------------------------------------------------------------
-    // Plants tab
-    // ------------------------------------------------------------------
-
     private Table buildPlantsTabBox() {
         Table box = new Table();
+        box.setBackground(new TextureRegionDrawable(loadTextureSafe(TAB_BOARD_BG)));
         box.top();
 
         UserState state = User.currentUser.userState;
         List<PlantJsonParser.PlantConfig> plants = sortedPlants(state);
 
         Table grid = new Table();
-        grid.top();
+        grid.top().padTop(10f);
         Table currentRow = null;
         for (int i = 0; i < plants.size(); i++) {
             if (i % PLANTS_PER_ROW == 0) {
                 currentRow = new Table();
-                grid.add(currentRow).left().row();
+                grid.add(currentRow).center().padBottom(SPACE_SM).row();
             }
-            currentRow.add(buildPlantCardCell(plants.get(i), state)).pad(SPACE_SM);
+            currentRow.add(buildPlantCardCell(plants.get(i), state)).padLeft(SPACE_SM).padRight(SPACE_SM);
         }
 
         ScrollPane pane = scrollable(grid);
-        box.add(pane).expand().fill();
+        box.add(pane).expand().fill().padTop(35f).padBottom(15f).padLeft(20f).padRight(20f);
         return box;
     }
 
-    /** Sorted the same way the console collection commands treat plants: unlocked first. */
     private List<PlantJsonParser.PlantConfig> sortedPlants(UserState state) {
         List<PlantJsonParser.PlantConfig> all = manager.getAllPlants();
         all.sort((a, b) -> {
@@ -252,19 +265,23 @@ public class CollectionScreen extends UiScreen {
         Table cell = new Table();
 
         Stack cardStack = new Stack();
-        cardStack.setSize(CARD_W, CARD_H);
+        float cardW = CARD_W;
+        float cardH = CARD_W * 1.38f;
 
         try {
             SeedPacketCard card = cardFactory.buildCardForDisplayName(config.name);
             if (card != null) {
+                cardW = card.getWidth();
+                cardH = card.getHeight();
                 cardStack.add(card);
             }
         } catch (Throwable t) {
             Gdx.app.error("CollectionScreen", "Failed to build seed packet card for " + config.name, t);
         }
 
+        cardStack.setSize(cardW, cardH);
+
         if (!unlocked) {
-            // Dim the whole card, then sit a small fixed-size lock badge centered on top.
             Image dim = new Image(solidColorDrawable(new Color(0f, 0f, 0f, 0.35f)));
             cardStack.add(dim);
 
@@ -283,37 +300,34 @@ public class CollectionScreen extends UiScreen {
             }
         });
 
-        cell.add(cardStack).size(CARD_W, CARD_H).row();
+        cell.add(cardStack).size(cardW, cardH).row();
 
         if (unlocked) {
             int level = state.getPlantLevel(config.id);
             int packetsOwned = state.seedPacketInventory.getOrDefault(config.id, 0);
             float progress = level <= 0 ? 1f : Math.min(1f, (float) packetsOwned / level);
 
+            int coinCost = level * 500;
+            int packetsNeeded = level;
+            boolean canUpgrade = state.coins >= coinCost && packetsOwned >= packetsNeeded;
+
             SeedProgressBar bar = new SeedProgressBar();
-            bar.setProgress(progress);
-            cell.add(bar).width(CARD_W).height(BAR_H).padTop(4);
+            bar.setProgress(progress, canUpgrade, upgradeIconTexture);
+            cell.add(bar).width(cardW).height(BAR_H).padTop(4);
         } else {
-            // Empty spacer so locked/unlocked rows still line up.
-            cell.add(new Table()).width(CARD_W).height(BAR_H).padTop(4);
+            cell.add(new Table()).width(cardW).height(BAR_H).padTop(4);
         }
 
         return cell;
     }
 
-    // ------------------------------------------------------------------
-    // Zombies tab - intentionally left empty for now.
-    // ------------------------------------------------------------------
-
     private Table buildZombiesTabBox() {
         Table box = new Table();
-        box.add(new Label("Zombie collection coming soon.", skin, "muted"));
+        box.setBackground(new TextureRegionDrawable(loadTextureSafe(TAB_BOARD_BG)));
+        box.top();
+        box.add(new Label("Zombie collection coming soon.", skin, "muted")).padTop(60f);
         return box;
     }
-
-    // ------------------------------------------------------------------
-    // Full-screen plant info popup
-    // ------------------------------------------------------------------
 
     private void openPlantInfo(int plantId) {
         PlantJsonParser.PlantConfig config = null;
@@ -353,12 +367,11 @@ public class CollectionScreen extends UiScreen {
         popupStack.add(scrim);
 
         Table panel = new Table();
-        panel.setBackground(skin.getDrawable("card-background"));
+        panel.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/backg/wood board.png")));
         panel.pad(SPACE_LG);
         panel.top().left();
 
         Table header = new Table();
-        // Same "back to last menu" icon used everywhere else in the UI.
         ImageButton back = createIconButton(BACK_ICON, 50, 50, this::closePlantInfo);
         header.add(back).left().expandX();
         panel.add(header).fillX().padBottom(SPACE_MD).row();
@@ -366,21 +379,18 @@ public class CollectionScreen extends UiScreen {
         Table body = new Table();
         body.top();
 
-        // Left square: the plant's idle animation, via the same collection animation
-        // mechanism used elsewhere (model.collections.animations.AnimationFactory).
         Table animBox = new Table();
-        animBox.setBackground(skin.getDrawable("modal-background"));
+        animBox.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/ui/collection/card_plant_bg_modern.png")));
         String animationPath = null;
         try {
             animationPath = AnimationFactory.pathForDisplayName(config.name);
         } catch (Throwable t) {
             Gdx.app.error("CollectionScreen", "Failed to resolve idle animation for " + config.name, t);
         }
-        PlantIdleAnimationActor animActor = new PlantIdleAnimationActor(animationPath);
+        PlantIdleAnimationActor animActor = new PlantIdleAnimationActor(animationPath, 0, 0);
         animBox.add(animActor).size(220, 220);
         body.add(animBox).size(250, 250).padRight(SPACE_LG).top();
 
-        // Right side: info + purchase/upgrade button.
         Table info = new Table();
         info.top().left();
 
@@ -400,14 +410,13 @@ public class CollectionScreen extends UiScreen {
         TextButton actionButton = buildActionButton(config, state, unlocked);
         info.add(actionButton).width(320).height(58).left();
 
-        body.add(info).top().left().expandX();
+        body.add(info).top().left().expandX().padLeft(30f);
         panel.add(body).row();
 
         Table centered = new Table();
         centered.add(panel).width(SCREEN_WIDTH * 0.82f).height(SCREEN_HEIGHT * 0.8f);
         popupStack.add(centered);
 
-        // Tapping the dimmed area outside the panel closes the popup too.
         popupStack.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -427,9 +436,6 @@ public class CollectionScreen extends UiScreen {
             button.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    // Same command the console collection menu already uses; runCommand
-                    // rebuilds the screen afterward (see onAfterCommand), which is what
-                    // flips this button into the upgrade button immediately on success.
                     runCommand("menu collection purchase-plant -p " + config.name);
                 }
             });
@@ -474,16 +480,16 @@ public class CollectionScreen extends UiScreen {
         return new TextButton(text, style);
     }
 
-    // ------------------------------------------------------------------
-    // Idle-animation actor - same PAM syntax as EgyptStagesScreen's MapDecorationActor.
-    // ------------------------------------------------------------------
-
     private class PlantIdleAnimationActor extends Actor {
         private final String animationPath;
         private float stateTime = 0f;
+        private float offsetX = 0f;
+        private float offsetY = 0f;
 
-        PlantIdleAnimationActor(String animationPath) {
+        PlantIdleAnimationActor(String animationPath, float ox, float oy) {
             this.animationPath = animationPath;
+            this.offsetX = ox + 110f;
+            this.offsetY = oy + 110f;
         }
 
         @Override
@@ -507,13 +513,13 @@ public class CollectionScreen extends UiScreen {
                 if(!animationPath.contains("MAGNETSHROOM")) {
 
                     if (clip != null) {
-                        pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true);
+                        pamPlayer.draw(batch, clip, stateTime, getX() + offsetX, getY() + offsetY, true);
                     }
                 }
                 else {
                     visibility.put("Magnet_Item",false);
                     if (clip != null) {
-                        pamPlayer.draw(batch, clip, stateTime, getX(), getY(), true,visibility);
+                        pamPlayer.draw(batch, clip, stateTime, getX() + offsetX, getY() + offsetY, true,visibility);
                     }
                 }
             } catch (Throwable t) {
@@ -522,15 +528,15 @@ public class CollectionScreen extends UiScreen {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Seed-packet counter bar: yellow while filling, green once full (upgrade ready).
-    // ------------------------------------------------------------------
-
     private class SeedProgressBar extends Actor {
         private float progress = 0f;
+        private boolean canUpgrade = false;
+        private Texture upgradeTexture;
 
-        void setProgress(float value) {
+        void setProgress(float value, boolean canUpgrade, Texture upgradeTexture) {
             this.progress = Math.max(0f, Math.min(1f, value));
+            this.canUpgrade = canUpgrade;
+            this.upgradeTexture = upgradeTexture;
         }
 
         @Override
@@ -540,16 +546,25 @@ public class CollectionScreen extends UiScreen {
             batch.setColor(0.12f, 0.10f, 0.06f, 0.9f);
             batch.draw(whitePixel, x, y, w, h);
 
-            batch.setColor(progress >= 1f ? GREEN : YELLOW);
+            boolean isFullAndReady = (progress >= 1f && canUpgrade);
+            batch.setColor(isFullAndReady ? GREEN : YELLOW);
             batch.draw(whitePixel, x, y, w * progress, h);
+
+            batch.setColor(GRAY);
+            batch.draw(whitePixel, x, y + h - 1f, w, 1f);
+            batch.draw(whitePixel, x, y, w, 1f);
+            batch.draw(whitePixel, x, y, 1f, h);
+            batch.draw(whitePixel, x + w - 1f, y, 1f, h);
+
+            if (isFullAndReady && upgradeTexture != null) {
+                batch.setColor(Color.WHITE);
+                float iconSize = h - 2f;
+                batch.draw(upgradeTexture, x + 2f, y + 1f, iconSize, iconSize);
+            }
 
             batch.setColor(Color.WHITE);
         }
     }
-
-    // ------------------------------------------------------------------
-    // Small local helpers (same pattern used in the other screens in this project).
-    // ------------------------------------------------------------------
 
     private ImageButton createIconButton(String path, float width, float height, Runnable action) {
         TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(path));
@@ -564,9 +579,35 @@ public class CollectionScreen extends UiScreen {
         return button;
     }
 
-    
+    protected Table createResourceWidget(String iconPath, String value) {
+        Stack stack = new Stack();
+        Table bgTable = new Table();
+        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
 
-    
+        Table textTable = new Table();
+        textTable.add(new Label(value, skin, "title")).center().expand();
+
+        stack.add(bgTable);
+        stack.add(textTable);
+
+        Table outer = new Table();
+        outer.add(stack).size(130, 42);
+        return outer;
+    }
+
+    protected Texture loadTextureSafe(String path) {
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            Texture tex = new Texture(Gdx.files.internal(path));
+            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            return tex;
+        }
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0);
+        pixmap.fill();
+        Texture fallback = new Texture(pixmap);
+        pixmap.dispose();
+        return fallback;
+    }
 
     private Drawable solidColorDrawable(Color color) {
         Pixmap pixmap = new Pixmap(4, 4, Pixmap.Format.RGBA8888);
@@ -577,4 +618,12 @@ public class CollectionScreen extends UiScreen {
         return new TextureRegionDrawable(new TextureRegion(texture));
     }
 
+    protected static TextureRegion whitePixelRegion() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return new TextureRegion(texture);
+    }
 }

@@ -15,26 +15,6 @@ import java.util.Map;
  * assets/images/ui/plants_ui) on top of a seed packet background (from
  * assets/images/ui/seedpackets_ui), then hands back the whole group of
  * built cards.
- * <p>
- * Usage:
- * <pre>
- *     SeedPacketCardFactory factory = new SeedPacketCardFactory();
- *     List&lt;SeedPacketCard&gt; cards = factory.buildAllCards();
- *     // or, to look a card up by plant name:
- *     Map&lt;String, SeedPacketCard&gt; byName = factory.buildAllCardsByName();
- *     SeedPacketCard akeeCard = byName.get("akee");
- * </pre>
- * <p>
- * <b>Choosing a packet skin per plant:</b> the seedpackets_ui folder has both
- * plain state packets (ready / ready_premium / selected / selected_premium /
- * empty_packet) and per-world reskins (beach, boost, cowboy, dark, dino,
- * eighties, future, homeless, iceage, lostcity, modernday, pirate). Nothing
- * in the plant data (Plants.json / model.collections.plant.Plant) records
- * which world a plant belongs to, so this factory can't correctly guess a
- * world skin for every plant on its own. Every plant defaults to the plain
- * "ready.png" packet; call {@link #setPacketSkin(String, String)} (plant
- * name -&gt; packet file name, both case-insensitive) before building cards
- * to assign the right themed packet to whichever plants need one.
  */
 public class SeedPacketCardFactory implements Disposable {
 
@@ -95,35 +75,68 @@ public class SeedPacketCardFactory implements Disposable {
             "pirate.png", "ready.png", "ready_premium.png", "selected.png", "selected_premium.png"
     };
 
+    // Mapping plants to their canonical world/category background packets.
+    private static final Map<String, String> DEFAULT_WORLD_PACKETS = new HashMap<>();
+
+    static {
+        // Pirate Seas
+        registerSkin("pirate.png", "cherry_bomb", "coconutcannon", "kernelpult", "powerlily", "snapdragon", "spikerock", "spikeweed", "springbean", "threepeater");
+
+        // Wild West
+        registerSkin("cowboy.png", "cactus", "chilibean", "lightningreed", "melonpult", "peapod", "splitpea", "tallnut", "wintermelon");
+
+        // Far Future
+        registerSkin("future.png", "blover", "citron", "empea", "holonut", "laser_bean", "magnifyinggrass", "powerplant", "tileturnip", "ultomato");
+
+        // Dark Ages & Mushrooms
+        registerSkin("dark.png", "doomshroom", "fumeshroom", "guardshroom", "hypnoshroom", "magnetshroom", "peanut", "puffshroom", "scaredyshroom", "sunbean", "sunshroom", "tombtangler", "vamporcini", "witchhazel");
+
+        // Big Wave Beach & Aquatic
+        registerSkin("beach.png", "aquavine", "banana", "bowlingbulb", "guacodile", "lilypad", "seaflora", "seashooter", "seashroom", "sundewtangler", "tanglekelp", "waterrabbit");
+
+        // Frostbite Caves & Ice/Cold
+        registerSkin("iceage.png", "boingsetta", "chardguard", "chillypepper", "frostbonnet", "hotpotato", "icebloom", "iceshroom", "iceweed", "icycurrant", "pepperpult", "rotorutbaga", "rotobaga", "stunion");
+
+        // Lost City
+        registerSkin("lostcity.png", "akee", "endurian", "goldleaf", "lavaguava", "redstinger", "stallia");
+
+        // Neon Mixtape Tour & Electric
+        registerSkin("eighties.png", "celerystalker", "electriccurrant", "electricitea", "garlic", "intensivecarrot", "phatbeet", "sporeshroom", "thymewarp");
+
+        // Jurassic Marsh & Primal
+        registerSkin("dino.png", "bramblebush", "perfumeshroom", "primalpeashooter", "primalpotatomine", "primalsunflower", "primalwallnut", "rhubarbarian");
+
+        // Modern Day & Shadow
+        registerSkin("modernday.png", "dusklobber", "gloomvine", "grimrose", "moonflower", "murkadamia", "nightcap", "nightshade", "noctarine", "shadowpeashooter", "shadowshroom");
+
+        // Premium / Mints / Arena / Event Plants
+        registerSkin("ready_premium.png",
+                "ailmint", "aloe", "appeasemint", "applemortar", "armamint", "bamboospartan", "beansprout", "blastberry", "blastspinner", "blazeleaf", "blazingknight", "blockoli", "bloominghearts", "bombardmint", "bombegranate", "boomberry", "boomflower", "brainstem", "buduhboom", "buttercup", "buzzbutton", "caulipower", "chomper", "coldsnapdragon", "concealmint", "containmint", "cornfetti", "cranjelly", "dandelion", "dartichoke", "dazeychain", "devourbloom", "draftodil", "dragonbruit", "electricblueberry", "electricpeashooter", "electricpeel", "enchantmint", "enforcemint", "enlightenmint", "escaperoot", "explodeonut", "explodeovine", "filamint", "firepeashooter", "ghostpepper", "goldbloom", "grapeshot", "gumnut", "hammeruit", "headbutter", "heathseeker", "hocus", "hollyknight", "homingthistle", "hotdate", "hurrikale", "imitater", "imppear", "inferno", "jackolantern", "jalapeno", "kiwibeast", "lemonaid", "levitater", "mangofier", "maybee", "megagatling", "meteorflower", "missiletoe", "olivepit", "parsnip", "peppermint", "poisonpeashooter", "pokra", "powervine", "puffball", "pvine", "pyrevine", "pyroak", "reinforcemint", "rose", "sakura", "sapfling", "shinevine", "shrinkingviolet", "slingpea", "snappea", "snowpea", "solarsage", "solartomato", "sourshot", "spearmint", "squash", "stickybombrice", "strawburst", "sweetheartsnare", "sweetpotato", "tacticalcuke", "teleportatomine", "thornwhip", "tigergrass", "toadstool", "tumbleweed", "turkeypult", "voltsnapdragon", "wasabiwhip", "wintermint", "xshot", "znakelily", "zoybeanpod"
+        );
+    }
+
+    private static void registerSkin(String skin, String... plants) {
+        for (String plant : plants) {
+            DEFAULT_WORLD_PACKETS.put(plant.toLowerCase(), skin);
+        }
+    }
+
     // plant name (lower-case) -> packet file name, overridable via setPacketSkin().
     private final Map<String, String> packetSkinOverrides = new HashMap<>();
 
     // Texture cache so the same packet/plant PNG isn't loaded from disk more than once.
     private final Map<String, Texture> textureCache = new HashMap<>();
 
-    // Known internal codename mismatches between a Plants.json display name and its
-    // plants_ui icon file - the same kind of gap model.collections.animations.AnimationFactory
-    // documents for animations.json, checked independently against this icon set.
     private static final Map<String, String> DISPLAY_NAME_ICON_OVERRIDES = Map.of(
             "MEGA_GATLING_PEA", "megagatling.png",
             "ICEBERG_LETTUCE", "headbutter.png",
             "PIERCE_MINT", "spearmint.png"
     );
 
-    // Plants.json display names with no matching file anywhere in plants_ui (checked
-    // against every normalization variant below) - resolveIconFile returns null for
-    // these and a placeholder card is built instead. You'll need icon art from
-    // elsewhere for: Rotobaga, Goo Peashooter, Cat-tail, catTail-mint.
     private static final java.util.Set<String> DISPLAY_NAMES_WITHOUT_ICON = java.util.Set.of(
             "GOO_PEASHOOTER", "CAT_TAIL", "CATTAIL_MINT"
     );
 
-    /**
-     * Builds a card straight from a plant's Plants.json display name (e.g. "Snow Pea"),
-     * resolving it to the matching plants_ui icon file automatically. If no icon file
-     * can be found for the name, a plain placeholder card is returned instead (never
-     * null) and the gap is logged so it's easy to notice and fix.
-     */
     public SeedPacketCard buildCardForDisplayName(String displayName) {
         try {
             String iconFile = resolveIconFile(displayName);
@@ -173,8 +186,7 @@ public class SeedPacketCardFactory implements Disposable {
     private SeedPacketCard buildPlaceholderCard(String displayName) {
         String name = (displayName == null || displayName.isBlank()) ? "unknown" : displayName;
         Gdx.app.error("SeedPacketCardFactory", "No plants_ui icon found for '" + name
-                + "' - showing a placeholder card. Add a matching PNG to plants_ui, or register it "
-                + "via DISPLAY_NAME_ICON_OVERRIDES.");
+                + "' - showing a placeholder card.");
 
         Texture packetTexture = loadTexture(SEEDPACKETS_UI_DIR + DEFAULT_PACKET_SKIN);
         Texture placeholderTexture = placeholderIconTexture(name);
@@ -205,13 +217,6 @@ public class SeedPacketCardFactory implements Disposable {
         return texture;
     }
 
-    /**
-     * Assigns a specific packet background to a plant, overriding the default
-     * ("ready.png"). The packet file must be one of {@link #PACKET_SKIN_FILES}.
-     *
-     * @param plantName  plant/card name, e.g. "akee" (case-insensitive)
-     * @param packetFile packet file name, e.g. "pirate.png" (case-insensitive)
-     */
     public void setPacketSkin(String plantName, String packetFile) {
         if (plantName == null || packetFile == null) {
             return;
@@ -219,7 +224,6 @@ public class SeedPacketCardFactory implements Disposable {
         packetSkinOverrides.put(plantName.toLowerCase(), packetFile.toLowerCase());
     }
 
-    /** Bulk version of {@link #setPacketSkin(String, String)}. */
     public void setPacketSkins(Map<String, String> plantNameToPacketFile) {
         if (plantNameToPacketFile == null) {
             return;
@@ -229,11 +233,6 @@ public class SeedPacketCardFactory implements Disposable {
         }
     }
 
-    /**
-     * Builds one {@link SeedPacketCard} per file in assets/images/ui/plants_ui,
-     * putting each plant's icon on its suitable seed packet, and returns the
-     * whole group of built cards.
-     */
     public List<SeedPacketCard> buildAllCards() {
         List<SeedPacketCard> cards = new ArrayList<>();
         for (String plantFile : PLANT_ICON_FILES) {
@@ -245,11 +244,6 @@ public class SeedPacketCardFactory implements Disposable {
         return cards;
     }
 
-    /**
-     * Same as {@link #buildAllCards()}, but grouped into a name -> card map
-     * for quick lookup (e.g. byName.get("akee")). Preserves the order the
-     * plant icons were declared in.
-     */
     public Map<String, SeedPacketCard> buildAllCardsByName() {
         Map<String, SeedPacketCard> byName = new LinkedHashMap<>();
         for (SeedPacketCard card : buildAllCards()) {
@@ -258,7 +252,6 @@ public class SeedPacketCardFactory implements Disposable {
         return byName;
     }
 
-    /** Builds a single card for one plant icon file, e.g. "akee.png". */
     public SeedPacketCard buildCard(String plantIconFile) {
         if (plantIconFile == null || plantIconFile.isEmpty()) {
             return null;
@@ -278,7 +271,6 @@ public class SeedPacketCardFactory implements Disposable {
                 packetTexture, plantTexture, CARD_WIDTH, CARD_HEIGHT);
     }
 
-    /** Convenience overload: builds a single card by plant name, e.g. "akee" (with or without ".png"). */
     public SeedPacketCard buildCardByPlantName(String plantName) {
         if (plantName == null) {
             return null;
@@ -293,10 +285,21 @@ public class SeedPacketCardFactory implements Disposable {
     }
 
     private String resolvePacketSkin(String plantName) {
-        String override = packetSkinOverrides.get(plantName.toLowerCase());
+        String lowerName = plantName.toLowerCase();
+
+        // ۱. بررسی دستی کاربر (در صورت وجود)
+        String override = packetSkinOverrides.get(lowerName);
         if (override != null && isKnownPacketSkin(override)) {
             return override;
         }
+
+        // ۲. بررسی پس‌زمینه اختصاصی دنیای گیاه
+        String worldSkin = DEFAULT_WORLD_PACKETS.get(lowerName);
+        if (worldSkin != null && isKnownPacketSkin(worldSkin)) {
+            return worldSkin;
+        }
+
+        // ۳. پس‌زمینه پیش‌فرض
         return DEFAULT_PACKET_SKIN;
     }
 
