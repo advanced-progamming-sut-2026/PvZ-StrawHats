@@ -564,35 +564,9 @@ public class CollectionScreen extends UiScreen {
         return button;
     }
 
-    private Table createResourceWidget(String iconPath, String value) {
-        Stack stack = new Stack();
-        Table bgTable = new Table();
-        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
+    
 
-        Table textTable = new Table();
-        textTable.add(new Label(value, skin, "title")).center().expand();
-
-        stack.add(bgTable);
-        stack.add(textTable);
-
-        Table outer = new Table();
-        outer.add(stack).size(130, 42);
-        return outer;
-    }
-
-    private Texture loadTextureSafe(String path) {
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            Texture tex = new Texture(Gdx.files.internal(path));
-            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            return tex;
-        }
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0);
-        pixmap.fill();
-        Texture fallback = new Texture(pixmap);
-        pixmap.dispose();
-        return fallback;
-    }
+    
 
     private Drawable solidColorDrawable(Color color) {
         Pixmap pixmap = new Pixmap(4, 4, Pixmap.Format.RGBA8888);
@@ -603,12 +577,4 @@ public class CollectionScreen extends UiScreen {
         return new TextureRegionDrawable(new TextureRegion(texture));
     }
 
-    private static TextureRegion whitePixelRegion() {
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return new TextureRegion(texture);
-    }
 }

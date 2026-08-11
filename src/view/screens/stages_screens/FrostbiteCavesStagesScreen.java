@@ -1,4 +1,4 @@
-package view.screens;
+package view.screens.stages_screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -39,9 +39,9 @@ import view.general_screens.UiScreen;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BigWaveBeachStagesScreen extends UiScreen {
+public class FrostbiteCavesStagesScreen extends StagesScreen {
 
-    private static final String CHAPTER_NAME = "Big Wave Beach";
+    private static final String CHAPTER_NAME = "Frostbite Caves";
 
     private static final String BACK_ICON = "images/ui/buttons_hud_back_normal.png";
     private static final String COLLECTION_ICON = "images/ui/collection.png";
@@ -50,14 +50,14 @@ public class BigWaveBeachStagesScreen extends UiScreen {
     private static final String COIN_ICON = "images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "images/ui/buttons_premium_normal.png";
 
-    private static final String CHAPTER_BACKGROUND = "images/backg/beaches_stages.png";
+    private static final String CHAPTER_BACKGROUND = "images/backg/frostbite_cave_bg.png";
 
     private static final String[] STAGE_ISLAND_TEXTURES = {
-            "images/chapters/beach/anim12_335x420.png",
-            "images/chapters/beach/anim13_397x399.png",
-            "images/chapters/beach/anim17_321x255.png"
+            "images/chapters/frostbite_cave/island2.png",
+            "images/chapters/frostbite_cave/island1.png",
+            "images/chapters/frostbite_cave/island2.png"
     };
-    private static final String BOSS_STAGE_ISLAND_TEXTURE = "images/chapters/beach/boss.png";
+    private static final String BOSS_STAGE_ISLAND_TEXTURE = "images/chapters/frostbite_cave/boss_island.png";
 
     private static final float NODE_WIDTH = 125f;
     private static final float NODE_HEIGHT = 95f;
@@ -71,32 +71,16 @@ public class BigWaveBeachStagesScreen extends UiScreen {
     private static final float LAYOUT_SCALE_X = PATH_WIDTH / 1080f;
     private static final float LAYOUT_SCALE_Y = PATH_HEIGHT / 380f;
 
-    private static class DecorTuning {
-        final float nativeW, nativeH, scale, offsetX, offsetY;
+    
 
-        DecorTuning(float nativeW, float nativeH, float scale, float offsetX, float offsetY) {
-            this.nativeW = nativeW;
-            this.nativeH = nativeH;
-            this.scale = scale;
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-        }
-    }
-
-    private static final DecorTuning HOUSE_ISLAND_TUNING = new DecorTuning(20f, 400f, 0.10f, -60f, 0f);
-    private static final DecorTuning LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.34f, -25f, 0f);
-    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.45f, -7f, -15f);
-    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.50f, 70f, -215f);
-    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.30f, 37f, 140f);
-    private static final DecorTuning WAVE_TUNING = new DecorTuning(90f, 180f, 0.30f, -120f, -60f);
-    private static final DecorTuning ROCK_TUNING = new DecorTuning(100f, 100f, 0.22f, 0f, 0f);
-    private static final DecorTuning SPLASH_TUNING = new DecorTuning(200f, 150f, 0.50f, 0f, 60f);
-    private static final DecorTuning STAR_TUNING = new DecorTuning(25f, 25f, 0.30f, 0f, 0f);
-
-    private static final DecorTuning WATER_DROP_TUNING = new DecorTuning(100f, 100f, 0.40f, 0f, -20f);
-    private static final DecorTuning WATERFALL_TUNING = new DecorTuning(200f, 250f, 0.22f, 20f, 0f);
-    private static final DecorTuning LARGE_ROCK_BEACH_TUNING = new DecorTuning(180f, 180f, 0.25f, -40f, -30f);
-    private static final DecorTuning SMALL_ROCK_BEACH_TUNING = new DecorTuning(120f, 120f, 0.20f, -10f, 10f);
+    private static final DecorTuning LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.34f, 27f, 44f);
+    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.53f, 45f, 25f);
+    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.40f, 90f, -150f);
+    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.50f, 37f, 160f);
+    private static final DecorTuning BLIZZARD_TUNING = new DecorTuning(250f, 300f, 0.30f, -83f, -24f);
+    private static final DecorTuning ICE_CHUNK_TUNING = new DecorTuning(100f, 100f, 0.22f, 0f, 0f);
+    private static final DecorTuning SNOW_DUST_TUNING = new DecorTuning(200f, 150f, 0.50f, 10f, 45f);
+    private static final DecorTuning CRYSTAL_TUNING = new DecorTuning(25f, 25f, 0.40f, 0f, 0f);
 
     private List<Level> allLevels = new ArrayList<>();
     private List<Level> chapterLevels = new ArrayList<>();
@@ -142,33 +126,30 @@ public class BigWaveBeachStagesScreen extends UiScreen {
     }
 
     public enum MapObjectType {
-        DECOR_HOUSE_ISLAND("768/FULL/WORLDMAP/BEACH/ANIM27/ANIM27.PAM", true),
+        DECOR_HOUSE_ISLAND("images/chapters/frostbite_cave/start_island.png", false),
 
-        SMALL_ISLAND_1("768/FULL/WORLDMAP/DINO/ANIM16/ANIM16.PAM", true),
-        SMALL_ISLAND_2("768/FULL/WORLDMAP/BEACH/ANIM6/ANIM6.PAM", true),
-        SMALL_ISLAND_3("images/chapters/beach/island42.png", false),
-        SMALL_ISLAND_4("images/chapters/beach/island41.png", false),
-        SMALL_ISLAND_5("images/chapters/beach/img_1.png", false),
+        SMALL_ISLAND_1("images/chapters/frostbite_cave/island3.png", false),
+        SMALL_ISLAND_2("images/chapters/frostbite_cave/island4.png", false),
+        SMALL_ISLAND_3("images/chapters/frostbite_cave/island5.png", false),
+        SMALL_ISLAND_4("images/chapters/frostbite_cave/island6.png", false),
+        SMALL_ISLAND_5("images/chapters/frostbite_cave/island7.png", false),
 
-        ZOMBOSS_NODE("768/FULL/WORLDMAP/BEACH/ANIM15/ANIM15.PAM", true),
+        SMALL_ISLAND_6("assets/images/chapters/frostbite_cave/anim28_271x337.png", false),
+
+        SMALL_ISLAND_7("assets/images/chapters/frostbite_cave/island11.png", false),
+
+        BIG_BOSS_DECOR_ISLAND("images/chapters/frostbite_cave/island8.png", false),
         LEVEL_NODE("768/INITIAL/WORLDMAP/LEVEL_NODE/LEVEL_NODE.PAM", true),
 
-        FLOATING_ROCK_ANIM_1("768/FULL/WORLDMAP/BEACH/ANIM19/ANIM19.PAM", true),
-        FLOATING_ROCK_ANIM_2("768/FULL/WORLDMAP/BEACH/ANIM20/ANIM20.PAM", true),
-        FLOATING_ROCK_ANIM_3("768/FULL/WORLDMAP/BEACH/ANIM18/ANIM18.PAM", true),
+        FLOATING_ICE_ANIM_1("768/FULL/WORLDMAP/ICEAGE/ANIM27/ANIM27.PAM", true),
+        FLOATING_ICE_ANIM_2("768/FULL/WORLDMAP/ICEAGE/ANIM26/ANIM26.PAM", true),
+        FLOATING_ICE_ANIM_3("768/FULL/WORLDMAP/ICEAGE/ANIM17/ANIM17.PAM", true),
 
-        DANGER_NODE_ANIM("768/FULL/WORLDMAP/DANGER_NODE_BEACH/DANGER_NODE_BEACH.PAM", true),
+        DANGER_NODE_ANIM("768/FULL/WORLDMAP/DANGER_NODE_ICEAGE/DANGER_NODE_ICEAGE.PAM", true),
 
-        WAVE_ANIM("768/FULL/WORLDMAP/FUTURE/ANIM4/ANIM4.PAM", true),
-        TWINKLING_STAR_ANIM("768/FULL/UI/JOUST/SPINNING_GOLD_STAR/SPINNING_GOLD_STAR.PAM", true),
-        SPLASH_EFFECT_ANIM("768/FULL/EFFECTS/WATER_SPLASH/WATER_SPLASH.PAM", true),
-
-        WATER_DROP_ANIM("768/FULL/WORLDMAP/BEACH/ANIM35/ANIM35.PAM", true),
-        WATERFALL_ANIM("768/FULL/WORLDMAP/BEACH/ANIM32/ANIM32.PAM", true),
-        FLOATING_ROCK_BEACH_LARGE_1("768/FULL/WORLDMAP/BEACH/ANIM16/ANIM16.PAM", true),
-        FLOATING_ROCK_BEACH_LARGE_2("768/FULL/WORLDMAP/BEACH/ANIM10/ANIM10.PAM", true),
-        SMALL_ROCK_BEACH_1("768/FULL/WORLDMAP/BEACH/ANIM4/ANIM4.PAM", true),
-        SMALL_ROCK_BEACH_2("768/FULL/WORLDMAP/BEACH/ANIM5/ANIM5.PAM", true);
+        BLIZZARD_ANIM("768/FULL/EFFECTS/HOTPOTATO_ICEBLOCK_STEAMFX/HOTPOTATO_ICEBLOCK_STEAMFX.PAM", true),
+        TWINKLING_CRYSTAL_ANIM("768/INITIAL/EFFECTS/PRIZE_TWINKLE/PRIZE_TWINKLE.PAM", true),
+        SNOW_DUST_ANIM("768/FULL/EFFECTS/SNOWSTORM_REAR/SNOWSTORM_REAR.PAM", true);
 
         private final String path;
         private final boolean isPamAnimation;
@@ -219,16 +200,17 @@ public class BigWaveBeachStagesScreen extends UiScreen {
         loadLevels();
         build();
     }
-    private static final String SPLASH_PARTICLE_PATH = "assets/images/chapters/beach/seashooter_projectile_28x28.png";
+
+    private static final String SNOW_PARTICLE_PATH = "assets/images/chapters/frostbite_cave/snow_particle.png";
 
     @Override
     public void initParticles() {
         if (particles != null) {
             particles.dispose();
         }
-        particlePaths = new String[]{ SPLASH_PARTICLE_PATH };
+        particlePaths = new String[]{ SNOW_PARTICLE_PATH };
 
-        particles = new view.general_screens.ParticleCreator(particlePaths, 20, 20f, 35f, 1.2f, true);
+        particles = new view.general_screens.ParticleCreator(particlePaths, 20, 5f, 15f, 1.2f, true);
 
         com.badlogic.gdx.scenes.scene2d.Actor particleActor = particles.createActor();
         particleActor.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
@@ -309,65 +291,11 @@ public class BigWaveBeachStagesScreen extends UiScreen {
         return topBar;
     }
 
-    private ImageButton createIconButton(String path, float width, float height, Runnable action) {
-        TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(path));
-        ImageButton button = new ImageButton(drawable);
-        button.getImageCell().size(width, height);
-        button.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                action.run();
-            }
-        });
-        return button;
-    }
+    
 
-    private Actor createIconButtonWithLabel(String path, float width, float height, String text, Runnable action) {
-        Table container = new Table();
-        ImageButton btn = createIconButton(path, width, height, action);
-        Label label = new Label(text, skin, "title");
+    
 
-        container.add(btn).row();
-        container.add(label).padTop(2);
-
-        container.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                action.run();
-            }
-        });
-        return container;
-    }
-
-    private Table createResourceWidget(String iconPath, String value) {
-        Stack stack = new Stack();
-        Table bgTable = new Table();
-        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
-
-        Table textTable = new Table();
-        textTable.add(new Label(value, skin, "title")).center().expand();
-
-        stack.add(bgTable);
-        stack.add(textTable);
-
-        Table outer = new Table();
-        outer.add(stack).size(130, 42);
-        return outer;
-    }
-
-    private Texture loadTextureSafe(String path) {
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            Texture tex = new Texture(Gdx.files.internal(path));
-            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            return tex;
-        }
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0);
-        pixmap.fill();
-        Texture fallback = new Texture(pixmap);
-        pixmap.dispose();
-        return fallback;
-    }
+    
 
     private Table buildPathContainer() {
         Table wrap = new Table();
@@ -380,7 +308,7 @@ public class BigWaveBeachStagesScreen extends UiScreen {
         scrollPane.setFadeScrollBars(true);
         scrollPane.setOverscroll(false, false);
 
-        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(0).padBottom(-100);
+        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(-50).padBottom(-100);
         return wrap;
     }
 
@@ -403,8 +331,8 @@ public class BigWaveBeachStagesScreen extends UiScreen {
 
     private void refreshSelectionBar() {
         Level selected = MatchMenu.selectedLevel;
-        boolean isBigWaveBeachSelection = selected != null && selected.getSeason() != null && selected.getSeason().getName().equalsIgnoreCase(CHAPTER_NAME);
-        if (isBigWaveBeachSelection) {
+        boolean isChapterSelection = selected != null && selected.getSeason() != null && selected.getSeason().getName().equalsIgnoreCase(CHAPTER_NAME);
+        if (isChapterSelection) {
             selectionLabel.setText(selected.getName() + "\n" + selected.getGameMode());
             playButton.setDisabled(false);
             playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
@@ -442,13 +370,17 @@ public class BigWaveBeachStagesScreen extends UiScreen {
 
         private final float[] centerX;
         private final float[] centerY;
-        private float houseX, houseY;
-        private float zombossNodeX, zombossNodeY;
-        private float dangerNodeAnchorX, dangerNodeAnchorY;
-        private float bridgeX, bridgeY;
+        private final float houseX;
+        private final float houseY;
+        private final float zombossNodeX;
+        private final float zombossNodeY;
+        private final float dangerNodeAnchorX;
+        private final float dangerNodeAnchorY;
+        private final float bridgeX;
+        private final float bridgeY;
 
         private float zombossRenderHeight() {
-            return ZOMBOSS_TUNING.nativeH * ZOMBOSS_TUNING.scale;
+            return ZOMBOSS_TUNING.nativeH() * ZOMBOSS_TUNING.scale();
         }
 
         StagePath() {
@@ -489,7 +421,7 @@ public class BigWaveBeachStagesScreen extends UiScreen {
             bridgeY = zombossNodeY + zombossRenderHeight() / 2f;
 
             if (count > 1) {
-                dangerNodeAnchorX = centerX[1] + DANGER_NODE_TUNING.offsetX * LAYOUT_SCALE_X;
+                dangerNodeAnchorX = centerX[1] + DANGER_NODE_TUNING.offsetX() * LAYOUT_SCALE_X;
                 dangerNodeAnchorY = centerY[1] + 120f * LAYOUT_SCALE_Y;
             } else {
                 dangerNodeAnchorX = PATH_WIDTH / 2f;
@@ -508,18 +440,17 @@ public class BigWaveBeachStagesScreen extends UiScreen {
             addForegroundEffects();
 
             if (count == 0) {
-                Label empty = new Label("No Big Wave Beach stages found.", skin, "muted");
+                Label empty = new Label("No Frostbite Caves stages found.", skin, "muted");
                 empty.setPosition(PATH_WIDTH / 2f - 100f, PATH_HEIGHT / 2f);
                 addActor(empty);
             }
         }
 
-        private Group createScaledAnimation(MapObjectType type, float nativeWidth, float nativeHeight, String state, float scale, float x, float y, boolean flipX) {
+        private Group createScaledAnimation(MapObjectType type, float nativeWidth, float nativeHeight, String state, float scale, float x, float y) {
             Group group = new Group();
             group.setTransform(true);
+            group.setScale(scale);
             group.setSize(nativeWidth, nativeHeight);
-            group.setOrigin(nativeWidth / 2f, nativeHeight / 2f);
-            group.setScale(flipX ? -scale : scale, scale);
             group.setPosition(x, y);
 
             MapDecorationActor actor = new MapDecorationActor(type, nativeWidth, nativeHeight, state);
@@ -528,79 +459,62 @@ public class BigWaveBeachStagesScreen extends UiScreen {
             return group;
         }
 
-        private Group createScaledAnimation(MapObjectType type, float nativeWidth, float nativeHeight, String state, float scale, float x, float y) {
-            return createScaledAnimation(type, nativeWidth, nativeHeight, state, scale, x, y, false);
-        }
-
-        private Group createAnchoredAnimation(MapObjectType type, DecorTuning tuning, String state, float anchorX, float anchorY, boolean flipX) {
-            float renderW = tuning.nativeW * tuning.scale;
-            float renderH = tuning.nativeH * tuning.scale;
-            float x = anchorX - renderW / 2f + tuning.offsetX * LAYOUT_SCALE_X;
-            float y = anchorY - renderH / 2f + tuning.offsetY * LAYOUT_SCALE_Y;
-            return createScaledAnimation(type, tuning.nativeW, tuning.nativeH, state, tuning.scale, x, y, flipX);
-        }
-
         private Group createAnchoredAnimation(MapObjectType type, DecorTuning tuning, String state, float anchorX, float anchorY) {
-            return createAnchoredAnimation(type, tuning, state, anchorX, anchorY, false);
+            float renderW = tuning.nativeW() * tuning.scale();
+            float renderH = tuning.nativeH() * tuning.scale();
+            float x = anchorX - renderW / 2f + tuning.offsetX() * LAYOUT_SCALE_X;
+            float y = anchorY - renderH / 2f + tuning.offsetY() * LAYOUT_SCALE_Y;
+            return createScaledAnimation(type, tuning.nativeW(), tuning.nativeH(), state, tuning.scale(), x, y);
         }
 
         private void addBackgroundDecorations() {
-            if (chapterLevels.size() > 0) {
-                addActor(createAnchoredAnimation(MapObjectType.WATERFALL_ANIM, WATERFALL_TUNING, "idle",
-                        centerX[0] - 40f * LAYOUT_SCALE_X, centerY[0] - 50f * LAYOUT_SCALE_Y, false));
-            }
-
-            float[][] floatingRocksBeach1 = {
-                    {280f, 320f}, {670f, 110f}, {930f, 280f}
+            float[][] crystalCoords = {
+                    {110f, 45f}, {320f, 330f}, {540f, 50f}, {760f, 310f}, {910f, 70f},
+                    {210f, 270f}, {460f, 190f}, {650f, 35f}, {870f, 330f}, {140f, 170f},
+                    {380f, 85f}, {590f, 320f}, {830f, 175f}, {260f, 345f}, {980f, 220f},
+                    {500f, 400f}, {350f, 180f}
             };
-            for (float[] coord : floatingRocksBeach1) {
-                addActor(createAnchoredAnimation(MapObjectType.FLOATING_ROCK_BEACH_LARGE_1, LARGE_ROCK_BEACH_TUNING, "idle",
+            for (float[] coord : crystalCoords) {
+                addActor(createAnchoredAnimation(MapObjectType.TWINKLING_CRYSTAL_ANIM, CRYSTAL_TUNING, "animation",
                         coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y));
             }
 
-            float[][] floatingRocksBeach2 = {
-                    {190f, 90f}, {510f, 330f}, {820f, 130f}
+            MapObjectType[] iceTypes = {
+                    MapObjectType.FLOATING_ICE_ANIM_1,
+                    MapObjectType.FLOATING_ICE_ANIM_2,
+                    MapObjectType.FLOATING_ICE_ANIM_3
             };
-            for (float[] coord : floatingRocksBeach2) {
-                addActor(createAnchoredAnimation(MapObjectType.FLOATING_ROCK_BEACH_LARGE_2, LARGE_ROCK_BEACH_TUNING, "idle",
-                        coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y));
-            }
-
-            float[][] starCoords = {
-                    {110f, 45f}, {320f, 330f}, {540f, 50f},
-                    {210f, 270f}, {460f, 190f}, {650f, 35f},
-                    {380f, 85f}, {590f, 320f}, {830f, 175f}
-            };
-            for (float[] coord : starCoords) {
-                addActor(createAnchoredAnimation(MapObjectType.TWINKLING_STAR_ANIM, STAR_TUNING, "idle",
-                        coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y));
-            }
-
-            MapObjectType[] rockTypes = {
-                    MapObjectType.FLOATING_ROCK_ANIM_1,
-                    MapObjectType.FLOATING_ROCK_ANIM_2,
-                    MapObjectType.FLOATING_ROCK_ANIM_3
-            };
-            float[][] rockCoords = {
+            float[][] iceCoords = {
                     {180f, 310f}, {480f, 320f}, {750f, 300f},
-                    {120f, 150f}, {350f, 450f},
-                    {820f, 480f}, {1020f, 280f},
-                    {250f, 550f}, {680f, 500f},
+                    {120f, 150f}, {350f, 450f}, {600f, 120f},
+                    {820f, 480f}, {1020f, 280f}, {400f, 250f},
+                    {250f, 550f}, {680f, 500f}, {920f, 550f},
+                    {300f, 500f}, {100f, 200f}, {600f, 400f}
             };
-            for (int i = 0; i < rockCoords.length; i++) {
-                MapObjectType selectedRock = rockTypes[i % rockTypes.length];
-                addActor(createAnchoredAnimation(selectedRock, ROCK_TUNING, "idle",
-                        rockCoords[i][0] * LAYOUT_SCALE_X, rockCoords[i][1] * LAYOUT_SCALE_Y));
+            for (int i = 0; i < iceCoords.length; i++) {
+                MapObjectType selectedIce = iceTypes[i % iceTypes.length];
+                addActor(createAnchoredAnimation(selectedIce, ICE_CHUNK_TUNING, "animation",
+                        iceCoords[i][0] * LAYOUT_SCALE_X, iceCoords[i][1] * LAYOUT_SCALE_Y));
             }
         }
 
         private void addMapDecorations() {
             List<MapObjectPlacement> placements = new ArrayList<>();
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_1, 20, 350, 50, 38));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 310, 15, 55, 40));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_3, 620, 280, 60, 45));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_4, 880, 25, 50, 35));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 970, 240, 55, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_1, 225, 230, 50, 38));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 530, 190, 55, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_3, 610, 260, 60, 45));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_4, 880, 195, 50, 35));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 770, 240, 40, 60));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 155, 270, 40, 60));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 450, 120, 40, 60));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 270, 160, 55, 42));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 700, 180, 60, 45));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 950, 110, 50, 38));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 460, 300, 60, 120));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 770, 20, 90, 180));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 75, 105, 90, 180));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 600, 80, 52, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 350, 70, 100, 200));
 
             for (MapObjectPlacement p : placements) {
                 MapDecorationActor actor = new MapDecorationActor(p.type, p.width, p.height, "idle");
@@ -608,78 +522,36 @@ public class BigWaveBeachStagesScreen extends UiScreen {
                 addActor(actor);
             }
 
-            if (chapterLevels.size() > 0) {
-                float[][] smallRocks1 = {
-                        {centerX[0] - 65f * LAYOUT_SCALE_X, centerY[0] - 35f * LAYOUT_SCALE_Y},
-                        {centerX[0] + 75f * LAYOUT_SCALE_X, centerY[0] + 40f * LAYOUT_SCALE_Y},
-                        {400f * LAYOUT_SCALE_X, 160f * LAYOUT_SCALE_Y}
-                };
-                for (float[] coord : smallRocks1) {
-                    addActor(createAnchoredAnimation(MapObjectType.SMALL_ROCK_BEACH_1, SMALL_ROCK_BEACH_TUNING, "idle",
-                            coord[0], coord[1]));
-                }
-            }
-
-            if (chapterLevels.size() > 1) {
-                float[][] smallRocks2 = {
-                        {centerX[1] - 70f * LAYOUT_SCALE_X, centerY[1] - 40f * LAYOUT_SCALE_Y},
-                        {centerX[1] + 70f * LAYOUT_SCALE_X, centerY[1] + 35f * LAYOUT_SCALE_Y},
-                        {zombossNodeX - 80f * LAYOUT_SCALE_X, zombossNodeY + 40f * LAYOUT_SCALE_Y}
-                };
-                for (float[] coord : smallRocks2) {
-                    addActor(createAnchoredAnimation(MapObjectType.SMALL_ROCK_BEACH_2, SMALL_ROCK_BEACH_TUNING, "idle",
-                            coord[0], coord[1]));
-                }
-            }
-
-            if (chapterLevels.size() > 2) {
-                addActor(createAnchoredAnimation(MapObjectType.SMALL_ROCK_BEACH_1, SMALL_ROCK_BEACH_TUNING, "idle",
-                        centerX[2] + 80f * LAYOUT_SCALE_X, centerY[2] - 35f * LAYOUT_SCALE_Y));
-                addActor(createAnchoredAnimation(MapObjectType.SMALL_ROCK_BEACH_2, SMALL_ROCK_BEACH_TUNING, "idle",
-                        centerX[2] - 65f * LAYOUT_SCALE_X, centerY[2] + 45f * LAYOUT_SCALE_Y));
-            }
-
-            float[][] waterDropCoords = {
-                    {80f, 120f}, {160f, 340f}, {240f, 80f},
-                    {380f, 310f}, {440f, 130f}, {510f, 260f},
-                    {640f, 330f}, {710f, 180f}, {780f, 60f},
-                    {900f, 140f}
-
-            };
-            for (float[] coord : waterDropCoords) {
-                addActor(createAnchoredAnimation(MapObjectType.WATER_DROP_ANIM, WATER_DROP_TUNING, "idle",
-                        coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y));
-            }
-
-            Group houseIslandGroup = createAnchoredAnimation(MapObjectType.DECOR_HOUSE_ISLAND, HOUSE_ISLAND_TUNING, "idle", houseX + 50f, houseY + 20f);
-            houseIslandGroup.addListener(new ClickListener() {
+            MapDecorationActor houseIsland = new MapDecorationActor(MapObjectType.DECOR_HOUSE_ISLAND, 150f, 110f, "idle");
+            houseIsland.setPosition(houseX, houseY - 20f);
+            houseIsland.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
                     runCommand("menu enter greenhouse");
                 }
             });
-            addActor(houseIslandGroup);
+            addActor(houseIsland);
         }
 
         private void addForegroundEffects() {
             DangerNodeState dState = calculateDangerNodeState();
-            String zombossState = (dState == DangerNodeState.UNLOCKED_IDLE) ? "defeated" : "idle";
-            addActor(createAnchoredAnimation(MapObjectType.ZOMBOSS_NODE, ZOMBOSS_TUNING, zombossState, zombossNodeX, zombossNodeY));
+            String zombossState = "idle";
+            addActor(createAnchoredAnimation(MapObjectType.BIG_BOSS_DECOR_ISLAND, ZOMBOSS_TUNING, zombossState, zombossNodeX - 60f, zombossNodeY - 160f));
+
             addActor(createAnchoredAnimation(MapObjectType.DANGER_NODE_ANIM, DANGER_NODE_TUNING, dState.getPamState(), dangerNodeAnchorX, dangerNodeAnchorY));
 
             if (chapterLevels.size() > 0) {
-                addActor(createAnchoredAnimation(MapObjectType.SPLASH_EFFECT_ANIM, SPLASH_TUNING, "idle", houseX + 45f, houseY + 20f));
-                addActor(createAnchoredAnimation(MapObjectType.SPLASH_EFFECT_ANIM, SPLASH_TUNING, "idle", centerX[0], centerY[0] - 20f));
+                addActor(createAnchoredAnimation(MapObjectType.SNOW_DUST_ANIM, SNOW_DUST_TUNING, "loop", centerX[0] + 35f, centerY[0] - 30f));
             }
             if (chapterLevels.size() >= 3) {
-                addActor(createAnchoredAnimation(MapObjectType.SPLASH_EFFECT_ANIM, SPLASH_TUNING, "idle", centerX[2], centerY[2] - 20f));
+                addActor(createAnchoredAnimation(MapObjectType.SNOW_DUST_ANIM, SNOW_DUST_TUNING, "loop", centerX[2] + 35f, centerY[2] - 30f));
             }
 
             if (chapterLevels.size() >= 2) {
-                float waveOffsetX = 130f * LAYOUT_SCALE_X;
-                float waveOffsetY = 70f * LAYOUT_SCALE_Y;
-                addActor(createAnchoredAnimation(MapObjectType.WAVE_ANIM, WAVE_TUNING, "idle",
-                        centerX[1] + waveOffsetX, centerY[1] + waveOffsetY));
+                float blizzardOffsetX = 130f * LAYOUT_SCALE_X;
+                float blizzardOffsetY = 70f * LAYOUT_SCALE_Y;
+                addActor(createAnchoredAnimation(MapObjectType.BLIZZARD_ANIM, BLIZZARD_TUNING, "animation",
+                        centerX[1] + blizzardOffsetX - 40f, centerY[1] + blizzardOffsetY + 28));
             }
         }
 
@@ -762,7 +634,7 @@ public class BigWaveBeachStagesScreen extends UiScreen {
             if (Gdx.files.internal(path).exists()) {
                 return new TextureRegionDrawable(loadTextureSafe(path));
             }
-            return circleDrawable(Math.min(w, h), new Color(0.2f, 0.55f, 0.75f, 1f), Color.WHITE, 2);
+            return circleDrawable(Math.min(w, h), new Color(0.35f, 0.62f, 0.82f, 1f), Color.WHITE, 2);
         }
 
         private com.badlogic.gdx.scenes.scene2d.utils.Drawable circleDrawable(int diameter, Color fill, Color border, int borderWidth) {
@@ -787,7 +659,7 @@ public class BigWaveBeachStagesScreen extends UiScreen {
 
             @Override
             public void draw(Batch batch, float parentAlpha) {
-                batch.setColor(0.35f, 0.65f, 0.80f, 0.8f);
+                batch.setColor(0.72f, 0.85f, 0.95f, 0.85f);
 
                 if (centerX.length > 0) {
                     drawSegment(batch, houseX + 75f, houseY + 20f, centerX[0], centerY[0]);
@@ -819,6 +691,7 @@ public class BigWaveBeachStagesScreen extends UiScreen {
                 batch.draw(pixel, x1, y1 - thickness / 2f, 0f, thickness / 2f,
                         length, thickness, 1f, 1f, angle);
             }
+            
         }
     }
 
@@ -876,12 +749,5 @@ public class BigWaveBeachStagesScreen extends UiScreen {
         }
     }
 
-    private static TextureRegion whitePixelRegion() {
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return new TextureRegion(texture);
-    }
+    
 }

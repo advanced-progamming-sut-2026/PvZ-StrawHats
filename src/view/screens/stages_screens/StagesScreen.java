@@ -1,0 +1,54 @@
+package view.screens.stages_screens;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import view.general_screens.UiScreen;
+
+public abstract class StagesScreen extends UiScreen {
+
+    protected ImageButton createIconButton(String path, float width, float height, Runnable action) {
+        
+        
+        TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(path));
+        ImageButton button = new ImageButton(drawable);
+        button.getImageCell().size(width, height);
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                action.run();
+            }
+        });
+        return button;
+    }
+
+
+    
+    protected Actor createIconButtonWithLabel(String path, float width, float height, String text, Runnable action) {
+        Table container = new Table();
+        ImageButton btn = createIconButton(path, width, height, action);
+        Label label = new Label(text, skin, "title");
+
+        container.add(btn).row();
+        container.add(label).padTop(2);
+
+        container.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                action.run();
+            }
+        });
+        return container;
+    }
+
+
+    
+}

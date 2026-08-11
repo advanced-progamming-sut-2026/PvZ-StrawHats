@@ -209,40 +209,9 @@ public class MainMenuScreen extends UiScreen {
         return container;
     }
 
-    private Table createResourceWidget(String iconPath, String value) {
-        Stack stack = new Stack();
-        Texture texture = loadTextureSafe(iconPath);
 
-        Table bgTable = new Table();
-        bgTable.setBackground(new TextureRegionDrawable(texture));
 
-        Label label = new Label(value, skin, "title");
-        label.setAlignment(Align.center);
 
-        Table textTable = new Table();
-        textTable.add(label).center().expand();
-
-        stack.add(bgTable);
-        stack.add(textTable);
-
-        Table outer = new Table();
-        outer.add(stack).size(130, 42);
-        return outer;
-    }
-
-    private Texture loadTextureSafe(String path) {
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            Texture tex = new Texture(Gdx.files.internal(path));
-            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            return tex;
-        }
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0);
-        pixmap.fill();
-        Texture fallback = new Texture(pixmap);
-        pixmap.dispose();
-        return fallback;
-    }
 
     private void confirmLogout() {
         new ConfirmModal("Log out?", "You'll need your password to sign back in.", "Log out",

@@ -10,6 +10,11 @@ import model.App;
 import model.match.main.levels.Level;
 import view.general_screens.BaseScreen;
 import view.screens.*;
+import view.screens.stages_screens.BigWaveBeachStagesScreen;
+import view.screens.CollectionScreen;
+import view.screens.stages_screens.DarkAgesStagesScreen;
+import view.screens.stages_screens.EgyptStagesScreen;
+import view.screens.stages_screens.FrostbiteCavesStagesScreen;
 
 public final class ScreenManager {
 

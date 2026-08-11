@@ -1,4 +1,4 @@
-package view.screens;
+package view.screens.stages_screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -34,30 +35,36 @@ import pvz.libpvz.textures.TextureBank;
 
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
+import view.general_screens.ParticleCreator;
 import view.general_screens.UiScreen;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FrostbiteCavesStagesScreen extends UiScreen {
+public class DarkAgesStagesScreen extends StagesScreen {
 
-    private static final String CHAPTER_NAME = "Frostbite Caves";
+    private static final String CHAPTER_NAME = "Dark Ages";
 
-    private static final String BACK_ICON = "images/ui/buttons_hud_back_normal.png";
-    private static final String COLLECTION_ICON = "images/ui/collection.png";
-    private static final String GREENHOUSE_ICON = "images/ui/greenhouse.png";
-    private static final String LEADERBOARD_ICON = "images/ui/leaderboard.png";
-    private static final String COIN_ICON = "images/ui/buttons_coin_buy_normal.png";
-    private static final String GEM_ICON = "images/ui/buttons_premium_normal.png";
+    private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
+    private static final String COLLECTION_ICON = "assets/images/ui/collection.png";
+    private static final String GREENHOUSE_ICON = "assets/images/ui/greenhouse.png";
+    private static final String LEADERBOARD_ICON = "assets/images/ui/leaderboard.png";
+    private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
+    private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
 
-    private static final String CHAPTER_BACKGROUND = "images/backg/frostbite_cave_bg.png";
+    private static final String CHAPTER_BACKGROUND = "assets/images/backg/ChatGPT Image Aug 9, 2026, 08_38_07 AM.png";
 
     private static final String[] STAGE_ISLAND_TEXTURES = {
-            "images/chapters/frostbite_cave/island2.png",
-            "images/chapters/frostbite_cave/island1.png",
-            "images/chapters/frostbite_cave/island2.png"
+            "assets/images/chapters/darkage/island7.png",
+            "assets/images/chapters/darkage/anim9_373x659.png",
+            "assets/images/chapters/darkage/anim10_352x358.png"
     };
-    private static final String BOSS_STAGE_ISLAND_TEXTURE = "images/chapters/frostbite_cave/boss_island.png";
+
+    private static final float DESIGN_PATH_HEIGHT = 700f;
+    private static final float EXTRA_BOTTOM_SPACE = 90f;
+    private static final float EXTRA_TOP_SPACE = 220f;
+
+    private static final float GLOBAL_Y_OFFSET = 100f;
 
     private static final float NODE_WIDTH = 125f;
     private static final float NODE_HEIGHT = 95f;
@@ -66,31 +73,22 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
     private static final float BOSS_NODE_HEIGHT = 400f;
 
     private static final float PATH_WIDTH = 1700f;
-    private static final float PATH_HEIGHT = 700f;
+    private static final float PATH_HEIGHT = DESIGN_PATH_HEIGHT + EXTRA_BOTTOM_SPACE + EXTRA_TOP_SPACE;
 
     private static final float LAYOUT_SCALE_X = PATH_WIDTH / 1080f;
-    private static final float LAYOUT_SCALE_Y = PATH_HEIGHT / 380f;
+    private static final float LAYOUT_SCALE_Y = DESIGN_PATH_HEIGHT / 380f;
 
-    private static class DecorTuning {
-        final float nativeW, nativeH, scale, offsetX, offsetY;
+    private static final Color TRAIL_COLOR = new Color(0.55f, 0.32f, 0.85f, 0.85f);
 
-        DecorTuning(float nativeW, float nativeH, float scale, float offsetX, float offsetY) {
-            this.nativeW = nativeW;
-            this.nativeH = nativeH;
-            this.scale = scale;
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-        }
-    }
+    
 
-    private static final DecorTuning LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.34f, 27f, 44f);
-    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.53f, 45f, 25f);
-    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.40f, 90f, -150f);
-    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.50f, 37f, 160f);
-    private static final DecorTuning BLIZZARD_TUNING = new DecorTuning(250f, 300f, 0.30f, -83f, -24f);
-    private static final DecorTuning ICE_CHUNK_TUNING = new DecorTuning(100f, 100f, 0.22f, 0f, 0f);
-    private static final DecorTuning SNOW_DUST_TUNING = new DecorTuning(200f, 150f, 0.50f, 10f, 45f);
-    private static final DecorTuning CRYSTAL_TUNING = new DecorTuning(25f, 25f, 0.40f, 0f, 0f);
+    private static final DecorTuning LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.34f, 27f, 34f);
+    private static final DecorTuning BOSS_LEVEL_NODE_TUNING = new DecorTuning(260f, 260f, 0.45f, -14f, 70f);
+    private static final DecorTuning DANGER_NODE_TUNING = new DecorTuning(350f, 300f, 0.50f, 45f, 130f);
+    private static final DecorTuning ZOMBOSS_TUNING = new DecorTuning(560f, 760f, 0.30f, 0f, 100f);
+    private static final DecorTuning FIREFLY_TUNING = new DecorTuning(25f, 25f, 0.15f, 0f, 0f);
+    private static final DecorTuning CLOUD_TUNING = new DecorTuning(300f, 200f, 0.30f, 0f, 0f);
+    private static final DecorTuning LIGHTNING_TUNING = new DecorTuning(300f, 300f, 0.28f, 0f, 0f);
 
     private List<Level> allLevels = new ArrayList<>();
     private List<Level> chapterLevels = new ArrayList<>();
@@ -136,30 +134,29 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
     }
 
     public enum MapObjectType {
-        DECOR_HOUSE_ISLAND("images/chapters/frostbite_cave/start_island.png", false),
+        DECOR_HOUSE_ISLAND("assets/images/chapters/darkage/anim1_1201x1413.png", false),
 
-        SMALL_ISLAND_1("images/chapters/frostbite_cave/island3.png", false),
-        SMALL_ISLAND_2("images/chapters/frostbite_cave/island4.png", false),
-        SMALL_ISLAND_3("images/chapters/frostbite_cave/island5.png", false),
-        SMALL_ISLAND_4("images/chapters/frostbite_cave/island6.png", false),
-        SMALL_ISLAND_5("images/chapters/frostbite_cave/island7.png", false),
+        SMALL_ISLAND_1("assets/images/chapters/darkage/island6.png", false),
+        SMALL_ISLAND_2("assets/images/chapters/darkage/island8.png", false),
+        SMALL_ISLAND_3("assets/images/chapters/darkage/island9.png", false),
 
-        SMALL_ISLAND_6("assets/images/chapters/frostbite_cave/anim28_271x337.png", false),
+        FLOATING_ROCK_1("assets/images/chapters/darkage/anim16_55x63.png", false),
+        FLOATING_ROCK_2("assets/images/chapters/darkage/anim15_102x97.png", false),
 
-        SMALL_ISLAND_7("assets/images/chapters/frostbite_cave/island11.png", false),
+        PARTICLE("assets/images/chapters/darkage/anim4_23x23.png", false),
 
-        BIG_BOSS_DECOR_ISLAND("images/chapters/frostbite_cave/island8.png", false),
         LEVEL_NODE("768/INITIAL/WORLDMAP/LEVEL_NODE/LEVEL_NODE.PAM", true),
 
-        FLOATING_ICE_ANIM_1("768/FULL/WORLDMAP/ICEAGE/ANIM27/ANIM27.PAM", true),
-        FLOATING_ICE_ANIM_2("768/FULL/WORLDMAP/ICEAGE/ANIM26/ANIM26.PAM", true),
-        FLOATING_ICE_ANIM_3("768/FULL/WORLDMAP/ICEAGE/ANIM17/ANIM17.PAM", true),
+        ZOMBOSS_BOSS_ISLAND("768/FULL/WORLDMAP/ZOMBOSS_NODE_DARK/ZOMBOSS_NODE_DARK.PAM", true),
 
-        DANGER_NODE_ANIM("768/FULL/WORLDMAP/DANGER_NODE_ICEAGE/DANGER_NODE_ICEAGE.PAM", true),
+        DANGER_NODE_ANIM("768/FULL/WORLDMAP/DANGER_NODE_DARK/DANGER_NODE_DARK.PAM", true),
 
-        BLIZZARD_ANIM("768/FULL/EFFECTS/HOTPOTATO_ICEBLOCK_STEAMFX/HOTPOTATO_ICEBLOCK_STEAMFX.PAM", true),
-        TWINKLING_CRYSTAL_ANIM("768/INITIAL/EFFECTS/PRIZE_TWINKLE/PRIZE_TWINKLE.PAM", true),
-        SNOW_DUST_ANIM("768/FULL/EFFECTS/SNOWSTORM_REAR/SNOWSTORM_REAR.PAM", true);
+        CLOUD_ANIM_1("768/FULL/WORLDMAP/DARK/ANIM6/ANIM6.PAM", true),
+        CLOUD_ANIM_2("768/FULL/WORLDMAP/DARK/ANIM7/ANIM7.PAM", true),
+
+        FIREFLY_ANIM("768/FULL/WORLDMAP/DARK/ANIM5/ANIM5.PAM", true),
+
+        LIGHTNING_ANIM("768/FULL/EFFECTS/ZOMBIE_DARK_WIZARD_PROJECTILE_HIT/ZOMBIE_DARK_WIZARD_PROJECTILE_HIT.PAM", true);
 
         private final String path;
         private final boolean isPamAnimation;
@@ -188,6 +185,18 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
     }
 
     @Override
+    public void initParticles() {
+        if (particles != null) {
+            particles.dispose();
+        }
+        particlePaths = new String[]{ MapObjectType.PARTICLE.getPath() };
+        particles = new ParticleCreator(particlePaths, 25, 14f, 26f, 1.1f, true);
+        Actor particleActor = particles.createActor();
+        particleActor.setTouchable(Touchable.disabled);
+        rootStack.addActorAt(1, particleActor);
+    }
+
+    @Override
     public void show() {
         if (CHAPTER_BACKGROUND != null && !CHAPTER_BACKGROUND.isEmpty() && Gdx.files.internal(CHAPTER_BACKGROUND).exists()) {
             setBackground(CHAPTER_BACKGROUND);
@@ -209,28 +218,6 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         super.show();
         loadLevels();
         build();
-    }
-
-    private static final String SNOW_PARTICLE_PATH = "assets/images/chapters/frostbite_cave/snow_particle.png";
-
-    @Override
-    public void initParticles() {
-        if (particles != null) {
-            particles.dispose();
-        }
-        particlePaths = new String[]{ SNOW_PARTICLE_PATH };
-
-        particles = new view.general_screens.ParticleCreator(particlePaths, 20, 5f, 15f, 1.2f, true);
-
-        com.badlogic.gdx.scenes.scene2d.Actor particleActor = particles.createActor();
-        particleActor.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
-        rootStack.addActorAt(1, particleActor);
-    }
-
-    @Override
-    public void hide() {
-        super.hide();
-        super.initParticles();
     }
 
     @Override
@@ -268,6 +255,7 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         Table selectionBar = buildSelectionBar();
 
         rootTable.add(topBar).fillX().padTop(5).padLeft(15).padRight(15).row();
+        rootTable.add(new Label("Dark Ages", skin, "title")).padTop(SPACE_MD).row();
         rootTable.add(pathContainer).expand().padTop(SPACE_SM).row();
         rootTable.add(selectionBar).fillX().padBottom(SPACE_SM);
 
@@ -301,65 +289,13 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         return topBar;
     }
 
-    private ImageButton createIconButton(String path, float width, float height, Runnable action) {
-        TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(path));
-        ImageButton button = new ImageButton(drawable);
-        button.getImageCell().size(width, height);
-        button.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                action.run();
-            }
-        });
-        return button;
-    }
+    
 
-    private Actor createIconButtonWithLabel(String path, float width, float height, String text, Runnable action) {
-        Table container = new Table();
-        ImageButton btn = createIconButton(path, width, height, action);
-        Label label = new Label(text, skin, "title");
+    
 
-        container.add(btn).row();
-        container.add(label).padTop(2);
+    
 
-        container.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                action.run();
-            }
-        });
-        return container;
-    }
-
-    private Table createResourceWidget(String iconPath, String value) {
-        Stack stack = new Stack();
-        Table bgTable = new Table();
-        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
-
-        Table textTable = new Table();
-        textTable.add(new Label(value, skin, "title")).center().expand();
-
-        stack.add(bgTable);
-        stack.add(textTable);
-
-        Table outer = new Table();
-        outer.add(stack).size(130, 42);
-        return outer;
-    }
-
-    private Texture loadTextureSafe(String path) {
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            Texture tex = new Texture(Gdx.files.internal(path));
-            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            return tex;
-        }
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0);
-        pixmap.fill();
-        Texture fallback = new Texture(pixmap);
-        pixmap.dispose();
-        return fallback;
-    }
+    
 
     private Table buildPathContainer() {
         Table wrap = new Table();
@@ -372,7 +308,10 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         scrollPane.setFadeScrollBars(true);
         scrollPane.setOverscroll(false, false);
 
-        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(-50).padBottom(-100);
+        scrollPane.layout();
+        scrollPane.setScrollY(0);
+
+        wrap.add(scrollPane).expand().fill().padLeft(-50).padRight(-50).padTop(-100).padBottom(0);
         return wrap;
     }
 
@@ -395,8 +334,9 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
     private void refreshSelectionBar() {
         Level selected = MatchMenu.selectedLevel;
-        boolean isChapterSelection = selected != null && selected.getSeason() != null && selected.getSeason().getName().equalsIgnoreCase(CHAPTER_NAME);
-        if (isChapterSelection) {
+        boolean isDarkAgesSelection = selected != null
+                && selected.getSeason().getName().equalsIgnoreCase(CHAPTER_NAME);
+        if (isDarkAgesSelection) {
             selectionLabel.setText(selected.getName() + "\n" + selected.getGameMode());
             playButton.setDisabled(false);
             playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
@@ -434,13 +374,15 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
         private final float[] centerX;
         private final float[] centerY;
-        private float houseX, houseY;
-        private float zombossNodeX, zombossNodeY;
-        private float dangerNodeAnchorX, dangerNodeAnchorY;
-        private float bridgeX, bridgeY;
+        private final float houseX;
+        private final float houseY;
+        private final float dangerNodeAnchorX;
+        private final float dangerNodeAnchorY;
+        private final float bridgeX;
+        private final float bridgeY;
 
-        private float zombossRenderHeight() {
-            return ZOMBOSS_TUNING.nativeH * ZOMBOSS_TUNING.scale;
+        private float dangerRenderHeight() {
+            return DANGER_NODE_TUNING.nativeH() * DANGER_NODE_TUNING.scale();
         }
 
         StagePath() {
@@ -453,7 +395,8 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             for (int i = 0; i < count; i++) {
                 float progress = count <= 1 ? 0.5f : (float) i / (count - 1);
                 float xVal = PATH_WIDTH * (0.12f + 0.76f * progress);
-                float yVal = PATH_HEIGHT * (0.52f + 0.26f * (float) Math.sin(progress * Math.PI * 1.3f));
+                float yVal = DESIGN_PATH_HEIGHT * (0.52f + 0.26f * (float) Math.sin(progress * Math.PI * 1.3f)) + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET;
+
                 centerX[i] = xVal;
                 centerY[i] = yVal;
             }
@@ -466,27 +409,20 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
                 houseY = centerY[0] + 70f * LAYOUT_SCALE_Y;
             } else {
                 houseX = 50f * LAYOUT_SCALE_X;
-                houseY = 200f * LAYOUT_SCALE_Y;
+                houseY = 200f * LAYOUT_SCALE_Y + GLOBAL_Y_OFFSET;
             }
 
             if (count >= 3) {
-                zombossNodeX = (centerX[1] + centerX[2]) / 2f;
-                zombossNodeY = Math.max(centerY[1], centerY[2]) - 200f * LAYOUT_SCALE_Y;
-            } else {
-                zombossNodeX = 450f * LAYOUT_SCALE_X;
-                zombossNodeY = 300f * LAYOUT_SCALE_Y;
-            }
-
-            bridgeX = zombossNodeX;
-            bridgeY = zombossNodeY + zombossRenderHeight() / 2f;
-
-            if (count > 1) {
-                dangerNodeAnchorX = centerX[1] + DANGER_NODE_TUNING.offsetX * LAYOUT_SCALE_X;
-                dangerNodeAnchorY = centerY[1] + 120f * LAYOUT_SCALE_Y;
+                dangerNodeAnchorX = (centerX[1] + centerX[2]) / 2f;
+                dangerNodeAnchorY = Math.max(centerY[1], centerY[2]) - 200f * LAYOUT_SCALE_Y;
             } else {
                 dangerNodeAnchorX = PATH_WIDTH / 2f;
-                dangerNodeAnchorY = PATH_HEIGHT / 2f;
+                dangerNodeAnchorY = PATH_HEIGHT / 2f + GLOBAL_Y_OFFSET;
             }
+
+            bridgeX = dangerNodeAnchorX;
+            bridgeY = dangerNodeAnchorY + dangerRenderHeight() / 2f;
+
             addBackgroundDecorations();
 
             addActor(new TrailActor());
@@ -499,9 +435,11 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
             addForegroundEffects();
 
+            addClouds();
+
             if (count == 0) {
-                Label empty = new Label("No Frostbite Caves stages found.", skin, "muted");
-                empty.setPosition(PATH_WIDTH / 2f - 100f, PATH_HEIGHT / 2f);
+                Label empty = new Label("No Dark Ages stages found.", skin, "muted");
+                empty.setPosition(PATH_WIDTH / 2f - 130f, PATH_HEIGHT / 2f + GLOBAL_Y_OFFSET);
                 addActor(empty);
             }
         }
@@ -512,78 +450,77 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             group.setScale(scale);
             group.setSize(nativeWidth, nativeHeight);
             group.setPosition(x, y);
+            group.setTouchable(Touchable.disabled);
 
             MapDecorationActor actor = new MapDecorationActor(type, nativeWidth, nativeHeight, state);
             actor.setSize(nativeWidth, nativeHeight);
+            actor.setTouchable(Touchable.disabled);
             group.addActor(actor);
             return group;
         }
 
         private Group createAnchoredAnimation(MapObjectType type, DecorTuning tuning, String state, float anchorX, float anchorY) {
-            float renderW = tuning.nativeW * tuning.scale;
-            float renderH = tuning.nativeH * tuning.scale;
-            float x = anchorX - renderW / 2f + tuning.offsetX * LAYOUT_SCALE_X;
-            float y = anchorY - renderH / 2f + tuning.offsetY * LAYOUT_SCALE_Y;
-            return createScaledAnimation(type, tuning.nativeW, tuning.nativeH, state, tuning.scale, x, y);
+            float renderW = tuning.nativeW() * tuning.scale();
+            float renderH = tuning.nativeH() * tuning.scale();
+            float x = anchorX - renderW / 2f + tuning.offsetX() * LAYOUT_SCALE_X;
+            float y = anchorY - renderH / 2f + tuning.offsetY() * LAYOUT_SCALE_Y;
+            return createScaledAnimation(type, tuning.nativeW(), tuning.nativeH(), state, tuning.scale(), x, y);
         }
 
         private void addBackgroundDecorations() {
-            float[][] crystalCoords = {
+            float[][] fireflyCoords = {
                     {110f, 45f}, {320f, 330f}, {540f, 50f}, {760f, 310f}, {910f, 70f},
                     {210f, 270f}, {460f, 190f}, {650f, 35f}, {870f, 330f}, {140f, 170f},
-                    {380f, 85f}, {590f, 320f}, {830f, 175f}, {260f, 345f}, {980f, 220f},
-                    {500f, 400f}, {350f, 180f}
+                    {380f, 85f}, {590f, 320f}, {830f, 175f}, {260f, 345f}, {980f, 220f}
             };
-            for (float[] coord : crystalCoords) {
-                addActor(createAnchoredAnimation(MapObjectType.TWINKLING_CRYSTAL_ANIM, CRYSTAL_TUNING, "animation",
-                        coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y));
+            for (float[] coord : fireflyCoords) {
+                addActor(createAnchoredAnimation(MapObjectType.FIREFLY_ANIM, FIREFLY_TUNING, "idle",
+                        coord[0] * LAYOUT_SCALE_X, coord[1] * LAYOUT_SCALE_Y + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET));
             }
 
-            MapObjectType[] iceTypes = {
-                    MapObjectType.FLOATING_ICE_ANIM_1,
-                    MapObjectType.FLOATING_ICE_ANIM_2,
-                    MapObjectType.FLOATING_ICE_ANIM_3
-            };
-            float[][] iceCoords = {
+            MapObjectType[] rockTypes = { MapObjectType.FLOATING_ROCK_1, MapObjectType.FLOATING_ROCK_2 };
+            float[][] rockSizes = { {40f, 46f}, {46f, 44f} };
+            float[][] rockCoords = {
                     {180f, 310f}, {480f, 320f}, {750f, 300f},
                     {120f, 150f}, {350f, 450f}, {600f, 120f},
                     {820f, 480f}, {1020f, 280f}, {400f, 250f},
-                    {250f, 550f}, {680f, 500f}, {920f, 550f},
-                    {300f, 500f}, {100f, 200f}, {600f, 400f}
+                    {250f, 550f}, {680f, 500f}, {920f, 550f}
             };
-            for (int i = 0; i < iceCoords.length; i++) {
-                MapObjectType selectedIce = iceTypes[i % iceTypes.length];
-                addActor(createAnchoredAnimation(selectedIce, ICE_CHUNK_TUNING, "animation",
-                        iceCoords[i][0] * LAYOUT_SCALE_X, iceCoords[i][1] * LAYOUT_SCALE_Y));
+            for (int i = 0; i < rockCoords.length; i++) {
+                int typeIndex = i % rockTypes.length;
+                MapDecorationActor rock = new MapDecorationActor(rockTypes[typeIndex], rockSizes[typeIndex][0], rockSizes[typeIndex][1], "idle");
+                rock.setPosition(rockCoords[i][0] * LAYOUT_SCALE_X, rockCoords[i][1] * LAYOUT_SCALE_Y + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET);
+                rock.setTouchable(Touchable.disabled);
+                addActor(rock);
+            }
+
+            for (int i = 0; i < 8; i++) {
+                MapDecorationActor particle = new MapDecorationActor(MapObjectType.PARTICLE, 14f, 14f, "idle");
+                particle.setPosition(rockCoords[i][0] * LAYOUT_SCALE_X + 20f, rockCoords[i][1] * LAYOUT_SCALE_Y + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET - 20f);
+                particle.setTouchable(Touchable.disabled);
+                addActor(particle);
             }
         }
 
         private void addMapDecorations() {
             List<MapObjectPlacement> placements = new ArrayList<>();
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_1, 225, 230, 50, 38));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 530, 190, 55, 40));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_3, 610, 260, 60, 45));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_4, 880, 195, 50, 35));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 770, 240, 40, 60));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 155, 270, 40, 60));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_5, 450, 120, 40, 60));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 270, 160, 55, 42));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 700, 180, 60, 45));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 950, 110, 50, 38));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 460, 300, 60, 120));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 770, 20, 90, 180));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 75, 105, 90, 180));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_6, 600, 80, 52, 40));
-            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_7, 350, 70, 100, 200));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 70, 260, 50, 38));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 270, 150, 55, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_3, 620, 280, 60, 45));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_1, 760, 110, 100, 70));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_2, 970, 240, 55, 40));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_3, 410, 170, 60, 45));
+            placements.add(new MapObjectPlacement(MapObjectType.SMALL_ISLAND_1, 300, 200, 100, 70));
 
             for (MapObjectPlacement p : placements) {
                 MapDecorationActor actor = new MapDecorationActor(p.type, p.width, p.height, "idle");
-                actor.setPosition(p.x * LAYOUT_SCALE_X, p.y * LAYOUT_SCALE_Y);
+                actor.setPosition(p.x * LAYOUT_SCALE_X, p.y * LAYOUT_SCALE_Y + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET);
+                actor.setTouchable(Touchable.disabled);
                 addActor(actor);
             }
 
-            MapDecorationActor houseIsland = new MapDecorationActor(MapObjectType.DECOR_HOUSE_ISLAND, 150f, 110f, "idle");
-            houseIsland.setPosition(houseX, houseY - 20f);
+            MapDecorationActor houseIsland = new MapDecorationActor(MapObjectType.DECOR_HOUSE_ISLAND, 300f, 220f, "idle");
+            houseIsland.setPosition(houseX, houseY);
             houseIsland.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
@@ -595,23 +532,26 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
         private void addForegroundEffects() {
             DangerNodeState dState = calculateDangerNodeState();
-            String zombossState = (dState == DangerNodeState.UNLOCKED_IDLE) ? "idle" : "idle";
-            addActor(createAnchoredAnimation(MapObjectType.BIG_BOSS_DECOR_ISLAND, ZOMBOSS_TUNING, zombossState, zombossNodeX - 60f, zombossNodeY - 160f));
+            addActor(createAnchoredAnimation(MapObjectType.DANGER_NODE_ANIM, DANGER_NODE_TUNING, dState.getPamState(),
+                    dangerNodeAnchorX, dangerNodeAnchorY));
 
-            addActor(createAnchoredAnimation(MapObjectType.DANGER_NODE_ANIM, DANGER_NODE_TUNING, dState.getPamState(), dangerNodeAnchorX, dangerNodeAnchorY));
+            addActor(createAnchoredAnimation(MapObjectType.LIGHTNING_ANIM, LIGHTNING_TUNING, "idle",
+                    dangerNodeAnchorX + 60f * LAYOUT_SCALE_X, dangerNodeAnchorY + 40f * LAYOUT_SCALE_Y));
+        }
 
-            if (chapterLevels.size() > 0) {
-                addActor(createAnchoredAnimation(MapObjectType.SNOW_DUST_ANIM, SNOW_DUST_TUNING, "loop", centerX[0] + 35f, centerY[0] - 30f));
+        private void addClouds() {
+            float travel = PATH_WIDTH + CLOUD_TUNING.nativeW() * CLOUD_TUNING.scale() * 2f;
+            for (int i = 0; i < 4; i++) {
+                float startOffset = travel * i / 4f;
+                float y = DESIGN_PATH_HEIGHT * (0.65f + 0.08f * i) + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET;
+                float speed = 40f + i * 6f;
+                addActor(new DriftingCloud(MapObjectType.CLOUD_ANIM_1, CLOUD_TUNING, startOffset, y, speed));
             }
-            if (chapterLevels.size() >= 3) {
-                addActor(createAnchoredAnimation(MapObjectType.SNOW_DUST_ANIM, SNOW_DUST_TUNING, "loop", centerX[2] + 35f, centerY[2] - 30f));
-            }
-
-            if (chapterLevels.size() >= 2) {
-                float blizzardOffsetX = 130f * LAYOUT_SCALE_X;
-                float blizzardOffsetY = 70f * LAYOUT_SCALE_Y;
-                addActor(createAnchoredAnimation(MapObjectType.BLIZZARD_ANIM, BLIZZARD_TUNING, "animation",
-                        centerX[1] + blizzardOffsetX - 40f, centerY[1] + blizzardOffsetY + 28));
+            for (int i = 0; i < 4; i++) {
+                float startOffset = travel * (i + 0.5f) / 4f;
+                float y = DESIGN_PATH_HEIGHT * (0.20f + 0.08f * i) + EXTRA_BOTTOM_SPACE + GLOBAL_Y_OFFSET;
+                float speed = 30f + i * 5f;
+                addActor(new DriftingCloud(MapObjectType.CLOUD_ANIM_2, CLOUD_TUNING, startOffset, y, speed));
             }
         }
 
@@ -644,18 +584,46 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         }
 
         private void buildNode(Level level, int index, int stageNumber) {
-            boolean boss = level instanceof BossLevel;
+            boolean boss = (level instanceof BossLevel) || (index == chapterLevels.size() - 1);
             float width = boss ? BOSS_NODE_WIDTH : NODE_WIDTH;
             float height = boss ? BOSS_NODE_HEIGHT : NODE_HEIGHT;
             StageStatus status = statusOf(level);
             LevelNodeState nodeState = levelNodeStateOf(index, status);
 
+            if (boss) {
+                String zombossState = (status == StageStatus.COMPLETED) ? "defeated" : "active";
+                addActor(createAnchoredAnimation(MapObjectType.ZOMBOSS_BOSS_ISLAND, ZOMBOSS_TUNING, zombossState,
+                        centerX[index], centerY[index]));
+            } else {
+                String islandPath = STAGE_ISLAND_TEXTURES[index % STAGE_ISLAND_TEXTURES.length];
+
+                float islandWidth = width;
+                float islandHeight = (index == 1) ? height * 1.5f : height;
+
+                Image islandImage = new Image(getTextureDrawable(islandPath, (int) islandWidth, (int) islandHeight));
+                islandImage.setSize(islandWidth, islandHeight);
+
+                float islandX = centerX[index] - islandWidth / 2f;
+                float islandY;
+
+                if (index == 1) {
+                    float topY = centerY[index] + height / 2f;
+                    islandY = topY - islandHeight + 16f;
+                } else {
+                    islandY = centerY[index] - islandHeight / 2f;
+                }
+
+                islandImage.setPosition(islandX, islandY);
+                islandImage.setTouchable(Touchable.disabled);
+                addActor(islandImage);
+            }
+
+            DecorTuning tuning = boss ? BOSS_LEVEL_NODE_TUNING : LEVEL_NODE_TUNING;
+            addActor(createAnchoredAnimation(MapObjectType.LEVEL_NODE, tuning, nodeState.getPamState(),
+                    centerX[index], centerY[index]));
+
             Stack stack = new Stack();
             stack.setSize(width, height);
-
-            String islandPath = boss ? BOSS_STAGE_ISLAND_TEXTURE : STAGE_ISLAND_TEXTURES[index % STAGE_ISLAND_TEXTURES.length];
-            Image islandImage = new Image(getTextureDrawable(islandPath, (int) width, (int) height));
-            stack.add(islandImage);
 
             Label numberLabel = new Label(boss ? "BOSS" : String.valueOf(stageNumber), skin, "title");
             numberLabel.setAlignment(Align.center);
@@ -684,17 +652,13 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             }
 
             addActor(column);
-
-            DecorTuning tuning = boss ? BOSS_LEVEL_NODE_TUNING : LEVEL_NODE_TUNING;
-            addActor(createAnchoredAnimation(MapObjectType.LEVEL_NODE, tuning, nodeState.getPamState(),
-                    centerX[index], centerY[index]));
         }
 
         private com.badlogic.gdx.scenes.scene2d.utils.Drawable getTextureDrawable(String path, int w, int h) {
             if (Gdx.files.internal(path).exists()) {
                 return new TextureRegionDrawable(loadTextureSafe(path));
             }
-            return circleDrawable(Math.min(w, h), new Color(0.35f, 0.62f, 0.82f, 1f), Color.WHITE, 2);
+            return circleDrawable(Math.min(w, h), new Color(0.45f, 0.30f, 0.6f, 1f), Color.WHITE, 2);
         }
 
         private com.badlogic.gdx.scenes.scene2d.utils.Drawable circleDrawable(int diameter, Color fill, Color border, int borderWidth) {
@@ -709,6 +673,47 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
             return new TextureRegionDrawable(texture);
         }
 
+        private class DriftingCloud extends Group {
+            private final float renderWidth;
+            private final float baseY;
+            private final float startOffset;
+            private final float speed;
+            private final float travel;
+            private float elapsed = 0f;
+
+            DriftingCloud(MapObjectType type, DecorTuning tuning, float startOffset, float y, float speed) {
+                setTransform(true);
+                setScale(tuning.scale());
+                setSize(tuning.nativeW(), tuning.nativeH());
+                setTouchable(Touchable.disabled);
+
+                this.renderWidth = tuning.nativeW() * tuning.scale();
+                this.baseY = y;
+                this.startOffset = startOffset;
+                this.speed = speed;
+                this.travel = PATH_WIDTH + renderWidth * 2f;
+
+                MapDecorationActor actor = new MapDecorationActor(type, tuning.nativeW(), tuning.nativeH(), "idle");
+                actor.setSize(tuning.nativeW(), tuning.nativeH());
+                actor.setTouchable(Touchable.disabled);
+                addActor(actor);
+
+                setPosition(currentX(), baseY);
+            }
+
+            private float currentX() {
+                float x = (startOffset + speed * elapsed) % travel;
+                return x - renderWidth;
+            }
+
+            @Override
+            public void act(float delta) {
+                super.act(delta);
+                elapsed += delta;
+                setPosition(currentX(), baseY);
+            }
+        }
+
         private class TrailActor extends Actor {
             private final TextureRegion pixel = whitePixelRegion();
 
@@ -719,10 +724,10 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
 
             @Override
             public void draw(Batch batch, float parentAlpha) {
-                batch.setColor(0.72f, 0.85f, 0.95f, 0.85f);
+                batch.setColor(TRAIL_COLOR);
 
                 if (centerX.length > 0) {
-                    drawSegment(batch, houseX + 75f, houseY + 20f, centerX[0], centerY[0]);
+                    drawSegment(batch, houseX + 150f, houseY + 110f, centerX[0], centerY[0]);
                 }
 
                 boolean bridgeExists = centerX.length >= 3;
@@ -757,12 +762,19 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
     private class MapDecorationActor extends Actor {
         private final MapObjectType objectType;
         private Texture texture;
-        private final String pamState;
+        private String pamState;
         private float stateTime = 0f;
+        private float animDuration = 0f;
 
         public MapDecorationActor(MapObjectType objectType, float width, float height, String state) {
             this.objectType = objectType;
-            this.pamState = state;
+            if (objectType == MapObjectType.CLOUD_ANIM_1 || objectType == MapObjectType.CLOUD_ANIM_2) {
+                String[] states = {"idle", "idle2", "idle3", "idle4"};
+                this.pamState = states[(int) (Math.random() * states.length)];
+                this.animDuration = 3f + (float) (Math.random() * 3f);
+            } else {
+                this.pamState = state;
+            }
             setSize(width, height);
 
             if (!objectType.isPamAnimation()) {
@@ -777,6 +789,14 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         public void act(float delta) {
             super.act(delta);
             stateTime += delta;
+            if (objectType == MapObjectType.CLOUD_ANIM_1 || objectType == MapObjectType.CLOUD_ANIM_2) {
+                if (stateTime >= animDuration) {
+                    stateTime = 0f;
+                    String[] states = {"idle", "idle2", "idle3", "idle4"};
+                    this.pamState = states[(int) (Math.random() * states.length)];
+                    this.animDuration = 3f + (float) (Math.random() * 3f);
+                }
+            }
         }
 
         @Override
@@ -788,6 +808,9 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
                     ClipRef clip = null;
                     if (pamState != null) {
                         clip = pamPlayer.getClip(objectType.getPath(), pamState);
+                    }
+                    if (clip == null) {
+                        clip = pamPlayer.getClip(objectType.getPath(), "active");
                     }
                     if (clip == null) {
                         clip = pamPlayer.getClip(objectType.getPath(), "idle");
@@ -808,12 +831,5 @@ public class FrostbiteCavesStagesScreen extends UiScreen {
         }
     }
 
-    private static TextureRegion whitePixelRegion() {
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return new TextureRegion(texture);
-    }
+    
 }

@@ -6,19 +6,13 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
@@ -48,6 +42,15 @@ public abstract class UiScreen extends BaseScreen {
     protected static final float CARD_MAX_HEIGHT = SCREEN_HEIGHT - 64f;
 
     private final Consumer<String> printerListener = this::onMessage;
+
+    protected static TextureRegion whitePixelRegion() {
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.WHITE);
+        pixmap.fill();
+        Texture texture = new Texture(pixmap);
+        pixmap.dispose();
+        return new TextureRegion(texture);
+    }
 
     private Texture loadLinearTexture(String path) {
         if (!Gdx.files.internal(path).exists()) {
@@ -166,6 +169,36 @@ public abstract class UiScreen extends BaseScreen {
         checkBoxStyle.checkboxOff = skin.getDrawable("checkbox-off");
         skin.add("main", checkBoxStyle);
         skin.add("default", checkBoxStyle);
+    }
+
+    protected Texture loadTextureSafe(String path) {
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            Texture tex = new Texture(Gdx.files.internal(path));
+            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            return tex;
+        }
+        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(0, 0, 0, 0);
+        pixmap.fill();
+        Texture fallback = new Texture(pixmap);
+        pixmap.dispose();
+        return fallback;
+    }
+
+    protected Table createResourceWidget(String iconPath, String value) {
+        Stack stack = new Stack();
+        Table bgTable = new Table();
+        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
+
+        Table textTable = new Table();
+        textTable.add(new Label(value, skin, "title")).center().expand();
+
+        stack.add(bgTable);
+        stack.add(textTable);
+
+        Table outer = new Table();
+        outer.add(stack).size(130, 42);
+        return outer;
     }
 
     private Drawable roundedPanel(int tile, int radius, int border, Color fill, Color borderColor) {

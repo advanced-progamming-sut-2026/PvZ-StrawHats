@@ -212,35 +212,9 @@ public class GameMenuScreen extends UiScreen {
         return container;
     }
 
-    private Table createResourceWidget(String iconPath, String value) {
-        Stack stack = new Stack();
-        Table bgTable = new Table();
-        bgTable.setBackground(new TextureRegionDrawable(loadTextureSafe(iconPath)));
+    
 
-        Table textTable = new Table();
-        textTable.add(new Label(value, skin, "title")).center().expand();
-
-        stack.add(bgTable);
-        stack.add(textTable);
-
-        Table outer = new Table();
-        outer.add(stack).size(130, 42);
-        return outer;
-    }
-
-    private Texture loadTextureSafe(String path) {
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            Texture tex = new Texture(Gdx.files.internal(path));
-            tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            return tex;
-        }
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(0, 0, 0, 0);
-        pixmap.fill();
-        Texture fallback = new Texture(pixmap);
-        pixmap.dispose();
-        return fallback;
-    }
+    
 
     @Override
     protected void onAfterCommand() {
