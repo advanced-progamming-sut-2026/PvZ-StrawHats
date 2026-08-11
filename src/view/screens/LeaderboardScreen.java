@@ -184,6 +184,7 @@ public class LeaderboardScreen extends UiScreen {
             case QUESTS -> Comparator.comparingInt((LeaderboardRow r) -> r.questsCompleted);
             case SCORE -> Comparator.comparingInt((LeaderboardRow r) -> r.highScore);
         };
+        if (comparator == null) return;
         rows.sort(comparator);
 
     }
