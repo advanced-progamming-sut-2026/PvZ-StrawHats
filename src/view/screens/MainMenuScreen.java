@@ -59,30 +59,15 @@ public class MainMenuScreen extends UiScreen {
 
         Table centerTable = new Table();
         Table carouselContent = new Table();
+        carouselContent.padLeft(425).padRight(425);
 
-        Actor gameBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
-        Actor travelBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor leaderboardBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
+        Actor gameBtn = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
+        Actor travelBtn = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
+        Actor leaderboardBtn = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
 
-        Actor gameBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
-        Actor travelBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor leaderboardBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
-
-        Actor gameBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
-        Actor travelBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor leaderboardBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
-
-        carouselContent.add(gameBtn1).size(420, 260).pad(20);
-        carouselContent.add(travelBtn1).size(420, 260).pad(20);
-        carouselContent.add(leaderboardBtn1).size(420, 260).pad(20);
-
-        carouselContent.add(gameBtn2).size(420, 260).pad(20);
-        carouselContent.add(travelBtn2).size(420, 260).pad(20);
-        carouselContent.add(leaderboardBtn2).size(420, 260).pad(20);
-
-        carouselContent.add(gameBtn3).size(420, 260).pad(20);
-        carouselContent.add(travelBtn3).size(420, 260).pad(20);
-        carouselContent.add(leaderboardBtn3).size(420, 260).pad(20);
+        carouselContent.add(gameBtn).size(420, 260).pad(20);
+        carouselContent.add(travelBtn).size(420, 260).pad(20);
+        carouselContent.add(leaderboardBtn).size(420, 260).pad(20);
 
         carouselPane = new ScrollPane(carouselContent);
         carouselPane.setOverscroll(false, false);
@@ -98,26 +83,22 @@ public class MainMenuScreen extends UiScreen {
         rootTable.add(topBar).fillX().padTop(5).padLeft(15).padRight(15).row();
         rootTable.add(centerTable).expand().center().row();
         rootTable.add(bottomBar).fillX().padBottom(10).padLeft(15).row();
-
-        Gdx.app.postRunnable(() -> {
-            if (carouselPane != null) {
-                float unitWidth = (420 + 40) * 3;
-                carouselPane.setScrollX(unitWidth);
-            }
-        });
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
-        if (carouselPane != null) {
-            float unitWidth = (420 + 40) * 3;
-            float maxX = carouselPane.getMaxX();
-            float currentX = carouselPane.getScrollX();
-            if (currentX <= 0f) {
-                carouselPane.setScrollX(Math.min(currentX + unitWidth, maxX));
-            } else if (currentX >= maxX) {
-                carouselPane.setScrollX(Math.max(currentX - unitWidth, 0f));
+        if (carouselPane != null && carouselPane.getWidget() instanceof Table) {
+            Table contentTable = (Table) carouselPane.getWidget();
+            float viewportCenter = carouselPane.getScrollX() + carouselPane.getWidth() / 2f;
+            for (Actor child : contentTable.getChildren()) {
+                float childCenter = child.getX() + child.getWidth() / 2f;
+                float dist = Math.abs(viewportCenter - childCenter);
+                float maxDist = 460f;
+                float factor = Math.max(0f, 1f - dist / maxDist);
+                float scale = 0.8f + 0.28f * factor;
+                child.setScale(scale);
+                child.setOrigin(child.getWidth() / 2f, child.getHeight() / 2f);
             }
         }
     }
@@ -154,6 +135,7 @@ public class MainMenuScreen extends UiScreen {
 
     private Actor createBannerCard(String path, String title, Runnable action) {
         Stack stack = new Stack();
+        stack.setTransform(true);
         Texture texture = loadTextureSafe(path);
         TextureRegionDrawable drawable = new TextureRegionDrawable(texture);
         ImageButton button = new ImageButton(drawable);
@@ -208,7 +190,6 @@ public class MainMenuScreen extends UiScreen {
         });
         return container;
     }
-
 
     private void confirmLogout() {
         new ConfirmModal("Log out?", "You'll need your password to sign back in.", "Log out",
