@@ -2,7 +2,6 @@ package view.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -31,7 +30,6 @@ import service.resource_manager.AudioManager;
 import view.general_screens.Toast;
 import view.general_screens.UiScreen;
 
-
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.textures.TextureBank;
@@ -40,6 +38,8 @@ public class GreenhouseScreen extends UiScreen {
 
     private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
     private static final String COLLECTION_ICON = "assets/images/ui/collection.png";
+    private static final String SHOP_ICON = "assets/images/greenhouse/shop_button.png";
+
     private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
     static final String SEED_PACKET_BG = "assets/images/ui/seedpacket_bg.png";
@@ -104,7 +104,6 @@ public class GreenhouseScreen extends UiScreen {
         Greenhouse greenhouse = Greenhouse.getInstance();
 
         rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-195).row();
-        rootTable.add(buildBottomBar()).padBottom(SPACE_MD);
     }
 
     private Table buildPotGrid(Greenhouse greenhouse) {
@@ -119,12 +118,6 @@ public class GreenhouseScreen extends UiScreen {
             grid.row();
         }
         return grid;
-    }
-
-    private Table buildBottomBar() {
-        Table bar = new Table();
-        bar.add(primaryButton("Visit Shop", () -> runCommand("enter shop"))).width(220).height(60);
-        return bar;
     }
 
     private enum PotStatus { LOCKED, EMPTY, GROWING, READY }
@@ -143,14 +136,12 @@ public class GreenhouseScreen extends UiScreen {
         Stack stack = new Stack();
         stack.setSize(POT_SIZE, POT_SIZE);
 
-        
         String iconPath = switch (status) {
             case LOCKED -> POT_LOCKED_ICON;
             case EMPTY, GROWING -> POT_EMPTY_ICON;
             case READY -> POT_READY_ICON;
         };
 
-        
         if (!iconPath.isEmpty() && Gdx.files.internal(iconPath).exists()) {
             stack.add(new Image(loadTextureSafe(iconPath)));
         } else {
@@ -166,7 +157,6 @@ public class GreenhouseScreen extends UiScreen {
             }
         }
 
-        
         if (status == PotStatus.LOCKED && !LOCK_ICON.isEmpty() && Gdx.files.internal(LOCK_ICON).exists()) {
             Table lockBadge = new Table();
             lockBadge.add(new Image(loadTextureSafe(LOCK_ICON))).size(44, 64);
@@ -248,9 +238,11 @@ public class GreenhouseScreen extends UiScreen {
         ImageButton backBtn = createIconButton(BACK_ICON, 54, 54, () -> runCommand("menu exit"));
 
         Table topLeft = new Table();
-        topLeft.add(backBtn).padRight(16);
+        topLeft.add(backBtn).padRight(35);
         topLeft.add(createIconButtonWithLabel(COLLECTION_ICON, 54, 54,
-                "Collection", () -> runCommand("menu enter collection")));
+                "Collection", () -> runCommand("menu enter collection"))).padRight(35);
+        topLeft.add(createIconButtonWithLabel(SHOP_ICON, 54, 54,
+                "Shop", () -> runCommand("enter shop")));
 
         User user = User.currentUser;
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
@@ -390,7 +382,6 @@ public class GreenhouseScreen extends UiScreen {
                 float px = getX();
                 float py = getY();
 
-                
                 float pivotX = px + (targetSize / 2f) + 57;
                 float pivotY = py + (targetSize * 0.25f) + 125;
 
