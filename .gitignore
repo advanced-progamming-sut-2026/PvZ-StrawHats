@@ -8,3 +8,4 @@ out/
 build/
 Data.json
 *.zip
+project_tree/

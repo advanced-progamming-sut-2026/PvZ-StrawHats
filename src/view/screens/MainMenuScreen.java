@@ -42,7 +42,7 @@ public class MainMenuScreen extends UiScreen {
         Table topLeft = new Table();
         topLeft.add(createProfileButton(() -> runCommand("menu enter profile"))).size(72, 72).padLeft(30).padRight(35);
 
-        topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_settings_selected.png", 54, 54, "News", () -> runCommand("menu enter settings"))).padRight(35);
+        topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_settings_selected.png", 54, 54, "Settings", () -> runCommand("menu enter settings"))).padRight(35);
 
         topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_news_selected copy 2.png", 54, 54, "News", () -> runCommand("menu enter news")));
 
