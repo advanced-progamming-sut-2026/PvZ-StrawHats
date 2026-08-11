@@ -40,9 +40,9 @@ public class MainMenuScreen extends UiScreen {
         Table topBar = new Table();
 
         Table topLeft = new Table();
-        topLeft.add(createProfileButton(() -> runCommand("menu enter profile"))).size(72, 72).padRight(16);
+        topLeft.add(createProfileButton(() -> runCommand("menu enter profile"))).size(72, 72).padLeft(30).padRight(35);
 
-        topLeft.add(createIconButton("assets/images/ui/buttons_hud_settings_selected.png", 54, 54, () -> runCommand("menu enter settings"))).padRight(16);
+        topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_settings_selected.png", 54, 54, "News", () -> runCommand("menu enter settings"))).padRight(35);
 
         topLeft.add(createIconButtonWithLabel("assets/images/ui/buttons_hud_news_selected copy 2.png", 54, 54, "News", () -> runCommand("menu enter news")));
 
@@ -62,27 +62,27 @@ public class MainMenuScreen extends UiScreen {
 
         Actor gameBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
         Actor travelBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor networkBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Network", () -> runCommand("menu enter network"));
+        Actor leaderboardBtn1 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
 
         Actor gameBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
         Actor travelBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor networkBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Network", () -> runCommand("menu enter network"));
+        Actor leaderboardBtn2 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
 
         Actor gameBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_tombtangled.png", "Game", () -> runCommand("menu enter game"));
         Actor travelBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_bigwavebeach.png", "Travel Log", () -> runCommand("menu enter travellog"));
-        Actor networkBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Network", () -> runCommand("menu enter network"));
+        Actor leaderboardBtn3 = createBannerCard("assets/images/ui/calendar_card_7day_lunar_new_year.png", "Leaderboard", () -> runCommand("menu enter leaderboard"));
 
         carouselContent.add(gameBtn1).size(420, 260).pad(20);
         carouselContent.add(travelBtn1).size(420, 260).pad(20);
-        carouselContent.add(networkBtn1).size(420, 260).pad(20);
+        carouselContent.add(leaderboardBtn1).size(420, 260).pad(20);
 
         carouselContent.add(gameBtn2).size(420, 260).pad(20);
         carouselContent.add(travelBtn2).size(420, 260).pad(20);
-        carouselContent.add(networkBtn2).size(420, 260).pad(20);
+        carouselContent.add(leaderboardBtn2).size(420, 260).pad(20);
 
         carouselContent.add(gameBtn3).size(420, 260).pad(20);
         carouselContent.add(travelBtn3).size(420, 260).pad(20);
-        carouselContent.add(networkBtn3).size(420, 260).pad(20);
+        carouselContent.add(leaderboardBtn3).size(420, 260).pad(20);
 
         carouselPane = new ScrollPane(carouselContent);
         carouselPane.setOverscroll(false, false);
@@ -208,9 +208,6 @@ public class MainMenuScreen extends UiScreen {
         });
         return container;
     }
-
-
-
 
 
     private void confirmLogout() {

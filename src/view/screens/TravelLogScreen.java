@@ -271,7 +271,7 @@ public class TravelLogScreen extends UiScreen {
         list.top();
         for (int i = 0; i < MINIGAME_KEYS.length; i++) {
             list.add(buildMinigameCard(MINIGAME_KEYS[i], MINIGAME_LABELS[i], MINIGAME_ICONS[i]))
-                    .width(CARD_WIDTH).padBottom(14).row();
+                    .width(CARD_WIDTH).height(135).padBottom(14).row();
         }
         return list;
     }
