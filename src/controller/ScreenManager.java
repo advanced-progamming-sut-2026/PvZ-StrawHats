@@ -4,6 +4,9 @@ import controller.menus.*;
 import controller.menus.authentication.LoginMenu;
 import controller.menus.authentication.SignupMenu;
 import controller.menus.match.MatchMenu;
+import controller.menus.match.BeforeMenu;
+import controller.menus.match.MeanwhileMenu;
+import controller.menus.match.AfterMenu;
 import controller.menus.greenhouse.GreenhouseMenu;
 import controller.menus.greenhouse.ShopMenu;
 import model.App;
@@ -15,6 +18,10 @@ import view.screens.CollectionScreen;
 import view.screens.stages_screens.DarkAgesStagesScreen;
 import view.screens.stages_screens.EgyptStagesScreen;
 import view.screens.stages_screens.FrostbiteCavesStagesScreen;
+import view.screens.BeforeMatchScreen;
+import view.screens.AfterMatchScreen;
+import view.general_screens.GameScreen;
+import view.screens.EgyptGameScreen;
 
 public final class ScreenManager {
 
@@ -81,6 +88,22 @@ public final class ScreenManager {
         }
         if (menu instanceof CollectionMenu) {
             return new CollectionScreen();
+        }
+
+        if (menu instanceof BeforeMenu) {
+            return new BeforeMatchScreen();
+        }
+        if (menu instanceof MeanwhileMenu) {
+            Level level = model.utils.GameSession.peekInstance() == null
+                    ? null : model.utils.GameSession.peekInstance().getLevel();
+            if (level != null && level.getSeason() != null
+                    && "Egypt".equalsIgnoreCase(level.getSeason().getName())) {
+                return new EgyptGameScreen();
+            }
+            return new GameScreen();
+        }
+        if (menu instanceof AfterMenu) {
+            return new AfterMatchScreen();
         }
 
         if (menu instanceof MatchMenu) {
