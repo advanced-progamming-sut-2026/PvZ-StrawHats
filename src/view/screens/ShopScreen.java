@@ -415,10 +415,10 @@ public class ShopScreen extends UiScreen {
         return container;
     }
 
-    
+
 
     private Table createResourceWidget(String bgPath, String iconPath, String value, float width, float height) {
-        float bgWidth = 110;
+        float bgWidth = 100;
         float bgHeight = 30;
         float groupWidth = Math.max(width, bgWidth);
         float groupHeight = Math.max(height, bgHeight);
@@ -428,11 +428,13 @@ public class ShopScreen extends UiScreen {
 
         Image bgImage = new Image(loadTextureSafe(bgPath));
         bgImage.setSize(bgWidth, bgHeight);
-        bgImage.setPosition(((groupWidth - bgWidth) / 2f) + 10, (groupHeight - bgHeight) / 2f);
+        bgImage.setPosition(((groupWidth - bgWidth) / 2f) + 20, (groupHeight - bgHeight) / 2f);
         group.addActor(bgImage);
 
         Table textTable = new Table();
-        textTable.add(new Image(loadTextureSafe(iconPath))).left().expand();
+        Image iconImage = new Image(loadTextureSafe(iconPath));
+        iconImage.setSize(55,85);
+        textTable.add(iconImage).left().expand();
         textTable.setSize(width, height);
         textTable.setPosition((groupWidth - width) / 2f, (groupHeight - height) / 2f);
         textTable.add(new Label(value, skin, "title")).center().expand();
