@@ -63,6 +63,10 @@ public class GreenhouseScreen extends UiScreen {
     private static final float POT_CELL_EXTRA_HEIGHT = 40f;
     private static final float POT_CELL_GAP = 8f;
 
+    private static final String WATERING_PAM_PATH = "768/INITIAL/ZEN_GARDEN/ZENGARDEN_WATER_POURING/ZENGARDEN_WATER_POURING.PAM";
+    private static final float WATERING_OFFSET_X = 0f;
+    private static final float WATERING_OFFSET_Y = 30f;
+
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
 
@@ -282,9 +286,19 @@ public class GreenhouseScreen extends UiScreen {
                 + " right now? You have " + state.diamonds + ".";
         new ConfirmModal("Speed up growth?", message, "Grow now",
                 () -> {
+                    triggerWateringEffect(pot);
                     runCommand("grow (" + x + ", " + y + ")");
                     build();
                 }).show();
+    }
+
+    private void triggerWateringEffect(Pot pot) {
+        Table targetCell = potCellMap.get(pot);
+        if (targetCell != null && stage != null) {
+            Vector2 pos = targetCell.localToStageCoordinates(new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f));
+            WateringEffectActor effect = new WateringEffectActor(pos.x + WATERING_OFFSET_X, pos.y + WATERING_OFFSET_Y);
+            stage.addActor(effect);
+        }
     }
 
     private String captionFor(PotStatus status, PotPlant plant) {
@@ -413,6 +427,63 @@ public class GreenhouseScreen extends UiScreen {
         Table outer = new Table();
         outer.add(group).size(groupWidth, groupHeight);
         return outer;
+    }
+
+    private class WateringEffectActor extends Actor {
+        private static final float WATERING_SCALE = 0.40f;
+        private float stateTime = 0f;
+
+        WateringEffectActor(float x, float y) {
+            setPosition(x, y);
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            stateTime += delta;
+            if (pamPlayer != null) {
+                try {
+                    String clipName = AnimationFactory.resolveClipNameForPath(WATERING_PAM_PATH, "animation");
+                    if (clipName == null) clipName = "animation";
+                    ClipRef clip = pamPlayer.getClip(WATERING_PAM_PATH, clipName);
+                    if (clip != null && stateTime >= 1.90f) {
+                        remove();
+                    }
+                } catch (Throwable t) {
+                    remove();
+                }
+            } else {
+                remove();
+            }
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            if (pamPlayer == null) return;
+            try {
+                String clipName = AnimationFactory.resolveClipNameForPath(WATERING_PAM_PATH, "animation");
+                if (clipName == null) clipName = "animation";
+                ClipRef clip = pamPlayer.getClip(WATERING_PAM_PATH, clipName);
+                if (clip == null) return;
+
+                float px = getX();
+                float py = getY();
+
+                Matrix4 original = batch.getTransformMatrix().cpy();
+                Matrix4 scaled = new Matrix4(original)
+                        .translate(px, py, 0)
+                        .scale(WATERING_SCALE, WATERING_SCALE, 1f)
+                        .translate(-px, -py, 0);
+
+                batch.setTransformMatrix(scaled);
+
+                pamPlayer.draw(batch, clip, stateTime, px, py, false);
+
+                batch.setTransformMatrix(original);
+            } catch (Throwable t) {
+                Gdx.app.error("WateringEffectActor", "Failed to draw watering animation", t);
+            }
+        }
     }
 
     private class PlantIdleAnimationActor extends Actor {
