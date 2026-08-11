@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -34,6 +35,11 @@ import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.textures.TextureBank;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class GreenhouseScreen extends UiScreen {
 
     private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
@@ -60,6 +66,13 @@ public class GreenhouseScreen extends UiScreen {
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
 
+    private final Map<Pot, Table> potCellMap = new HashMap<>();
+    private final Map<Pot, PotStatus> lastKnownStatusMap = new HashMap<>();
+    private final Map<Pot, Label> potCaptionLabels = new HashMap<>();
+    private float statusCheckTimer = 0f;
+
+    private BeeActor beeActor;
+
     @Override
     public void show() {
         setBackground(GREENHOUSE_BACKGROUND);
@@ -79,6 +92,13 @@ public class GreenhouseScreen extends UiScreen {
 
         super.show();
         build();
+
+        if (beeActor == null) {
+            beeActor = new BeeActor();
+        }
+        if (stage != null && beeActor.getStage() == null) {
+            stage.addActor(beeActor);
+        }
     }
 
     @Override
@@ -90,7 +110,39 @@ public class GreenhouseScreen extends UiScreen {
                 Gdx.app.error("GreenhouseScreen", "textureBank.update() failed", t);
             }
         }
+
+        statusCheckTimer += delta;
+        if (statusCheckTimer >= 0.2f) {
+            statusCheckTimer = 0f;
+            updatePotsRealtime();
+        }
+
         super.render(delta);
+    }
+
+    private void updatePotsRealtime() {
+        boolean needsRebuild = false;
+        for (Map.Entry<Pot, Table> entry : potCellMap.entrySet()) {
+            Pot pot = entry.getKey();
+            PotStatus currentStatus = statusOf(pot);
+            PotStatus lastStatus = lastKnownStatusMap.get(pot);
+
+            if (lastStatus != currentStatus) {
+                needsRebuild = true;
+                break;
+            }
+
+            if (currentStatus == PotStatus.GROWING) {
+                Label captionLabel = potCaptionLabels.get(pot);
+                if (captionLabel != null && pot.getPotPlant() != null) {
+                    captionLabel.setText(Greenhouse.formatDuration(pot.getPotPlant().getRemainingSeconds()));
+                }
+            }
+        }
+
+        if (needsRebuild) {
+            build();
+        }
     }
 
     private void build() {
@@ -103,15 +155,21 @@ public class GreenhouseScreen extends UiScreen {
 
         Greenhouse greenhouse = Greenhouse.getInstance();
 
-        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-195).row();
+        rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-145).row();
     }
 
     private Table buildPotGrid(Greenhouse greenhouse) {
+        potCellMap.clear();
+        lastKnownStatusMap.clear();
+        potCaptionLabels.clear();
+
         Table grid = new Table();
         for (int row = 1; row <= Greenhouse.getRowCount(); row++) {
             for (int col = 1; col <= Greenhouse.getColCount(); col++) {
                 Pot pot = greenhouse.getPot(col, row);
-                grid.add(buildPotCell(pot, col, row))
+                Table cell = buildPotCell(pot, col, row);
+                potCellMap.put(pot, cell);
+                grid.add(cell)
                         .size(POT_SIZE + POT_CELL_EXTRA_WIDTH, POT_SIZE + POT_CELL_EXTRA_HEIGHT)
                         .pad(POT_CELL_GAP);
             }
@@ -131,6 +189,8 @@ public class GreenhouseScreen extends UiScreen {
 
     private Table buildPotCell(Pot pot, int x, int y) {
         PotStatus status = statusOf(pot);
+        lastKnownStatusMap.put(pot, status);
+
         PotPlant plant = pot.getPotPlant();
 
         Stack stack = new Stack();
@@ -185,6 +245,8 @@ public class GreenhouseScreen extends UiScreen {
         Label captionLabel = new Label(captionFor(status, plant), skin, "title");
         captionLabel.setAlignment(Align.center);
         captionLabel.setWrap(true);
+        potCaptionLabels.put(pot, captionLabel);
+
         column.add(captionLabel).width(POT_SIZE + 26f).padTop(4);
 
         column.addListener(new ClickListener() {
@@ -200,8 +262,14 @@ public class GreenhouseScreen extends UiScreen {
     private void onPotClicked(PotStatus status, Pot pot, int x, int y) {
         switch (status) {
             case LOCKED -> Toast.show(stage, "Locked - buy a Vase in the Shop, or find one during a level.");
-            case EMPTY -> runCommand("plant pot at (" + x + ", " + y + ")");
-            case READY -> runCommand("collect (" + x + ", " + y + ")");
+            case EMPTY -> {
+                runCommand("plant pot at (" + x + ", " + y + ")");
+                build();
+            }
+            case READY -> {
+                runCommand("collect (" + x + ", " + y + ")");
+                build();
+            }
             case GROWING -> confirmGrow(pot, x, y);
         }
     }
@@ -213,7 +281,10 @@ public class GreenhouseScreen extends UiScreen {
         String message = "Spend " + cost + " diamond(s) to finish growing " + pot.getPotPlant().getPlantName()
                 + " right now? You have " + state.diamonds + ".";
         new ConfirmModal("Speed up growth?", message, "Grow now",
-                () -> runCommand("grow (" + x + ", " + y + ")")).show();
+                () -> {
+                    runCommand("grow (" + x + ", " + y + ")");
+                    build();
+                }).show();
     }
 
     private String captionFor(PotStatus status, PotPlant plant) {
@@ -401,8 +472,234 @@ public class GreenhouseScreen extends UiScreen {
         }
     }
 
-    @Override
-    protected void onAfterCommand() {
-        build();
+    private class BeeActor extends Actor {
+        private static final String BEE_PAM_PATH = "768/INITIAL/ZEN_GARDEN/BEE/BEE.PAM";
+        private static final float BEE_SCALE = 0.45f;
+
+        private float targetX, targetY;
+        private float vx = 0f, vy = 0f;
+        private float maxSpeed = 130f;
+
+        private float globalTime = 0f;
+        private float clipTime = 0f;
+
+        private float cooldownTimer = 0f;
+        private float plantActionTimer = 0f;
+        private float actionTimer = 0f;
+        private float wanderActionInterval = 3.5f;
+        private float turnTimer = 0f;
+
+        private String currentClipName = "idle";
+        private boolean facingLeft = true;
+        private boolean nextFacingLeft = true;
+
+        private enum State { WANDERING, MOVING_TO_PLANT, AT_PLANT, TURNING }
+        private State state = State.WANDERING;
+        private State stateAfterTurn = State.WANDERING;
+
+        public BeeActor() {
+            float sw = Gdx.graphics.getWidth();
+            float sh = Gdx.graphics.getHeight();
+            setPosition(sw / 2f, sh / 2f);
+            pickRandomTarget();
+        }
+
+        private void changeClip(String newClip) {
+            if (!newClip.equals(currentClipName)) {
+                currentClipName = newClip;
+                clipTime = 0f;
+            }
+        }
+
+        @Override
+        public void act(float delta) {
+            super.act(delta);
+            globalTime += delta;
+            clipTime += delta;
+
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+
+            if (cooldownTimer > 0) {
+                cooldownTimer -= delta;
+            }
+
+            switch (state) {
+                case TURNING -> {
+                    vx *= 0.88f;
+                    vy *= 0.88f;
+                    setPosition(getX() + vx * delta, getY() + vy * delta);
+
+                    turnTimer -= delta;
+                    if (turnTimer <= 0) {
+                        facingLeft = nextFacingLeft;
+                        state = stateAfterTurn;
+                        if (state == State.AT_PLANT) {
+                            changeClip("action3");
+                            plantActionTimer = 1.0f;
+                        } else {
+                            changeClip("idle");
+                        }
+                    }
+                }
+
+                case AT_PLANT -> {
+                    vx = 0f;
+                    vy = 0f;
+                    plantActionTimer -= delta;
+                    if (plantActionTimer <= 0) {
+                        cooldownTimer = 10f;
+                        pickRandomTarget();
+                    }
+                }
+
+                case MOVING_TO_PLANT, WANDERING -> {
+                    if (state == State.WANDERING && cooldownTimer <= 0) {
+                        Vector2 readyPlantTarget = getRandomReadyPlantPosition();
+                        if (readyPlantTarget != null) {
+                            setMovementTarget(readyPlantTarget.x, readyPlantTarget.y, State.MOVING_TO_PLANT);
+                            break;
+                        }
+                    }
+
+                    float dx = targetX - getX();
+                    float dy = targetY - getY();
+                    float dist = (float) Math.hypot(dx, dy);
+
+                    if (dist < 15f) {
+                        if (state == State.MOVING_TO_PLANT) {
+                            state = State.AT_PLANT;
+                            changeClip("action3");
+                            plantActionTimer = 1.0f;
+                        } else {
+                            pickRandomTarget();
+                        }
+                    } else {
+                        float targetVx = (dx / dist) * maxSpeed;
+                        float targetVy = (dy / dist) * maxSpeed;
+
+                        vx += (targetVx - vx) * Math.min(1f, delta * 5f);
+                        vy += (targetVy - vy) * Math.min(1f, delta * 5f);
+
+                        float floatBobbing = (float) Math.sin(globalTime * 6.5f) * 12f * delta;
+
+                        setPosition(getX() + vx * delta, getY() + vy * delta + floatBobbing);
+
+                        setX(Math.max(40f, Math.min(sw - 40f, getX())));
+                        setY(Math.max(60f, Math.min(sh - 60f, getY())));
+                    }
+
+                    if (state == State.WANDERING) {
+                        if (actionTimer > 0) {
+                            actionTimer -= delta;
+                            if (actionTimer <= 0) {
+                                changeClip("idle");
+                            }
+                        } else {
+                            wanderActionInterval -= delta;
+                            if (wanderActionInterval <= 0) {
+                                triggerRandomWanderAction();
+                                wanderActionInterval = 3f + (float) Math.random() * 3f;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void triggerRandomWanderAction() {
+            if (state == State.WANDERING && !"turn".equals(currentClipName)) {
+                String[] actions = {"action2", "idle2", "actionCritical"};
+                String chosen = actions[(int) (Math.random() * actions.length)];
+                changeClip(chosen);
+
+                if ("actionCritical".equals(chosen)) {
+                    actionTimer = 1.77f;
+                } else {
+                    actionTimer = 1.2f;
+                }
+            }
+        }
+
+        private void setMovementTarget(float tx, float ty, State nextState) {
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+
+            this.targetX = Math.max(40f, Math.min(sw - 40f, tx));
+            this.targetY = Math.max(60f, Math.min(sh - 60f, ty));
+
+            boolean targetIsLeft = (this.targetX < getX());
+
+            if (Math.abs(this.targetX - getX()) > 30f && targetIsLeft != facingLeft) {
+                nextFacingLeft = targetIsLeft;
+                state = State.TURNING;
+                stateAfterTurn = nextState;
+                changeClip("turn");
+                turnTimer = 0.45f;
+            } else {
+                state = nextState;
+                if (state == State.WANDERING && actionTimer <= 0) {
+                    changeClip("idle");
+                }
+            }
+        }
+
+        private void pickRandomTarget() {
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+
+            float rx = 60f + (float) Math.random() * (sw - 120f);
+            float ry = 90f + (float) Math.random() * (sh - 180f);
+
+            setMovementTarget(rx, ry, State.WANDERING);
+        }
+
+        private Vector2 getRandomReadyPlantPosition() {
+            List<Vector2> readyPositions = new ArrayList<>();
+            for (Map.Entry<Pot, Table> entry : potCellMap.entrySet()) {
+                Pot pot = entry.getKey();
+                if (statusOf(pot) == PotStatus.READY) {
+                    Table cell = entry.getValue();
+                    Vector2 stagePos = cell.localToStageCoordinates(new Vector2(POT_SIZE / 2f, POT_SIZE + 80f));
+                    readyPositions.add(stagePos);
+                }
+            }
+            if (readyPositions.isEmpty()) return null;
+            int idx = (int) (Math.random() * readyPositions.size());
+            return readyPositions.get(idx);
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            if (pamPlayer == null) return;
+
+            try {
+                String clipName = AnimationFactory.resolveClipNameForPath(BEE_PAM_PATH, currentClipName);
+                if (clipName == null) clipName = currentClipName;
+
+                ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, clipName);
+                if (clip == null) return;
+
+                float px = getX();
+                float py = getY();
+
+                float scaleX = facingLeft ? BEE_SCALE : -BEE_SCALE;
+                float scaleY = BEE_SCALE;
+
+                Matrix4 original = batch.getTransformMatrix().cpy();
+                Matrix4 scaled = new Matrix4(original)
+                        .translate(px, py, 0)
+                        .scale(scaleX, scaleY, 1f)
+                        .translate(-px, -py, 0);
+
+                batch.setTransformMatrix(scaled);
+
+                pamPlayer.draw(batch, clip, clipTime, px, py, true);
+
+                batch.setTransformMatrix(original);
+            } catch (Throwable t) {
+                Gdx.app.error("BeeActor", "Failed to draw bee animation", t);
+            }
+        }
     }
 }
