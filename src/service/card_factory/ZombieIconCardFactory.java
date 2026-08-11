@@ -95,7 +95,7 @@ public class ZombieIconCardFactory implements Disposable {
     // A plain panel behind every icon so adjacent cards read as separate slots in the
     // grid instead of icons floating directly on the board background. Built once and
     // shared - same tone as the "unseen" mystery-card frame in CollectionScreen.
-    private Texture cardBackgroundTexture;
+    private Texture cardBackgroundTexture = new Texture("images/ui/zombies_ui/frame.png");
 
     private Texture cardBackground() {
         if (cardBackgroundTexture == null) {
