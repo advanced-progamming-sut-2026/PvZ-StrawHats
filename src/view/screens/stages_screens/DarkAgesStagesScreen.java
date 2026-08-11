@@ -339,11 +339,11 @@ public class DarkAgesStagesScreen extends StagesScreen {
         if (isDarkAgesSelection) {
             selectionLabel.setText(selected.getName() + "\n" + selected.getGameMode());
             playButton.setDisabled(false);
-            playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+            playButton.setTouchable(Touchable.enabled);
         } else {
             selectionLabel.setText("Tap an unlocked stage to select it.");
             playButton.setDisabled(true);
-            playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+            playButton.setTouchable(Touchable.disabled);
         }
     }
 

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -221,7 +222,7 @@ public class BigWaveBeachStagesScreen extends StagesScreen {
         particles = new view.general_screens.ParticleCreator(particlePaths, 20, 20f, 35f, 1.2f, true);
 
         com.badlogic.gdx.scenes.scene2d.Actor particleActor = particles.createActor();
-        particleActor.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+        particleActor.setTouchable(Touchable.disabled);
         rootStack.addActorAt(1, particleActor);
     }
 
@@ -345,11 +346,11 @@ public class BigWaveBeachStagesScreen extends StagesScreen {
         if (isBigWaveBeachSelection) {
             selectionLabel.setText(selected.getName() + "\n" + selected.getGameMode());
             playButton.setDisabled(false);
-            playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+            playButton.setTouchable(Touchable.enabled);
         } else {
             selectionLabel.setText("Tap an unlocked stage to select it.");
             playButton.setDisabled(true);
-            playButton.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+            playButton.setTouchable(Touchable.disabled);
         }
     }
 
