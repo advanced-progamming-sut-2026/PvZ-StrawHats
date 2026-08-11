@@ -6,6 +6,7 @@ import model.collections.zombie.Zombie;
 import model.collections.zombie.ZombieFactory;
 import model.match.main.levels.Level;
 import model.match_mechanisms.ZombieWave;
+import model.user_data.User;
 import model.user_data.UserState;
 import model.utils.LevelLoader;
 import model.utils.LevelProgression;
@@ -105,6 +106,10 @@ public class CollectionManager {
         state.unlockPlant(config.id);
         NewsManager.generateNews("PLANT", config.name,
                 formatPlant(config, true, state.getPlantLevel(config.id)));
+
+        // Persist the modified UserState immediately so coins/unlocks survive
+        // leaving the collection screen or restarting the application.
+        User.save();
         return true;
     }
 
@@ -119,6 +124,10 @@ public class CollectionManager {
         state.coins -= coinCost;
         state.seedPacketInventory.merge(config.id, -packetsNeeded, Integer::sum);
         state.setPlantLevel(config.id, currentLevel + 1);
+
+        // Persist the modified UserState immediately. Without this, the in-memory
+        // upgrade disappears when the application is restarted.
+        User.save();
         return true;
     }
 }

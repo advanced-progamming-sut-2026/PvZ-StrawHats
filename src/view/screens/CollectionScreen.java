@@ -8,8 +8,12 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -19,6 +23,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
@@ -35,6 +40,7 @@ import service.card_factory.SeedPacketCardFactory;
 import service.card_factory.ZombieIconCard;
 import service.card_factory.ZombieIconCardFactory;
 import view.general_screens.UiScreen;
+import view.general_screens.ParticleCreator;
 
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
@@ -52,8 +58,11 @@ public class CollectionScreen extends UiScreen {
     private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
     private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
-    private static final String LOCK_ICON = "assets/images/lock.png";
+    private static final String LOCK_ICON = "assets/images/ui/collection/lock_small_gold.png";
     private static final String UPGRADE_ICON = "assets/images/ui/collection/rift_perk_upgrade_uparrow.png";
+
+    private static final String PLANTS_TAB_ICON = "assets/images/ui/collection/plants.png";
+    private static final String ZOMBIES_TAB_ICON = "assets/images/ui/collection/zombies.png";
 
     private static final String MAIN_BG = "assets/images/backg/mainmenu_background.png";
     private static final String TAB_ACTIVE_BG = "assets/images/ui/zombies_active.png";
@@ -79,9 +88,12 @@ public class CollectionScreen extends UiScreen {
     private Integer openPlantId = null;
     private String openZombieAlias = null;
     private Actor popupOverlay;
+    private Actor currentParticleActor;
 
     private final TextureRegion whitePixel = whitePixelRegion();
     private Texture upgradeIconTexture;
+    private Texture roundedAnimBgTexture;
+    private Drawable roundedAnimBgDrawable;
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
@@ -110,6 +122,54 @@ public class CollectionScreen extends UiScreen {
     }
 
     @Override
+    public void initParticles() {
+        if (particles != null) {
+            particles.dispose();
+        }
+        if (currentParticleActor != null) {
+            currentParticleActor.remove();
+            currentParticleActor = null;
+        }
+
+        if (currentTab == CollectionTab.PLANTS) {
+            particlePaths = new String[]{
+                    "assets/images/ui/collection/cornfettipopper_70x50.png",
+                    "assets/images/ui/collection/leaf_backdrop.png",
+                    "assets/images/ui/collection/prize_pinata_mushrooms_123x127.png",
+                    "assets/images/ui/collection/prize_pinata_nuts_97x91.png"
+            };
+            particles = new ParticleCreator(particlePaths, 15, 20f, 32f, 1.2f, true);
+        } else {
+            particlePaths = new String[]{
+                    "assets/images/ui/collection/gargantuar_imp_74x59.png",
+                    "assets/images/ui/collection/halloween_zombie_basic_36x45.png",
+                    "assets/images/ui/collection/zombie_lostcity_crystalskull_34x31.png",
+                    "assets/images/ui/collection/zombie_prospector_19x47.png"
+            };
+            particles = new ParticleCreator(particlePaths, 15, 45f, 75f, 1.2f, true);
+        }
+
+        Actor rawParticleActor = particles.createActor();
+        rawParticleActor.setTouchable(Touchable.disabled);
+
+        Group particleWrapper = new Group() {
+            @Override
+            protected void drawChildren(Batch batch, float parentAlpha) {
+                Color c = batch.getColor();
+                float oldR = c.r, oldG = c.g, oldB = c.b, oldA = c.a;
+                batch.setColor(oldR, oldG, oldB, 1.0f);
+                super.drawChildren(batch, 1.0f);
+                batch.setColor(oldR, oldG, oldB, oldA);
+            }
+        };
+        particleWrapper.setTouchable(Touchable.disabled);
+        particleWrapper.addActor(rawParticleActor);
+
+        currentParticleActor = particleWrapper;
+        rootStack.addActorAt(1, currentParticleActor);
+    }
+
+    @Override
     public void render(float delta) {
         if (textureBank != null) {
             try {
@@ -128,6 +188,9 @@ public class CollectionScreen extends UiScreen {
             zombieCardFactory.dispose();
             if (upgradeIconTexture != null) {
                 upgradeIconTexture.dispose();
+            }
+            if (roundedAnimBgTexture != null) {
+                roundedAnimBgTexture.dispose();
             }
         } catch (Throwable t) {
             Gdx.app.error("CollectionScreen", "Failed to dispose card factory", t);
@@ -163,6 +226,8 @@ public class CollectionScreen extends UiScreen {
         } else if (openZombieAlias != null) {
             openZombieInfo(openZombieAlias);
         }
+
+        initParticles();
     }
 
     @Override
@@ -196,29 +261,30 @@ public class CollectionScreen extends UiScreen {
     private Table buildTabs() {
         Table tabs = new Table();
         tabs.left();
-        tabs.add(buildTab("Plants", CollectionTab.PLANTS)).padRight(SPACE_SM);
-        tabs.add(buildTab("Zombies", CollectionTab.ZOMBIES));
+        tabs.add(buildTab(CollectionTab.PLANTS)).padRight(SPACE_SM);
+        tabs.add(buildTab(CollectionTab.ZOMBIES));
         return tabs;
     }
 
-    private Table buildTab(String label, CollectionTab tab) {
+    private Table buildTab(CollectionTab tab) {
         Table container = new Table();
+        String iconPath = (tab == CollectionTab.PLANTS) ? PLANTS_TAB_ICON : ZOMBIES_TAB_ICON;
 
         if (tab == currentTab) {
             container.setBackground(new TextureRegionDrawable(loadTextureSafe(TAB_ACTIVE_BG)));
             container.pad(8, 22, 10, 22);
 
-            Label tabLabel = new Label(label, skin, "title");
-            container.add(tabLabel).center();
+            Image tabImage = new Image(loadTextureSafe(iconPath));
+            container.add(tabImage).center();
         } else {
             TextureRegionDrawable tabDrawable = new TextureRegionDrawable(loadTextureSafe(TAB_ACTIVE_BG));
             Drawable inactiveDrawable = tabDrawable.tint(new Color(0.35f, 0.30f, 0.45f, 0.88f));
             container.setBackground(inactiveDrawable);
             container.pad(8, 22, 14, 22);
 
-            Label tabLabel = new Label(label, skin, "muted");
-            tabLabel.setColor(new Color(0.85f, 0.85f, 0.90f, 1f));
-            container.add(tabLabel).center();
+            Image tabImage = new Image(loadTextureSafe(iconPath));
+            tabImage.setColor(new Color(0.85f, 0.85f, 0.90f, 1f));
+            container.add(tabImage).center();
         }
 
         container.addListener(new ClickListener() {
@@ -246,13 +312,13 @@ public class CollectionScreen extends UiScreen {
 
         Table grid = new Table();
         grid.top().padTop(10f);
-        Table currentRow = null;
+
         for (int i = 0; i < plants.size(); i++) {
-            if (i % PLANTS_PER_ROW == 0) {
-                currentRow = new Table();
-                grid.add(currentRow).center().padBottom(SPACE_SM).row();
+            Table cell = buildPlantCardCell(plants.get(i), state);
+            grid.add(cell).pad(SPACE_SM);
+            if ((i + 1) % PLANTS_PER_ROW == 0) {
+                grid.row();
             }
-            currentRow.add(buildPlantCardCell(plants.get(i), state)).padLeft(SPACE_SM).padRight(SPACE_SM);
         }
 
         ScrollPane pane = scrollable(grid);
@@ -277,11 +343,12 @@ public class CollectionScreen extends UiScreen {
         boolean unlocked = state.isPlantUnlocked(config.id);
 
         Table cell = new Table();
+        cell.setTransform(true);
 
-        Stack cardStack = new Stack();
         float cardW = CARD_W;
         float cardH = CARD_W * 1.38f;
 
+        Stack cardStack = new Stack();
         try {
             SeedPacketCard card = cardFactory.buildCardForDisplayName(config.name);
             if (card != null) {
@@ -292,17 +359,15 @@ public class CollectionScreen extends UiScreen {
         } catch (Throwable t) {
             Gdx.app.error("CollectionScreen", "Failed to build seed packet card for " + config.name, t);
         }
-
         cardStack.setSize(cardW, cardH);
 
         if (!unlocked) {
-            Image dim = new Image(solidColorDrawable(new Color(0f, 0f, 0f, 0.35f)));
+            Image dim = new Image(solidColorDrawable(new Color(0f, 0f, 0f, 0.42f)));
             cardStack.add(dim);
 
             Image lockImage = new Image(loadTextureSafe(LOCK_ICON));
             Container<Image> lockContainer = new Container<>(lockImage);
-            lockContainer.size(56f, 56f);
-            lockContainer.align(Align.center);
+            lockContainer.size(38f, 38f).bottom().right().padRight(6f).padBottom(6f);
             cardStack.add(lockContainer);
         }
 
@@ -314,22 +379,17 @@ public class CollectionScreen extends UiScreen {
             }
         });
 
-        cell.add(cardStack).size(cardW, cardH).row();
+        cell.add(cardStack).size(cardW, cardH).top().row();
 
         if (unlocked) {
-            int level = state.getPlantLevel(config.id);
-            int packetsOwned = state.seedPacketInventory.getOrDefault(config.id, 0);
-            float progress = level <= 0 ? 1f : Math.min(1f, (float) packetsOwned / level);
-
+            int level = Math.max(1, state.getPlantLevel(config.id));
+            int packetsOwned = Math.max(0, state.seedPacketInventory.getOrDefault(config.id, 0));
+            float progress = Math.min(1f, (float) packetsOwned / (float) level);
             int coinCost = level * 500;
-            int packetsNeeded = level;
-            boolean canUpgrade = state.coins >= coinCost && packetsOwned >= packetsNeeded;
+            boolean canUpgrade = state.coins >= coinCost && packetsOwned >= level;
 
-            SeedProgressBar bar = new SeedProgressBar();
-            bar.setProgress(progress, canUpgrade, upgradeIconTexture);
-            cell.add(bar).width(cardW).height(BAR_H).padTop(4);
-        } else {
-            cell.add(new Table()).width(cardW).height(BAR_H).padTop(4);
+            SeedProgressBar bar = new SeedProgressBar(progress, canUpgrade, upgradeIconTexture);
+            cell.add(bar).size(cardW, BAR_H).padTop(5f).top();
         }
 
         return cell;
@@ -346,15 +406,14 @@ public class CollectionScreen extends UiScreen {
 
         Table grid = new Table();
         grid.top().padTop(10f);
-        Table currentRow = null;
+
         for (int i = 0; i < aliases.size(); i++) {
-            if (i % ZOMBIES_PER_ROW == 0) {
-                currentRow = new Table();
-                grid.add(currentRow).center().padBottom(SPACE_SM).row();
-            }
             String alias = aliases.get(i);
-            currentRow.add(buildZombieCardCell(alias, seenAliases.contains(alias)))
-                    .padLeft(SPACE_SM).padRight(SPACE_SM);
+            Table cell = buildZombieCardCell(alias, seenAliases.contains(alias));
+            grid.add(cell).pad(SPACE_SM);
+            if ((i + 1) % ZOMBIES_PER_ROW == 0) {
+                grid.row();
+            }
         }
 
         ScrollPane pane = scrollable(grid);
@@ -362,7 +421,6 @@ public class CollectionScreen extends UiScreen {
         return box;
     }
 
-    /** Seen zombies first (matches the "seen" mechanic Plants.json's unlock flag mirrors), then alphabetically. */
     private List<String> sortedZombieAliases(Set<String> seenAliases) {
         List<String> all = new ArrayList<>(manager.getAllZombieAliases());
         all.sort((a, b) -> {
@@ -378,6 +436,7 @@ public class CollectionScreen extends UiScreen {
 
     private Table buildZombieCardCell(String alias, boolean seen) {
         Table cell = new Table();
+        cell.setTransform(true);
 
         Stack cardStack = new Stack();
         float cardW = CARD_W;
@@ -408,7 +467,6 @@ public class CollectionScreen extends UiScreen {
             Image frame = new Image(solidColorDrawable(new Color(0.10f, 0.09f, 0.08f, 0.55f)));
             cardStack.add(frame);
 
-            // Not yet encountered in a completed level - an empty card, no name, not clickable.
             Label mystery = new Label("?", skin, "title");
             mystery.setFontScale(1.6f);
             mystery.setAlignment(Align.center);
@@ -428,7 +486,6 @@ public class CollectionScreen extends UiScreen {
         return cell;
     }
 
-    /** "ZombieIceAgeTroglobite" -> "Ice Age Troglobite" for display; aliases have no display name of their own. */
     private String friendlyZombieName(String alias) {
         String withoutPrefix = alias.startsWith("Zombie") ? alias.substring("Zombie".length()) : alias;
         StringBuilder sb = new StringBuilder();
@@ -483,8 +540,9 @@ public class CollectionScreen extends UiScreen {
         Table body = new Table();
         body.top();
 
-        Table animBox = new Table();
-        animBox.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/ui/collection/card_plant_bg_modern.png")));
+        Stack animBox = new Stack();
+        animBox.add(new Image(getRoundedAnimBgDrawable()));
+        animBox.add(new Image(roundedBorderDrawable(Color.WHITE, 3f, 18f)));
         String animationPath = null;
         try {
             animationPath = ZombieAnimationRegistry.pathFor(alias);
@@ -492,8 +550,11 @@ public class CollectionScreen extends UiScreen {
             Gdx.app.error("CollectionScreen", "Failed to resolve idle animation for " + alias, t);
         }
         PlantIdleAnimationActor animActor = new PlantIdleAnimationActor(animationPath, 0, 0);
-        animBox.add(animActor).size(220, 220);
-        body.add(animBox).size(250, 250).padRight(SPACE_LG).top();
+        Table animLayer = new Table();
+        animLayer.setFillParent(true);
+        animLayer.add(animActor).size(220, 220);
+        animBox.add(animLayer);
+        body.add(animBox).size(250, 250).top().padRight(SPACE_LG);
 
         Table info = new Table();
         info.top().left();
@@ -516,8 +577,9 @@ public class CollectionScreen extends UiScreen {
             info.add(statLabel("No further data available.")).left().padBottom(SPACE_LG).row();
         }
 
-        body.add(info).top().left().expandX().padLeft(30f);
-        panel.add(body).row();
+        body.add(info).top().left().expandX().padLeft(80f);
+
+        panel.add(body).padTop(80f).padLeft(110f).row();
 
         Table centered = new Table();
         centered.add(panel).width(SCREEN_WIDTH * 0.82f).height(SCREEN_HEIGHT * 0.8f);
@@ -585,8 +647,9 @@ public class CollectionScreen extends UiScreen {
         Table body = new Table();
         body.top();
 
-        Table animBox = new Table();
-        animBox.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/ui/collection/card_plant_bg_modern.png")));
+        Stack animBox = new Stack();
+        animBox.add(new Image(getRoundedAnimBgDrawable()));
+        animBox.add(new Image(roundedBorderDrawable(Color.WHITE, 3f, 18f)));
         String animationPath = null;
         try {
             animationPath = AnimationFactory.pathForDisplayName(config.name);
@@ -594,8 +657,11 @@ public class CollectionScreen extends UiScreen {
             Gdx.app.error("CollectionScreen", "Failed to resolve idle animation for " + config.name, t);
         }
         PlantIdleAnimationActor animActor = new PlantIdleAnimationActor(animationPath, 0, 0);
-        animBox.add(animActor).size(220, 220);
-        body.add(animBox).size(250, 250).padRight(SPACE_LG).top();
+        Table animLayer = new Table();
+        animLayer.setFillParent(true);
+        animLayer.add(animActor).size(220, 220);
+        animBox.add(animLayer);
+        body.add(animBox).size(250, 250).top().padRight(SPACE_LG);
 
         Table info = new Table();
         info.top().left();
@@ -616,8 +682,9 @@ public class CollectionScreen extends UiScreen {
         TextButton actionButton = buildActionButton(config, state, unlocked);
         info.add(actionButton).width(320).height(58).left();
 
-        body.add(info).top().left().expandX().padLeft(30f);
-        panel.add(body).row();
+        body.add(info).top().left().expandX().padLeft(80f);
+
+        panel.add(body).padTop(80f).padLeft(110f).row();
 
         Table centered = new Table();
         centered.add(panel).width(SCREEN_WIDTH * 0.82f).height(SCREEN_HEIGHT * 0.8f);
@@ -633,6 +700,46 @@ public class CollectionScreen extends UiScreen {
         });
 
         return popupStack;
+    }
+
+    private Drawable getRoundedAnimBgDrawable() {
+        if (roundedAnimBgDrawable == null) {
+            roundedAnimBgDrawable = createRoundedTextureDrawable("assets/images/ui/collection/card_plant_bg_modern.png", 18f);
+        }
+        return roundedAnimBgDrawable;
+    }
+
+    private Drawable createRoundedTextureDrawable(String path, float screenRadius) {
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            Pixmap src = new Pixmap(Gdx.files.internal(path));
+            int w = src.getWidth();
+            int h = src.getHeight();
+            Pixmap dst = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+            dst.setBlending(Pixmap.Blending.None);
+
+            float r = screenRadius * ((float) w / 250f);
+            r = Math.min(r, Math.min(w, h) / 2f);
+
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    float d = roundedRectDistance(x + 0.5f, y + 0.5f, w, h, r);
+                    if (d <= 0f) {
+                        dst.drawPixel(x, y, src.getPixel(x, y));
+                    } else {
+                        dst.drawPixel(x, y, 0);
+                    }
+                }
+            }
+            src.dispose();
+            if (roundedAnimBgTexture != null) {
+                roundedAnimBgTexture.dispose();
+            }
+            roundedAnimBgTexture = new Texture(dst);
+            roundedAnimBgTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            dst.dispose();
+            return new TextureRegionDrawable(new TextureRegion(roundedAnimBgTexture));
+        }
+        return solidColorDrawable(new Color(0f, 0f, 0f, 0f));
     }
 
     private TextButton buildActionButton(PlantJsonParser.PlantConfig config, UserState state, boolean unlocked) {
@@ -679,9 +786,9 @@ public class CollectionScreen extends UiScreen {
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
         style.font = skin.getFont("default-font");
         style.fontColor = Color.BLACK;
-        style.up = solidColorDrawable(color);
-        style.down = solidColorDrawable(color.cpy().mul(0.85f, 0.85f, 0.85f, 1f));
-        style.disabled = solidColorDrawable(GRAY);
+        style.up = roundedFilledDrawable(color, Color.WHITE, 14f, 2f);
+        style.down = roundedFilledDrawable(color.cpy().mul(0.85f, 0.85f, 0.85f, 1f), Color.WHITE, 14f, 2f);
+        style.disabled = roundedFilledDrawable(GRAY, Color.WHITE, 14f, 2f);
         style.disabledFontColor = new Color(0.8f, 0.8f, 0.8f, 1f);
         return new TextButton(text, style);
     }
@@ -695,9 +802,6 @@ public class CollectionScreen extends UiScreen {
         PlantIdleAnimationActor(String animationPath, float ox, float oy) {
             this.animationPath = animationPath;
             this.offsetX = ox + 110f;
-            // Slightly below box-center: PAM clips anchor near a character's feet, and at
-            // a full 110 (dead-center) taller idle animations poke out above animBox's
-            // background. Lowering this keeps the whole sprite inside the visible panel.
             this.offsetY = oy + 85f;
         }
 
@@ -737,40 +841,56 @@ public class CollectionScreen extends UiScreen {
         }
     }
 
-    private class SeedProgressBar extends Actor {
-        private float progress = 0f;
-        private boolean canUpgrade = false;
-        private Texture upgradeTexture;
+    private class SeedProgressBar extends Widget {
+        private final float progress;
+        private final boolean canUpgrade;
+        private final Texture upgradeTexture;
 
-        void setProgress(float value, boolean canUpgrade, Texture upgradeTexture) {
-            this.progress = Math.max(0f, Math.min(1f, value));
+        SeedProgressBar(float progress, boolean canUpgrade, Texture upgradeTexture) {
+            this.progress = Math.max(0f, Math.min(1f, progress));
             this.canUpgrade = canUpgrade;
             this.upgradeTexture = upgradeTexture;
         }
 
         @Override
-        public void draw(Batch batch, float parentAlpha) {
-            float x = getX(), y = getY(), w = getWidth(), h = getHeight();
+        public float getPrefWidth() {
+            return CARD_W;
+        }
 
-            batch.setColor(0.12f, 0.10f, 0.06f, 0.9f);
+        @Override
+        public float getPrefHeight() {
+            return BAR_H;
+        }
+
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            validate();
+
+            float x = getX();
+            float y = getY();
+            float w = getWidth();
+            float h = getHeight();
+
+            batch.setColor(0.035f, 0.035f, 0.035f, parentAlpha);
             batch.draw(whitePixel, x, y, w, h);
 
-            boolean isFullAndReady = (progress >= 1f && canUpgrade);
-            batch.setColor(isFullAndReady ? GREEN : YELLOW);
-            batch.draw(whitePixel, x, y, w * progress, h);
+            if (progress > 0f) {
+                Color fill = canUpgrade ? GREEN : YELLOW;
+                batch.setColor(fill.r, fill.g, fill.b, parentAlpha);
+                batch.draw(whitePixel, x + 2f, y + 2f, Math.max(1f, (w - 4f) * progress), Math.max(1f, h - 4f));
+            }
 
-            batch.setColor(GRAY);
+            batch.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, 0.85f * parentAlpha);
             batch.draw(whitePixel, x, y + h - 1f, w, 1f);
             batch.draw(whitePixel, x, y, w, 1f);
             batch.draw(whitePixel, x, y, 1f, h);
             batch.draw(whitePixel, x + w - 1f, y, 1f, h);
 
-            if (isFullAndReady && upgradeTexture != null) {
-                batch.setColor(Color.WHITE);
-                float iconSize = h - 2f;
-                batch.draw(upgradeTexture, x + 2f, y + 1f, iconSize, iconSize);
+            if (canUpgrade && upgradeTexture != null) {
+                batch.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, parentAlpha);
+                float iconSize = h + 6f;
+                batch.draw(upgradeTexture, x + 2f, y + (h - iconSize) * 0.5f, iconSize, iconSize);
             }
-
             batch.setColor(Color.WHITE);
         }
     }
@@ -816,6 +936,52 @@ public class CollectionScreen extends UiScreen {
         Texture fallback = new Texture(pixmap);
         pixmap.dispose();
         return fallback;
+    }
+
+    private Drawable roundedFilledDrawable(Color fill, Color border, float radius, float thickness) {
+        return roundedDrawable(fill, border, radius, thickness, true);
+    }
+
+    private Drawable roundedBorderDrawable(Color border, float thickness, float radius) {
+        return roundedDrawable(new Color(1f, 1f, 1f, 0f), border, radius, thickness, false);
+    }
+
+    private Drawable roundedDrawable(Color fill, Color border, float radius, float thickness, boolean filled) {
+        int size = 64;
+        Pixmap pixmap = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        pixmap.setBlending(Pixmap.Blending.None);
+        float r = Math.min(radius, size / 2f - 1f);
+        float t = Math.max(1f, thickness);
+        for (int py = 0; py < size; py++) {
+            for (int px = 0; px < size; px++) {
+                float d = roundedRectDistance(px + 0.5f, py + 0.5f, size, size, r);
+                boolean inside = d <= 0f;
+                boolean borderPixel = d <= 0f && d >= -t;
+                if (inside && filled) {
+                    pixmap.setColor(borderPixel ? border : fill);
+                    pixmap.drawPixel(px, py);
+                } else if (borderPixel) {
+                    pixmap.setColor(border);
+                    pixmap.drawPixel(px, py);
+                } else {
+                    pixmap.setColor(0f, 0f, 0f, 0f);
+                    pixmap.drawPixel(px, py);
+                }
+            }
+        }
+        Texture texture = new Texture(pixmap);
+        texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        pixmap.dispose();
+        NinePatchDrawable drawable = new NinePatchDrawable(new com.badlogic.gdx.graphics.g2d.NinePatch(texture, 18, 18, 18, 18));
+        return drawable;
+    }
+
+    private float roundedRectDistance(float x, float y, float w, float h, float radius) {
+        float cx = Math.max(radius, Math.min(x, w - radius));
+        float cy = Math.max(radius, Math.min(y, h - radius));
+        float dx = x - cx;
+        float dy = y - cy;
+        return (float) Math.sqrt(dx * dx + dy * dy) - radius;
     }
 
     private Drawable solidColorDrawable(Color color) {
