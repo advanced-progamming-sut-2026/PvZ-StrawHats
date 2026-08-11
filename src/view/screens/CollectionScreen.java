@@ -24,20 +24,27 @@ import com.badlogic.gdx.utils.Align;
 
 import controller.CollectionManager;
 import model.collections.animations.AnimationFactory;
+import model.collections.animations.ZombieAnimationRegistry;
+import model.collections.armour.Armour;
 import model.collections.plant.PlantJsonParser;
+import model.collections.zombie.Zombie;
 import model.user_data.User;
 import model.user_data.UserState;
 import service.card_factory.SeedPacketCard;
 import service.card_factory.SeedPacketCardFactory;
+import service.card_factory.ZombieIconCard;
+import service.card_factory.ZombieIconCardFactory;
 import view.general_screens.UiScreen;
 
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.textures.TextureBank;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CollectionScreen extends UiScreen {
@@ -53,6 +60,7 @@ public class CollectionScreen extends UiScreen {
     private static final String TAB_BOARD_BG = "assets/images/backg/wood board.png";
 
     private static final int PLANTS_PER_ROW = 5;
+    private static final int ZOMBIES_PER_ROW = 5;
     private static final float CARD_W = 135f;
     private static final float BAR_H = 14f;
 
@@ -65,9 +73,11 @@ public class CollectionScreen extends UiScreen {
     private CollectionTab currentTab = CollectionTab.PLANTS;
 
     private final SeedPacketCardFactory cardFactory = new SeedPacketCardFactory();
+    private final ZombieIconCardFactory zombieCardFactory = new ZombieIconCardFactory();
     private final CollectionManager manager = new CollectionManager();
 
     private Integer openPlantId = null;
+    private String openZombieAlias = null;
     private Actor popupOverlay;
 
     private final TextureRegion whitePixel = whitePixelRegion();
@@ -115,6 +125,7 @@ public class CollectionScreen extends UiScreen {
     public void dispose() {
         try {
             cardFactory.dispose();
+            zombieCardFactory.dispose();
             if (upgradeIconTexture != null) {
                 upgradeIconTexture.dispose();
             }
@@ -149,6 +160,8 @@ public class CollectionScreen extends UiScreen {
         }
         if (openPlantId != null) {
             openPlantInfo(openPlantId);
+        } else if (openZombieAlias != null) {
+            openZombieInfo(openZombieAlias);
         }
     }
 
@@ -216,6 +229,7 @@ public class CollectionScreen extends UiScreen {
                 }
                 currentTab = tab;
                 openPlantId = null;
+                openZombieAlias = null;
                 build();
             }
         });
@@ -325,8 +339,200 @@ public class CollectionScreen extends UiScreen {
         Table box = new Table();
         box.setBackground(new TextureRegionDrawable(loadTextureSafe(TAB_BOARD_BG)));
         box.top();
-        box.add(new Label("Zombie collection coming soon.", skin, "muted")).padTop(60f);
+
+        UserState state = User.currentUser.userState;
+        Set<String> seenAliases = manager.getSeenZombieAliases(state);
+        List<String> aliases = sortedZombieAliases(seenAliases);
+
+        Table grid = new Table();
+        grid.top().padTop(10f);
+        Table currentRow = null;
+        for (int i = 0; i < aliases.size(); i++) {
+            if (i % ZOMBIES_PER_ROW == 0) {
+                currentRow = new Table();
+                grid.add(currentRow).center().padBottom(SPACE_SM).row();
+            }
+            String alias = aliases.get(i);
+            currentRow.add(buildZombieCardCell(alias, seenAliases.contains(alias)))
+                    .padLeft(SPACE_SM).padRight(SPACE_SM);
+        }
+
+        ScrollPane pane = scrollable(grid);
+        box.add(pane).expand().fill().padTop(35f).padBottom(15f).padLeft(20f).padRight(20f);
         return box;
+    }
+
+    /** Seen zombies first (matches the "seen" mechanic Plants.json's unlock flag mirrors), then alphabetically. */
+    private List<String> sortedZombieAliases(Set<String> seenAliases) {
+        List<String> all = new ArrayList<>(manager.getAllZombieAliases());
+        all.sort((a, b) -> {
+            boolean seenA = seenAliases.contains(a);
+            boolean seenB = seenAliases.contains(b);
+            if (seenA != seenB) {
+                return seenA ? -1 : 1;
+            }
+            return friendlyZombieName(a).compareTo(friendlyZombieName(b));
+        });
+        return all;
+    }
+
+    private Table buildZombieCardCell(String alias, boolean seen) {
+        Table cell = new Table();
+
+        Stack cardStack = new Stack();
+        float cardW = CARD_W;
+        float cardH = CARD_W * 1.38f;
+
+        if (seen) {
+            try {
+                ZombieIconCard card = zombieCardFactory.buildCardForAlias(alias);
+                if (card != null) {
+                    cardW = card.getWidth();
+                    cardH = card.getHeight();
+                    cardStack.add(card);
+                }
+            } catch (Throwable t) {
+                Gdx.app.error("CollectionScreen", "Failed to build zombie icon card for " + alias, t);
+            }
+
+            cardStack.setSize(cardW, cardH);
+            cardStack.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    openZombieAlias = alias;
+                    openZombieInfo(alias);
+                }
+            });
+        } else {
+            cardStack.setSize(cardW, cardH);
+            Image frame = new Image(solidColorDrawable(new Color(0.10f, 0.09f, 0.08f, 0.55f)));
+            cardStack.add(frame);
+
+            // Not yet encountered in a completed level - an empty card, no name, not clickable.
+            Label mystery = new Label("?", skin, "title");
+            mystery.setFontScale(1.6f);
+            mystery.setAlignment(Align.center);
+            Container<Label> mysteryContainer = new Container<>(mystery);
+            mysteryContainer.fill();
+            cardStack.add(mysteryContainer);
+        }
+
+        cell.add(cardStack).size(cardW, cardH).row();
+
+        Label nameLabel = new Label(seen ? friendlyZombieName(alias) : "???", skin, "main");
+        nameLabel.setFontScale(0.75f);
+        nameLabel.setAlignment(Align.center);
+        nameLabel.setWrap(true);
+        cell.add(nameLabel).width(cardW).padTop(4);
+
+        return cell;
+    }
+
+    /** "ZombieIceAgeTroglobite" -> "Ice Age Troglobite" for display; aliases have no display name of their own. */
+    private String friendlyZombieName(String alias) {
+        String withoutPrefix = alias.startsWith("Zombie") ? alias.substring("Zombie".length()) : alias;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < withoutPrefix.length(); i++) {
+            char c = withoutPrefix.charAt(i);
+            if (i > 0 && Character.isUpperCase(c)) {
+                sb.append(' ');
+            }
+            sb.append(c);
+        }
+        return sb.length() == 0 ? alias : sb.toString();
+    }
+
+    private void openZombieInfo(String alias) {
+        if (!manager.getAllZombieAliases().contains(alias)) {
+            openZombieAlias = null;
+            return;
+        }
+        if (popupOverlay != null) {
+            popupOverlay.remove();
+        }
+        popupOverlay = buildZombieInfoPopup(alias);
+        getModalStack().add(popupOverlay);
+    }
+
+    private void closeZombieInfo() {
+        if (popupOverlay != null) {
+            popupOverlay.remove();
+            popupOverlay = null;
+        }
+        openZombieAlias = null;
+    }
+
+    private Stack buildZombieInfoPopup(String alias) {
+        Zombie zombie = manager.findZombie(alias);
+
+        Stack popupStack = new Stack();
+
+        Image scrim = new Image(solidColorDrawable(new Color(0f, 0f, 0f, 0.72f)));
+        popupStack.add(scrim);
+
+        Table panel = new Table();
+        panel.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/backg/wood board.png")));
+        panel.pad(SPACE_LG);
+        panel.top().left();
+
+        Table header = new Table();
+        ImageButton back = createIconButton(BACK_ICON, 50, 50, this::closeZombieInfo);
+        header.add(back).left().expandX();
+        panel.add(header).fillX().padBottom(SPACE_MD).row();
+
+        Table body = new Table();
+        body.top();
+
+        Table animBox = new Table();
+        animBox.setBackground(new TextureRegionDrawable(loadTextureSafe("assets/images/ui/collection/card_plant_bg_modern.png")));
+        String animationPath = null;
+        try {
+            animationPath = ZombieAnimationRegistry.pathFor(alias);
+        } catch (Throwable t) {
+            Gdx.app.error("CollectionScreen", "Failed to resolve idle animation for " + alias, t);
+        }
+        PlantIdleAnimationActor animActor = new PlantIdleAnimationActor(animationPath, 0, 0);
+        animBox.add(animActor).size(220, 220);
+        body.add(animBox).size(250, 250).padRight(SPACE_LG).top();
+
+        Table info = new Table();
+        info.top().left();
+
+        Label nameLabel = new Label(friendlyZombieName(alias), skin, "title");
+        nameLabel.setFontScale(1.3f);
+        info.add(nameLabel).left().padBottom(SPACE_SM).row();
+
+        if (zombie != null) {
+            info.add(statLabel("Race: " + zombie.getRace())).left().row();
+            info.add(statLabel("HP: " + zombie.getMaxHp())).left().row();
+            double speed = zombie.getSpeed() != null ? Math.abs(zombie.getSpeed().x()) : 0;
+            info.add(statLabel("Speed: " + String.format("%.2f", speed))).left().row();
+            info.add(statLabel("Eat DPS: " + String.format("%.1f", zombie.getEatDps()))).left().row();
+
+            Armour armour = zombie.getArmour();
+            String armorText = armour == null ? "None" : armour.getStage() + " (" + armour.getHP() + " HP)";
+            info.add(statLabel("Armor: " + armorText)).left().padBottom(SPACE_LG).row();
+        } else {
+            info.add(statLabel("No further data available.")).left().padBottom(SPACE_LG).row();
+        }
+
+        body.add(info).top().left().expandX().padLeft(30f);
+        panel.add(body).row();
+
+        Table centered = new Table();
+        centered.add(panel).width(SCREEN_WIDTH * 0.82f).height(SCREEN_HEIGHT * 0.8f);
+        popupStack.add(centered);
+
+        popupStack.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (event.getTarget() == popupStack) {
+                    closeZombieInfo();
+                }
+            }
+        });
+
+        return popupStack;
     }
 
     private void openPlantInfo(int plantId) {
@@ -489,7 +695,10 @@ public class CollectionScreen extends UiScreen {
         PlantIdleAnimationActor(String animationPath, float ox, float oy) {
             this.animationPath = animationPath;
             this.offsetX = ox + 110f;
-            this.offsetY = oy + 110f;
+            // Slightly below box-center: PAM clips anchor near a character's feet, and at
+            // a full 110 (dead-center) taller idle animations poke out above animBox's
+            // background. Lowering this keeps the whole sprite inside the visible panel.
+            this.offsetY = oy + 85f;
         }
 
         @Override
