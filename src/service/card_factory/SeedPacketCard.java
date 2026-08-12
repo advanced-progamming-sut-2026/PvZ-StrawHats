@@ -22,12 +22,19 @@ public class SeedPacketCard extends Stack {
     private final String plantIconFile;
     private final String packetSkinFile;
 
+    private final Container<Image> plantContainer;
+    private final float baseWidth;
+    private final float baseHeight;
+
     SeedPacketCard(String name, String plantIconFile, String packetSkinFile,
                    Texture packetTexture, Texture plantTexture,
                    float cardWidth, float cardHeight) {
         this.name = name;
         this.plantIconFile = plantIconFile;
         this.packetSkinFile = packetSkinFile;
+
+        this.baseWidth = cardWidth;
+        this.baseHeight = cardHeight;
 
         float aspect = (packetTexture != null && packetTexture.getWidth() > 0)
                 ? (float) packetTexture.getHeight() / (float) packetTexture.getWidth()
@@ -37,24 +44,41 @@ public class SeedPacketCard extends Stack {
         setSize(cardWidth, actualHeight);
 
         Image packetImage = new Image(new TextureRegionDrawable(packetTexture));
+        packetImage.setScaling(Scaling.stretch);
         add(packetImage);
 
         Image plantImage = new Image(new TextureRegionDrawable(plantTexture));
         plantImage.setScaling(Scaling.fit);
         plantImage.setAlign(Align.center);
 
-        Container<Image> plantContainer = new Container<>(plantImage);
-        plantContainer.size(cardWidth * PLANT_SCALE_W, actualHeight * PLANT_SCALE_H);
+        plantContainer = new Container<>(plantImage);
         plantContainer.align(Align.top);
-
-        if (OFFSET_X < 0) {
-            plantContainer.padRight(-OFFSET_X);
-        } else {
-            plantContainer.padLeft(OFFSET_X);
-        }
-        plantContainer.padTop(OFFSET_Y);
-
         add(plantContainer);
+
+        updateLayout(cardWidth, actualHeight);
+    }
+
+    @Override
+    protected void sizeChanged() {
+        super.sizeChanged();
+        updateLayout(getWidth(), getHeight());
+    }
+
+    private void updateLayout(float w, float h) {
+        if (plantContainer == null) return;
+
+        plantContainer.size(w * PLANT_SCALE_W, h * PLANT_SCALE_H);
+
+        float scaleX = w / baseWidth;
+        float scaleY = h / baseHeight;
+
+        plantContainer.pad(0);
+        if (OFFSET_X < 0) {
+            plantContainer.padRight(-OFFSET_X * scaleX);
+        } else {
+            plantContainer.padLeft(OFFSET_X * scaleX);
+        }
+        plantContainer.padTop(OFFSET_Y * scaleY);
     }
 
     @Override
@@ -66,7 +90,6 @@ public class SeedPacketCard extends Stack {
             applyTransform(batch, computeTransform());
         }
 
-        // انقباض ۱ واحدی محدوده برش از چهار طرف
         float clipX = (transform ? 0 : getX()) + CLIP_INSET;
         float clipY = (transform ? 0 : getY()) + CLIP_INSET;
         float clipW = Math.max(0, getWidth() - (CLIP_INSET * 2f));
@@ -85,15 +108,7 @@ public class SeedPacketCard extends Stack {
         }
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getPlantIconFile() {
-        return plantIconFile;
-    }
-
-    public String getPacketSkinFile() {
-        return packetSkinFile;
-    }
+    public String getName() { return name; }
+    public String getPlantIconFile() { return plantIconFile; }
+    public String getPacketSkinFile() { return packetSkinFile; }
 }
