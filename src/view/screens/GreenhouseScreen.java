@@ -64,8 +64,8 @@ public class GreenhouseScreen extends UiScreen {
     private static final float POT_CELL_GAP = 8f;
 
     private static final String WATERING_PAM_PATH = "768/INITIAL/ZEN_GARDEN/ZENGARDEN_WATER_POURING/ZENGARDEN_WATER_POURING.PAM";
-    private static final float WATERING_OFFSET_X = 0f;
-    private static final float WATERING_OFFSET_Y = 30f;
+    private static final float WATERING_OFFSET_X = 23f;
+    private static final float WATERING_OFFSET_Y = 40f;
 
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
@@ -77,54 +77,6 @@ public class GreenhouseScreen extends UiScreen {
 
     private BeeActor beeActor;
 
-    private ClipRef getSafeClip(String pamPath, String preferredClipName, String... fallbacks) {
-        if (pamPlayer == null || pamPath == null) return null;
-
-        ClipRef clip = null;
-
-        if (preferredClipName != null) {
-            clip = pamPlayer.getClip(pamPath, preferredClipName);
-        }
-
-        // ۲. تلاش از طریق AnimationFactory
-        if (clip == null && preferredClipName != null) {
-            try {
-                String resolved = AnimationFactory.resolveClipNameForPath(pamPath, preferredClipName);
-                if (resolved != null) {
-                    clip = pamPlayer.getClip(pamPath, resolved);
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        if (clip == null && preferredClipName != null) {
-            String[] variations = new String[]{
-                    preferredClipName.toLowerCase(),
-                    preferredClipName.toUpperCase(),
-                    Character.toUpperCase(preferredClipName.charAt(0)) + preferredClipName.substring(1).toLowerCase()
-            };
-            for (String var : variations) {
-                clip = pamPlayer.getClip(pamPath, var);
-                if (clip != null) break;
-            }
-        }
-
-        if (clip == null && fallbacks != null) {
-            for (String fallback : fallbacks) {
-                if (fallback == null) continue;
-                clip = pamPlayer.getClip(pamPath, fallback);
-                if (clip == null) {
-                    try {
-                        String resolved = AnimationFactory.resolveClipNameForPath(pamPath, fallback);
-                        if (resolved != null) clip = pamPlayer.getClip(pamPath, resolved);
-                    } catch (Throwable ignored) {}
-                }
-                if (clip != null) break;
-            }
-        }
-
-        return clip;
-    }
-
     @Override
     public void show() {
         setBackground(GREENHOUSE_BACKGROUND);
@@ -135,22 +87,18 @@ public class GreenhouseScreen extends UiScreen {
                 FileHandle rootHandle = Gdx.files.internal("assets/pvz-assets");
                 textureBank = new TextureBank("atlases", rootHandle);
                 pamPlayer = new PamPlayer(textureBank, rootHandle);
-
-                Gdx.app.log("PAM_INIT", "PAM System and TextureBank initialized successfully!");
             } catch (Throwable t) {
                 Gdx.app.error("PAM_INIT", "Failed to initialize PAM System", t);
             }
         }
 
         super.show();
-        build();
 
         if (beeActor == null) {
             beeActor = new BeeActor();
         }
-        if (stage != null && beeActor.getStage() == null) {
-            stage.addActor(beeActor);
-        }
+
+        build();
     }
 
     @Override
@@ -170,6 +118,39 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         super.render(delta);
+    }
+
+    private ClipRef getSafeClip(String pamPath, String requestedClip) {
+        if (pamPlayer == null) return null;
+
+        String resolvedName = AnimationFactory.resolveClipNameForPath(pamPath, requestedClip);
+        if (resolvedName != null) {
+            try {
+                ClipRef clip = pamPlayer.getClip(pamPath, resolvedName);
+                if (clip != null) return clip;
+            } catch (Exception ignored) {}
+        }
+
+        try {
+            ClipRef clip = pamPlayer.getClip(pamPath, requestedClip);
+            if (clip != null) return clip;
+        } catch (Exception ignored) {}
+
+        String baseName = pamPath.substring(pamPath.lastIndexOf('/') + 1).replace(".PAM", "").replace(".pam", "");
+        String[] fallbacks = {
+                "anim_idle", "anim_fly", "anim_work", "anim_bee", "anim_water", "anim_pouring",
+                "idle", "fly", "work", "animation", "action", "main", "default",
+                baseName, baseName.toLowerCase(), baseName.toUpperCase()
+        };
+
+        for (String f : fallbacks) {
+            try {
+                ClipRef clip = pamPlayer.getClip(pamPath, f);
+                if (clip != null) return clip;
+            } catch (Exception ignored) {}
+        }
+
+        return null;
     }
 
     private void updatePotsRealtime() {
@@ -208,6 +189,18 @@ public class GreenhouseScreen extends UiScreen {
         Greenhouse greenhouse = Greenhouse.getInstance();
 
         rootTable.add(buildPotGrid(greenhouse)).expand().padTop(SPACE_MD).padBottom(-145).row();
+
+        if (rootTable != null) {
+            rootTable.validate();
+        }
+
+        if (stage != null && beeActor != null) {
+            if (beeActor.getStage() != stage) {
+                beeActor.remove();
+                stage.addActor(beeActor);
+            }
+            beeActor.toFront();
+        }
     }
 
     private Table buildPotGrid(Greenhouse greenhouse) {
@@ -334,18 +327,24 @@ public class GreenhouseScreen extends UiScreen {
                 + " right now? You have " + state.diamonds + ".";
         new ConfirmModal("Speed up growth?", message, "Grow now",
                 () -> {
-                    triggerWateringEffect(pot);
                     runCommand("grow (" + x + ", " + y + ")");
                     build();
+                    triggerWateringEffect(pot);
                 }).show();
     }
 
     private void triggerWateringEffect(Pot pot) {
+        if (rootTable != null) {
+            rootTable.validate();
+        }
         Table targetCell = potCellMap.get(pot);
         if (targetCell != null && stage != null) {
+            targetCell.validate();
+
             Vector2 pos = targetCell.localToStageCoordinates(new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f));
             WateringEffectActor effect = new WateringEffectActor(pos.x + WATERING_OFFSET_X, pos.y + WATERING_OFFSET_Y);
             stage.addActor(effect);
+            effect.toFront();
         }
     }
 
@@ -478,7 +477,7 @@ public class GreenhouseScreen extends UiScreen {
     }
 
     private class WateringEffectActor extends Actor {
-        private static final float WATERING_SCALE = 0.40f;
+        private static final float WATERING_SCALE = 0.65f;
         private float stateTime = 0f;
 
         WateringEffectActor(float x, float y) {
@@ -489,9 +488,10 @@ public class GreenhouseScreen extends UiScreen {
         public void act(float delta) {
             super.act(delta);
             stateTime += delta;
+
             if (pamPlayer != null) {
                 try {
-                    ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation", "Animation", "main", "idle");
+                    ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation");
                     if (clip != null && stateTime >= 1.90f) {
                         remove();
                     }
@@ -507,7 +507,7 @@ public class GreenhouseScreen extends UiScreen {
         public void draw(Batch batch, float parentAlpha) {
             if (pamPlayer == null) return;
             try {
-                ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation", "Animation", "main", "idle");
+                ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation");
                 if (clip == null) return;
 
                 float px = getX();
@@ -542,7 +542,6 @@ public class GreenhouseScreen extends UiScreen {
             this.canvasWidth = canvasWidth > 0 ? canvasWidth : targetSize;
             this.canvasHeight = canvasHeight > 0 ? canvasHeight : targetSize;
             this.targetSize = targetSize;
-
             setSize(targetSize, targetSize);
         }
 
@@ -554,11 +553,10 @@ public class GreenhouseScreen extends UiScreen {
 
         @Override
         public void draw(Batch batch, float parentAlpha) {
-            if (pamPlayer == null || animationPath == null) {
-                return;
-            }
+            if (pamPlayer == null || animationPath == null) return;
+
             try {
-                ClipRef clip = getSafeClip(animationPath, "idle", "Idle", "IDLE", "animation", "main", "action3");
+                ClipRef clip = getSafeClip(animationPath, "idle");
                 if (clip == null) return;
 
                 float scale = (targetSize / Math.max(canvasWidth, canvasHeight)) * 2.35f;
@@ -578,9 +576,7 @@ public class GreenhouseScreen extends UiScreen {
                 pamPlayer.draw(batch, clip, stateTime, px, py, true);
 
                 batch.setTransformMatrix(original);
-            } catch (Throwable t) {
-                Gdx.app.error("GreenhouseScreen", "Failed to draw idle animation", t);
-            }
+            } catch (Throwable t) {}
         }
     }
 
@@ -597,30 +593,25 @@ public class GreenhouseScreen extends UiScreen {
 
         private float cooldownTimer = 0f;
         private float plantActionTimer = 0f;
-        private float actionTimer = 0f;
-        private float wanderActionInterval = 3.5f;
-        private float turnTimer = 0f;
 
-        private String currentClipName = "idle";
         private boolean facingLeft = true;
-        private boolean nextFacingLeft = true;
 
-        private enum State { WANDERING, MOVING_TO_PLANT, AT_PLANT, TURNING }
+        private enum State { WANDERING, MOVING_TO_PLANT, AT_PLANT }
         private State state = State.WANDERING;
-        private State stateAfterTurn = State.WANDERING;
 
         public BeeActor() {
-            float sw = Gdx.graphics.getWidth();
-            float sh = Gdx.graphics.getHeight();
+            float sw = 1152f;
+            float sh = 648f;
             setPosition(sw / 2f, sh / 2f);
             pickRandomTarget();
         }
 
-        private void changeClip(String newClip) {
-            if (!newClip.equals(currentClipName)) {
-                currentClipName = newClip;
-                clipTime = 0f;
-            }
+        private float getStageWidth() {
+            return getStage() != null ? getStage().getWidth() : 1152f;
+        }
+
+        private float getStageHeight() {
+            return getStage() != null ? getStage().getHeight() : 648f;
         }
 
         @Override
@@ -629,32 +620,12 @@ public class GreenhouseScreen extends UiScreen {
             globalTime += delta;
             clipTime += delta;
 
-            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
-            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+            float sw = getStageWidth();
+            float sh = getStageHeight();
 
-            if (cooldownTimer > 0) {
-                cooldownTimer -= delta;
-            }
+            if (cooldownTimer > 0) cooldownTimer -= delta;
 
             switch (state) {
-                case TURNING -> {
-                    vx *= 0.88f;
-                    vy *= 0.88f;
-                    setPosition(getX() + vx * delta, getY() + vy * delta);
-
-                    turnTimer -= delta;
-                    if (turnTimer <= 0) {
-                        facingLeft = nextFacingLeft;
-                        state = stateAfterTurn;
-                        if (state == State.AT_PLANT) {
-                            changeClip("action3");
-                            plantActionTimer = 1.0f;
-                        } else {
-                            changeClip("idle");
-                        }
-                    }
-                }
-
                 case AT_PLANT -> {
                     vx = 0f;
                     vy = 0f;
@@ -670,7 +641,6 @@ public class GreenhouseScreen extends UiScreen {
                         Vector2 readyPlantTarget = getRandomReadyPlantPosition();
                         if (readyPlantTarget != null) {
                             setMovementTarget(readyPlantTarget.x, readyPlantTarget.y, State.MOVING_TO_PLANT);
-                            break;
                         }
                     }
 
@@ -681,8 +651,7 @@ public class GreenhouseScreen extends UiScreen {
                     if (dist < 15f) {
                         if (state == State.MOVING_TO_PLANT) {
                             state = State.AT_PLANT;
-                            changeClip("action3");
-                            plantActionTimer = 1.0f;
+                            plantActionTimer = 1.5f;
                         } else {
                             pickRandomTarget();
                         }
@@ -699,69 +668,25 @@ public class GreenhouseScreen extends UiScreen {
 
                         setX(Math.max(40f, Math.min(sw - 40f, getX())));
                         setY(Math.max(60f, Math.min(sh - 60f, getY())));
+
+                        facingLeft = (vx < 0);
                     }
-
-                    if (state == State.WANDERING) {
-                        if (actionTimer > 0) {
-                            actionTimer -= delta;
-                            if (actionTimer <= 0) {
-                                changeClip("idle");
-                            }
-                        } else {
-                            wanderActionInterval -= delta;
-                            if (wanderActionInterval <= 0) {
-                                triggerRandomWanderAction();
-                                wanderActionInterval = 3f + (float) Math.random() * 3f;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void triggerRandomWanderAction() {
-            if (state == State.WANDERING && !"turn".equals(currentClipName)) {
-                String[] actions = {"action2", "idle2", "actionCritical"};
-                String chosen = actions[(int) (Math.random() * actions.length)];
-                changeClip(chosen);
-
-                if ("actionCritical".equals(chosen)) {
-                    actionTimer = 1.77f;
-                } else if ("action2".equals(chosen)) {
-                    actionTimer = 2.20f;
-                }
-                else {
-                    actionTimer = 1.2f;
                 }
             }
         }
 
         private void setMovementTarget(float tx, float ty, State nextState) {
-            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
-            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+            float sw = getStageWidth();
+            float sh = getStageHeight();
 
             this.targetX = Math.max(40f, Math.min(sw - 40f, tx));
             this.targetY = Math.max(60f, Math.min(sh - 60f, ty));
-
-            boolean targetIsLeft = (this.targetX < getX());
-
-            if (Math.abs(this.targetX - getX()) > 30f && targetIsLeft != facingLeft) {
-                nextFacingLeft = targetIsLeft;
-                state = State.TURNING;
-                stateAfterTurn = nextState;
-                changeClip("turn");
-                turnTimer = 0.45f;
-            } else {
-                state = nextState;
-                if (state == State.WANDERING && actionTimer <= 0) {
-                    changeClip("idle");
-                }
-            }
+            this.state = nextState;
         }
 
         private void pickRandomTarget() {
-            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
-            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
+            float sw = getStageWidth();
+            float sh = getStageHeight();
 
             float rx = 60f + (float) Math.random() * (sw - 120f);
             float ry = 90f + (float) Math.random() * (sh - 180f);
@@ -770,12 +695,16 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         private Vector2 getRandomReadyPlantPosition() {
+            if (rootTable != null) {
+                rootTable.validate();
+            }
             List<Vector2> readyPositions = new ArrayList<>();
             for (Map.Entry<Pot, Table> entry : potCellMap.entrySet()) {
                 Pot pot = entry.getKey();
                 if (statusOf(pot) == PotStatus.READY) {
                     Table cell = entry.getValue();
-                    Vector2 stagePos = cell.localToStageCoordinates(new Vector2(POT_SIZE / 2f, POT_SIZE + 80f));
+                    cell.validate();
+                    Vector2 stagePos = cell.localToStageCoordinates(new Vector2(POT_SIZE / 2f, POT_SIZE / 2f + 20f));
                     readyPositions.add(stagePos);
                 }
             }
@@ -789,7 +718,9 @@ public class GreenhouseScreen extends UiScreen {
             if (pamPlayer == null) return;
 
             try {
-                ClipRef clip = getSafeClip(BEE_PAM_PATH, currentClipName, "action3", "idle", "turn", "Action3");
+                ClipRef clip = getSafeClip(BEE_PAM_PATH, "anim_idle");
+                if (clip == null) clip = getSafeClip(BEE_PAM_PATH, "anim_fly");
+                if (clip == null) clip = getSafeClip(BEE_PAM_PATH, "idle");
                 if (clip == null) return;
 
                 float px = getX();
@@ -810,7 +741,7 @@ public class GreenhouseScreen extends UiScreen {
 
                 batch.setTransformMatrix(original);
             } catch (Throwable t) {
-                Gdx.app.error("BeeActor", "Failed to draw bee animation", t);
+                Gdx.app.error("BeeActor", "Error rendering bee", t);
             }
         }
     }
