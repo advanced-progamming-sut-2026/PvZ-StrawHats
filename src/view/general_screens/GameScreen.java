@@ -36,12 +36,22 @@ import model.collections.plant.PlantJsonParser;
 import model.collections.zombie.Zombie;
 import model.game_exceptions.GameException;
 import model.match_mechanisms.vector.Position;
+import model.pitches.Cell;
+import model.match.main.levels.special_levels.BossLevel;
+import model.match.main.levels.special_levels.ConveyorBeltLevel;
+import model.match.main.levels.special_levels.DeadLineLevel;
+import model.match.main.levels.special_levels.IntroductionLevel;
+import model.match.main.levels.special_levels.LockedPlantsLevel;
+import model.match.main.levels.special_levels.LoveYourPlantsLevel;
+import model.match.main.levels.special_levels.NightOpsLevel;
+import model.match.main.levels.special_levels.PlantWhatYouGetLevel;
+import model.match.main.levels.special_levels.SaveOurSeedsLevel;
+import model.match.main.levels.special_levels.TimedWarLevel;
 import model.projectile.Projectile;
 import model.projectile.zombie_projectile.ZombieProjectile;
 import model.utils.GameSession;
 import model.utils.GameSettings;
 import service.GameClock;
-import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 
 /**
@@ -54,7 +64,7 @@ import service.resource_manager.AudioManager;
  * anything not supplied yet falls back to a tinted, labeled rectangle so the board is still fully readable.
  */
 
-public class GameScreen extends BaseScreen {
+public class GameScreen extends UiScreen {
 
     private static final float TILE_SIZE = 96f;
 
@@ -76,6 +86,8 @@ public class GameScreen extends BaseScreen {
     private TextureRegion whitePixel;
     private BitmapFont font;
     private boolean ownsFont;
+    private Texture egyptBackgroundTexture;
+    private Label specialInfoLabel;
 
     private Label sunLabel;
     private Label plantFoodLabel;
@@ -112,6 +124,17 @@ public class GameScreen extends BaseScreen {
         boardCamera.update();
 
         whitePixel = makeWhitePixel();
+        font = new BitmapFont();
+        ownsFont = true;
+
+        if (isEgyptLevel()) {
+            String path = "assets/images/backg/egyptbg.png";
+            if (!Gdx.files.internal(path).exists()) path = "images/backg/egyptbg.png";
+            if (Gdx.files.internal(path).exists()) {
+                egyptBackgroundTexture = new Texture(Gdx.files.internal(path));
+                egyptBackgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            }
+        }
 
         createHud();
         addBoardClickCatcher();
@@ -129,6 +152,8 @@ public class GameScreen extends BaseScreen {
         sunLabel = new Label("", skin);
         plantFoodLabel = new Label("", skin);
         waveBar = new WaveProgressBar();
+        specialInfoLabel = new Label("", skin, "main");
+        specialInfoLabel.setAlignment(1);
 
         pauseButton = new TextButton("Pause", skin);
         pauseButton.addListener(new ClickListener() {
@@ -166,6 +191,7 @@ public class GameScreen extends BaseScreen {
         topBar.add(sunLabel).pad(8);
         topBar.add(plantFoodLabel).pad(8);
         topBar.add(waveBar).width(320).height(18).pad(8).expandX();
+        topBar.add(specialInfoLabel).width(300).pad(8);
         topBar.add(startWavesButton).pad(8);
         topBar.add(pauseButton).pad(8);
 
@@ -227,6 +253,7 @@ public class GameScreen extends BaseScreen {
         shovelButton.setChecked(armedTool == Tool.SHOVEL);
         feedButton.setChecked(armedTool == Tool.FEED);
         feedButton.setDisabled(session.getPlantFoodCount() <= 0);
+        refreshSpecialHud();
     }
 
     private void armPlant(String plantName) {
@@ -247,16 +274,14 @@ public class GameScreen extends BaseScreen {
 
 
 
-    /** invisible actor sitting behind the HUD; only receives clicks the HUD didn't consume*/
+    /** Receives clicks that are not consumed by the HUD. */
     private void addBoardClickCatcher() {
-        Actor catcher = new Actor();
-        catcher.addListener(new ClickListener() {
+        rootStack.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 handleBoardClick();
             }
         });
-        rootStack.addActorAt(1, catcher); // above background/particles, below rootTable's HUD
     }
 
     private Vector2 unprojectMouse() {
@@ -300,9 +325,13 @@ public class GameScreen extends BaseScreen {
         }
     }
 
-    /** Sends a command to whatever Menu is currently active and reports failures as a toast.
-     *  Returns true on success, so callers can chain a follow-up action. */
-    private boolean runCommand(String command) {
+    /**
+     * Sends a command to whatever Menu is currently active and reports failures as a toast.
+     * Returns true on success, so callers can chain a follow-up action.
+     *
+     * @return
+     */
+    public boolean runCommand(String command) {
         try {
             App.currentMenu.handleCommand(command);
             return true;
@@ -341,6 +370,39 @@ public class GameScreen extends BaseScreen {
         super.render(delta); // stage.act + stage.draw: HUD, modals, toasts
     }
 
+    private void refreshSpecialHud() {
+        if (specialInfoLabel == null || session == null || session.getLevel() == null) return;
+        var level = session.getLevel();
+
+        String text = "";
+        if (level instanceof TimedWarLevel timed) {
+            double remaining = timed.getTimeLimit() == null ? 0 : timed.getTimeLimit().getSecondsRemaining();
+            text = String.format("TIME %.1fs | %d/%d ZOMBIES",
+                    Math.max(0, remaining), timed.getZombiesKilledSoFar(), timed.getZombiesToKill());
+        } else if (level instanceof LoveYourPlantsLevel love) {
+            text = "PLANTS LOST " + love.getPlantsLost() + "/" + love.getMaxPlantLoss();
+        } else if (level instanceof ConveyorBeltLevel conveyor) {
+            text = conveyor.getCurrentPlant() == null
+                    ? "CONVEYOR: WAITING"
+                    : "CONVEYOR: " + conveyor.getCurrentPlant().getName();
+        } else if (level instanceof LockedPlantsLevel) {
+            text = "LOCKED PLANTS";
+        } else if (level instanceof SaveOurSeedsLevel) {
+            text = "PROTECT THE SEEDS";
+        } else if (level instanceof DeadLineLevel) {
+            text = "DO NOT CROSS THE LINE";
+        } else if (level instanceof BossLevel) {
+            text = "BOSS LEVEL";
+        } else if (level instanceof PlantWhatYouGetLevel) {
+            text = "PLANT WHAT YOU GET";
+        } else if (level instanceof NightOpsLevel) {
+            text = "NIGHT OPS";
+        } else if (level instanceof IntroductionLevel) {
+            text = "TUTORIAL";
+        }
+        specialInfoLabel.setText(text);
+    }
+
     private void checkMatchEnd() {
         if (matchFinished) return;
         if (session.isGameOver()) {
@@ -362,6 +424,8 @@ public class GameScreen extends BaseScreen {
         batch.begin();
 
         drawBackground();
+        drawSeasonEffects();
+        drawSpecialLevelBoardEffects();
         if (GameSettings.get().isShowGrid()) drawGridLines();
         drawHoverHighlight();
         drawGroundItems();
@@ -375,9 +439,129 @@ public class GameScreen extends BaseScreen {
     private void drawBackground() {
         boolean night = session.getLevel() != null && session.getLevel().getSeason() != null
                 && session.getLevel().getSeason().isNight();
+
+        if (egyptBackgroundTexture != null) {
+            batch.setColor(Color.WHITE);
+            batch.draw(egyptBackgroundTexture, 0, 0, boardWidth, boardHeight);
+            return;
+        }
+
         Color base = night ? new Color(0.12f, 0.16f, 0.24f, 1f) : new Color(0.36f, 0.56f, 0.27f, 1f);
         batch.setColor(base);
         batch.draw(whitePixel, 0, 0, boardWidth, boardHeight);
+        batch.setColor(Color.WHITE);
+    }
+
+    private boolean isEgyptLevel() {
+        return session != null
+                && session.getLevel() != null
+                && session.getLevel().getSeason() != null
+                && "Egypt".equalsIgnoreCase(session.getLevel().getSeason().getName());
+    }
+
+    private void drawSeasonEffects() {
+        if (session.getLevel() == null || session.getLevel().getSeason() == null) return;
+
+        if (isEgyptLevel() && session.isWavesStarted()
+                && session.getTotalWaveCount() > 0
+                && session.getWavesSpawnedCount() >= session.getTotalWaveCount()) {
+            float alpha = 0.10f + 0.07f * (float) Math.sin(System.nanoTime() / 180_000_000.0);
+            batch.setColor(0.78f, 0.60f, 0.28f, alpha);
+            for (int i = 0; i < 7; i++) {
+                float x = (float) ((System.nanoTime() / 12_000_000L + i * 170) % (boardWidth + 220)) - 220;
+                batch.draw(whitePixel, x, 0, 180, boardHeight);
+            }
+            batch.setColor(Color.WHITE);
+        }
+
+        if (session.getLevel() instanceof NightOpsLevel
+                || session.getLevel().getSeason().isNight()) {
+            batch.setColor(0.04f, 0.06f, 0.14f, 0.28f);
+            batch.draw(whitePixel, 0, 0, boardWidth, boardHeight);
+            batch.setColor(Color.WHITE);
+        }
+    }
+
+    private void drawSpecialLevelBoardEffects() {
+        var level = session.getLevel();
+        if (level == null) return;
+
+        if (level instanceof SaveOurSeedsLevel save && save.getSeedPositions() != null) {
+            for (Position p : save.getSeedPositions().keySet()) {
+                drawCellBorder((int) p.y(), (int) p.x(),
+                        new Color(0.2f, 1f, 0.35f, 0.55f), 5f);
+            }
+        }
+
+        if (level instanceof DeadLineLevel deadline && deadline.getDeadLine() != null) {
+            int column = (int) deadline.getDeadLine().x();
+            float x = column * TILE_SIZE;
+            batch.setColor(1f, 0.18f, 0.10f, 0.72f);
+            batch.draw(whitePixel, x, 0, 7, boardHeight);
+            batch.setColor(Color.WHITE);
+        }
+
+        if (level instanceof IntroductionLevel) {
+            batch.setColor(1f, 1f, 0.75f, 0.16f);
+            batch.draw(whitePixel, 0, 0, boardWidth, boardHeight);
+            batch.setColor(Color.WHITE);
+        }
+
+        if (level instanceof ConveyorBeltLevel conveyor) {
+            float h = 58f;
+            batch.setColor(0.10f, 0.10f, 0.10f, 0.88f);
+            batch.draw(whitePixel, 0, boardHeight - h, boardWidth, h);
+            batch.setColor(0.55f, 0.40f, 0.18f, 0.75f);
+            for (int i = 0; i < 12; i++) {
+                float x = i * 85f + 10f;
+                batch.draw(whitePixel, x, boardHeight - h + 7f, 52f, 7f);
+            }
+            batch.setColor(Color.WHITE);
+            if (conveyor.getCurrentPlant() != null && font != null) {
+                font.setColor(Color.WHITE);
+                font.draw(batch, "NEXT: " + conveyor.getCurrentPlant().getName(),
+                        18f, boardHeight - 20f);
+            }
+        }
+
+        if (level instanceof PlantWhatYouGetLevel) {
+            batch.setColor(0.85f, 0.65f, 0.18f, 0.16f);
+            batch.draw(whitePixel, 0, 0, boardWidth, boardHeight);
+            batch.setColor(Color.WHITE);
+        }
+
+        drawEgyptGraves();
+    }
+
+    private void drawEgyptGraves() {
+        if (!isEgyptLevel() || session.getEnvironment() == null) return;
+        for (int r = 0; r < session.getRows(); r++) {
+            for (int c = 0; c < session.getCols(); c++) {
+                Cell cell = session.getEnvironment().getCell(r, c);
+                if (cell == null || cell.getObstacle() == null) continue;
+                if (!"Grave".equalsIgnoreCase(cell.getObstacle().getName())) continue;
+
+                float x = c * TILE_SIZE + TILE_SIZE * 0.25f;
+                float y = cellBottomY(r) + TILE_SIZE * 0.15f;
+                batch.setColor(0.30f, 0.29f, 0.27f, 1f);
+                batch.draw(whitePixel, x, y, TILE_SIZE * 0.50f, TILE_SIZE * 0.65f);
+                batch.setColor(0.15f, 0.15f, 0.14f, 1f);
+                batch.draw(whitePixel, x + TILE_SIZE * 0.16f, y + TILE_SIZE * 0.20f,
+                        TILE_SIZE * 0.18f, TILE_SIZE * 0.05f);
+                batch.setColor(Color.WHITE);
+            }
+        }
+    }
+
+    private void drawCellBorder(int row, int col, Color color, float thickness) {
+        if (row < 0 || col < 0 || row >= session.getRows() || col >= session.getCols()) return;
+        float x = col * TILE_SIZE;
+        float y = cellBottomY(row);
+        batch.setColor(color);
+        batch.draw(whitePixel, x, y, TILE_SIZE, thickness);
+        batch.draw(whitePixel, x, y + TILE_SIZE - thickness, TILE_SIZE, thickness);
+        batch.draw(whitePixel, x, y, thickness, TILE_SIZE);
+        batch.draw(whitePixel, x + TILE_SIZE - thickness, y, thickness, TILE_SIZE);
         batch.setColor(Color.WHITE);
     }
 
@@ -519,6 +703,7 @@ public class GameScreen extends BaseScreen {
     public void dispose() {
         super.dispose();
         if (whitePixel != null) whitePixel.getTexture().dispose();
+        if (egyptBackgroundTexture != null) egyptBackgroundTexture.dispose();
         if (ownsFont && font != null) font.dispose();
     }
 

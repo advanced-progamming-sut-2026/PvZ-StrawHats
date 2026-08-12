@@ -300,7 +300,7 @@ public abstract class UiScreen extends BaseScreen {
         }
     }
 
-    protected void runCommand(String command) {
+    protected boolean runCommand(String command) {
         try {
             App.currentMenu.handleCommand(command);
         } catch (GameException e) {
@@ -312,6 +312,7 @@ public abstract class UiScreen extends BaseScreen {
         if (ScreenManager.getScreen() == this) {
             onAfterCommand();
         }
+        return false;
     }
 
     protected void onAfterCommand() {

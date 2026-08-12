@@ -23,6 +23,8 @@ import model.greenhouse.shop.Product;
 import model.greenhouse.shop.Shop;
 import model.user_data.User;
 import model.user_data.UserState;
+import service.card_factory.SeedPacketCard;
+import service.card_factory.SeedPacketCardFactory;
 import service.resource_manager.AudioEnum;
 import service.resource_manager.AudioManager;
 import view.general_screens.UiScreen;
@@ -37,7 +39,6 @@ import static view.screens.GreenhouseScreen.SEED_PACKET_ICON;
 public class ShopScreen extends UiScreen {
 
     private static final Shop STORE = new Shop();
-
 
     private static final String TAB_ICON_PLANTS = "assets/images/shop/event_icon_potw_down.png";
     private static final String TAB_ICON_CURRENCY = "assets/images/shop/moneybag.png";
@@ -203,7 +204,7 @@ public class ShopScreen extends UiScreen {
 
         boolean canBuy = !state.dailyOfferPurchased && state.dailyOfferPlantId != null;
         TextButton buyBtn = primaryButton(state.dailyOfferPurchased
-                ? "Bought" : Product.DAILY_OFFER.getCoinCost() + " coins",
+                        ? "Bought" : Product.DAILY_OFFER.getCoinCost() + " coins",
                 () -> new ConfirmBuyModal(Product.DAILY_OFFER, () -> buy("daily-offer", 1, null)).show());
         buyBtn.setDisabled(!canBuy);
         card.add(buyBtn).width(150).height(44);
@@ -415,8 +416,6 @@ public class ShopScreen extends UiScreen {
         return container;
     }
 
-
-
     private Table createResourceWidget(String bgPath, String iconPath, String value, float width, float height) {
         float bgWidth = 100;
         float bgHeight = 30;
@@ -433,7 +432,7 @@ public class ShopScreen extends UiScreen {
 
         Table textTable = new Table();
         Image iconImage = new Image(loadTextureSafe(iconPath));
-        iconImage.setSize(55,85);
+        iconImage.setSize(55, 85);
         textTable.add(iconImage).left().expand();
         textTable.setSize(width, height);
         textTable.setPosition((groupWidth - width) / 2f, (groupHeight - height) / 2f);
@@ -444,8 +443,6 @@ public class ShopScreen extends UiScreen {
         outer.add(group).size(groupWidth, groupHeight);
         return outer;
     }
-
-    
 
     @Override
     protected void onAfterCommand() {
@@ -474,26 +471,70 @@ public class ShopScreen extends UiScreen {
 
     private class SeedChoiceModal extends view.general_screens.Modal {
 
+        private final SeedPacketCardFactory cardFactory = new SeedPacketCardFactory();
+
         SeedChoiceModal(UserState state, java.util.function.Consumer<Integer> onPick) {
-            content.add(new Label("Choose a Plant", skin, "title")).padBottom(SPACE_SM).row();
+            content.pad(24);
+
+            Label titleLabel = new Label("Choose a Plant", skin, "title");
+            titleLabel.setFontScale(1.1f);
+            content.add(titleLabel).padBottom(SPACE_SM).row();
 
             List<Integer> unlockedIds = new ArrayList<>(state.unlockedPlantIds);
-            Table list = new Table();
+            Table grid = new Table();
+            grid.top().padTop(10f);
+
             if (unlockedIds.isEmpty()) {
-                list.add(new Label("No unlocked plants yet.", skin, "muted"));
+                grid.add(new Label("No unlocked plants yet.", skin, "muted"));
             } else {
+                int col = 0;
+                int plantsPerRow = 4;
+
                 for (Integer plantId : unlockedIds) {
-                    TextButton pick = secondaryButton(plantName(plantId), () -> {
-                        hide();
-                        onPick.accept(plantId);
-                    });
-                    list.add(pick).width(260).height(42).padBottom(SPACE_XS).row();
+                    String pName = plantName(plantId);
+                    Table cell = new Table();
+
+                    try {
+                        SeedPacketCard card = cardFactory.buildCardForDisplayName(pName);
+                        if (card != null) {
+                            card.addListener(new ClickListener() {
+                                @Override
+                                public void clicked(InputEvent event, float x, float y) {
+                                    hide();
+                                    cardFactory.dispose();
+                                    onPick.accept(plantId);
+                                }
+                            });
+                            cell.add(card).size(card.getWidth(), card.getHeight());
+                        }
+                    } catch (Exception e) {
+                        TextButton pick = secondaryButton(pName, () -> {
+                            hide();
+                            cardFactory.dispose();
+                            onPick.accept(plantId);
+                        });
+                        cell.add(pick).width(130).height(42);
+                    }
+
+                    grid.add(cell).pad(SPACE_XS);
+                    col++;
+                    if (col % plantsPerRow == 0) {
+                        grid.row();
+                    }
                 }
             }
-            content.add(scrollable(list)).width(280).height(220).row();
 
-            TextButton cancel = secondaryButton("Cancel", this::hide);
-            content.add(cancel).width(140).padTop(SPACE_SM);
+            ScrollPane scrollPane = new ScrollPane(grid);
+            scrollPane.setScrollingDisabled(true, false);
+            scrollPane.setFadeScrollBars(false);
+
+            content.add(scrollPane).width(780).height(400).padBottom(SPACE_SM).row();
+
+            TextButton cancel = secondaryButton("Cancel", () -> {
+                cardFactory.dispose();
+                hide();
+            });
+            content.add(cancel).width(160).padTop(SPACE_XS);
         }
     }
 }
