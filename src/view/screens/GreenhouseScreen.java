@@ -791,35 +791,31 @@ public class GreenhouseScreen extends UiScreen {
             return readyPositions.get(idx);
         }
 
-        /**
-         * متد اختصاصی دریافت کلیپ برای زنبور بدون نیاز به متد خارجی
-         */
         private ClipRef getBeeClipSafely(String preferredClip) {
             if (pamPlayer == null) return null;
 
-            // ۱. اول کلیپ مدنظر (مثل idle یا action2 یا turn) چک میشه
-            ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, preferredClip);
+            try {
+                ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, preferredClip);
+                if (clip != null) return clip;
+            } catch (Throwable ignored) {}
 
-            // ۲. تلاش با کمک AnimationFactory
-            if (clip == null) {
+            try {
+                String resolved = AnimationFactory.resolveClipNameForPath(BEE_PAM_PATH, preferredClip);
+                if (resolved != null) {
+                    ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, resolved);
+                    if (clip != null) return clip;
+                }
+            } catch (Throwable ignored) {}
+
+            String[] fallbacks = {"anim_idle", "anim_fly", "idle", "action3", "turn", "Action3"};
+            for (String fallback : fallbacks) {
                 try {
-                    String resolved = AnimationFactory.resolveClipNameForPath(BEE_PAM_PATH, preferredClip);
-                    if (resolved != null) {
-                        clip = pamPlayer.getClip(BEE_PAM_PATH, resolved);
-                    }
+                    ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, fallback);
+                    if (clip != null) return clip;
                 } catch (Throwable ignored) {}
             }
 
-            // ۳. اگر هیچ کدوم نبود، اسم‌های رایج مک/ویندوز چک میشن تا زنبور غیب نشه
-            if (clip == null) {
-                String[] fallbacks = {"anim_idle", "anim_fly", "idle", "action3", "turn", "Action3"};
-                for (String fallback : fallbacks) {
-                    clip = pamPlayer.getClip(BEE_PAM_PATH, fallback);
-                    if (clip != null) break;
-                }
-            }
-
-            return clip;
+            return null;
         }
 
         @Override

@@ -94,7 +94,7 @@ public class BeforeMatchScreen extends UiScreen {
 
         Table content = new Table();
         content.add(buildPlantGrid(level)).expand().fill();
-        content.add(buildLoadoutPanel(level)).width(275).padLeft(18).top();
+        content.add(buildLoadoutPanel(level)).width(300).padLeft(18).top();
         outer.add(content).expand().fill().row();
 
         Table bottom = new Table();
@@ -169,7 +169,7 @@ public class BeforeMatchScreen extends UiScreen {
     }
 
     private Actor buildGridContainer(List<String> names, java.util.function.Predicate<String> darkened,
-                                      java.util.function.Predicate<String> showLockIcon) {
+                                     java.util.function.Predicate<String> showLockIcon) {
         Table grid = new Table();
         grid.top();
 
@@ -186,9 +186,14 @@ public class BeforeMatchScreen extends UiScreen {
             index++;
         }
 
+        ScrollPane scrollPane = new ScrollPane(grid);
+        scrollPane.setFadeScrollBars(false);
+        scrollPane.setScrollingDisabled(true, false);
+        scrollPane.setCancelTouchFocus(false);
+
         Table gridContainer = new Table();
         gridContainer.top().left();
-        gridContainer.add(grid).expandX().fillX().top().left();
+        gridContainer.add(scrollPane).expand().fill().top().left();
         return gridContainer;
     }
 
@@ -270,19 +275,61 @@ public class BeforeMatchScreen extends UiScreen {
         panel.add(title).center().row();
 
         Table slots = new Table();
+        float maxSlotW = 125f;
+
         for (int i = 0; i < 8; i++) {
             String name = i < BeforeMenu.selectedPlants.size()
                     ? BeforeMenu.selectedPlants.get(i) : "Empty";
-            TextButton slot = new TextButton(name, skin);
+
             final String selected = name;
-            if (!"Empty".equals(name)) {
-                slot.addListener(new ClickListener() {
+
+            if ("Empty".equals(name)) {
+                Table emptySlot = new Table();
+                emptySlot.setBackground(skin.getDrawable("card-background"));
+                Label emptyLabel = new Label("Empty", skin, "main");
+                emptyLabel.setColor(Color.LIGHT_GRAY);
+                emptySlot.add(emptyLabel).center();
+                slots.add(emptySlot).size(maxSlotW, 62f).pad(4);
+            } else {
+                Stack cardStack = new Stack();
+                float cardW = 150f;
+                float cardH = 75f;
+
+                try {
+                    SeedPacketCard card = cardFactory.buildCardForDisplayName(name);
+                    if (card != null) {
+                        cardW = card.getWidth();
+                        cardH = card.getHeight();
+                        cardStack.add(card);
+                    }
+                } catch (Throwable ignored) {}
+
+                if (cardStack.getChildren().isEmpty()) {
+                    Table fallback = new Table();
+                    fallback.setBackground(skin.getDrawable("card-background"));
+                    Label label = new Label(name, skin, "main");
+                    label.setAlignment(Align.center);
+                    label.setWrap(true);
+                    fallback.add(label).center();
+                    cardStack.add(fallback);
+                }
+
+                float slotW = maxSlotW;
+                float slotH = cardH * (maxSlotW / cardW);
+                cardStack.setSize(slotW, slotH);
+
+                cardStack.addListener(new ClickListener() {
                     @Override public void clicked(InputEvent event, float x, float y) {
                         removePlant(selected);
                     }
                 });
+
+                slots.add(cardStack).size(slotW, slotH).pad(4);
             }
-            slots.add(slot).width(225).height(42).pad(3).row();
+
+            if (i % 2 == 1) {
+                slots.row();
+            }
         }
         panel.add(slots).padTop(8).row();
 
