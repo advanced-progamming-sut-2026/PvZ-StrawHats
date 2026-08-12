@@ -77,15 +77,11 @@ public class GreenhouseScreen extends UiScreen {
 
     private BeeActor beeActor;
 
-    /**
-     * متد دریافت امن کلیپ انیمیشن برای جلوگیری از غیب شدن اشیاء در مک و ویندوز
-     */
     private ClipRef getSafeClip(String pamPath, String preferredClipName, String... fallbacks) {
         if (pamPlayer == null || pamPath == null) return null;
 
         ClipRef clip = null;
 
-        // ۱. تلاش مستقیم برای دریافت کلیپ درخواست شده
         if (preferredClipName != null) {
             clip = pamPlayer.getClip(pamPath, preferredClipName);
         }
@@ -100,7 +96,6 @@ public class GreenhouseScreen extends UiScreen {
             } catch (Throwable ignored) {}
         }
 
-        // ۳. بررسی حالت‌های مختلف حروف کوچک/بزرگ (برای رفع تفاوت مک و ویندوز)
         if (clip == null && preferredClipName != null) {
             String[] variations = new String[]{
                     preferredClipName.toLowerCase(),
@@ -113,7 +108,6 @@ public class GreenhouseScreen extends UiScreen {
             }
         }
 
-        // ۴. چک کردن کلیپ‌های جایگزین (Fallbacks)
         if (clip == null && fallbacks != null) {
             for (String fallback : fallbacks) {
                 if (fallback == null) continue;
@@ -795,7 +789,6 @@ public class GreenhouseScreen extends UiScreen {
             if (pamPlayer == null) return;
 
             try {
-                // استفاده از getSafeClip با فال‌بک طلایی action3 برای زنبور
                 ClipRef clip = getSafeClip(BEE_PAM_PATH, currentClipName, "action3", "idle", "turn", "Action3");
                 if (clip == null) return;
 
@@ -821,4 +814,4 @@ public class GreenhouseScreen extends UiScreen {
             }
         }
     }
-} //
+}
