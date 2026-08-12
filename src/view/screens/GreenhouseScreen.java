@@ -77,6 +77,60 @@ public class GreenhouseScreen extends UiScreen {
 
     private BeeActor beeActor;
 
+    /**
+     * متد دریافت امن کلیپ انیمیشن برای جلوگیری از غیب شدن اشیاء در مک و ویندوز
+     */
+    private ClipRef getSafeClip(String pamPath, String preferredClipName, String... fallbacks) {
+        if (pamPlayer == null || pamPath == null) return null;
+
+        ClipRef clip = null;
+
+        // ۱. تلاش مستقیم برای دریافت کلیپ درخواست شده
+        if (preferredClipName != null) {
+            clip = pamPlayer.getClip(pamPath, preferredClipName);
+        }
+
+        // ۲. تلاش از طریق AnimationFactory
+        if (clip == null && preferredClipName != null) {
+            try {
+                String resolved = AnimationFactory.resolveClipNameForPath(pamPath, preferredClipName);
+                if (resolved != null) {
+                    clip = pamPlayer.getClip(pamPath, resolved);
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        // ۳. بررسی حالت‌های مختلف حروف کوچک/بزرگ (برای رفع تفاوت مک و ویندوز)
+        if (clip == null && preferredClipName != null) {
+            String[] variations = new String[]{
+                    preferredClipName.toLowerCase(),
+                    preferredClipName.toUpperCase(),
+                    Character.toUpperCase(preferredClipName.charAt(0)) + preferredClipName.substring(1).toLowerCase()
+            };
+            for (String var : variations) {
+                clip = pamPlayer.getClip(pamPath, var);
+                if (clip != null) break;
+            }
+        }
+
+        // ۴. چک کردن کلیپ‌های جایگزین (Fallbacks)
+        if (clip == null && fallbacks != null) {
+            for (String fallback : fallbacks) {
+                if (fallback == null) continue;
+                clip = pamPlayer.getClip(pamPath, fallback);
+                if (clip == null) {
+                    try {
+                        String resolved = AnimationFactory.resolveClipNameForPath(pamPath, fallback);
+                        if (resolved != null) clip = pamPlayer.getClip(pamPath, resolved);
+                    } catch (Throwable ignored) {}
+                }
+                if (clip != null) break;
+            }
+        }
+
+        return clip;
+    }
+
     @Override
     public void show() {
         setBackground(GREENHOUSE_BACKGROUND);
@@ -122,41 +176,6 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         super.render(delta);
-    }
-
-    /**
-     * متد ایمن جهت لود کلیپ انیمیشن برای جلوگیری از غیب شدن زنبور و آب‌پاش
-     */
-    private ClipRef getPamClipSafe(String path, String preferredClip) {
-        if (pamPlayer == null || path == null) return null;
-
-        // ۱. تلاش با نام کلیپ حل‌شده از AnimationFactory
-        try {
-            String resolved = AnimationFactory.resolveClipNameForPath(path, preferredClip);
-            if (resolved != null) {
-                ClipRef clip = pamPlayer.getClip(path, resolved);
-                if (clip != null) return clip;
-            }
-        } catch (Throwable ignored) {}
-
-        // ۲. تلاش مستقیم با نام کلیپ درخواست شده
-        if (preferredClip != null) {
-            try {
-                ClipRef clip = pamPlayer.getClip(path, preferredClip);
-                if (clip != null) return clip;
-            } catch (Throwable ignored) {}
-        }
-
-        // ۳. فال‌بک‌های عمومی جهت جلوگیری از نامرئی شدن اکتر
-        String[] fallbacks = new String[]{"idle", "animation", "main", "anim_idle", "Action"};
-        for (String fb : fallbacks) {
-            try {
-                ClipRef clip = pamPlayer.getClip(path, fb);
-                if (clip != null) return clip;
-            } catch (Throwable ignored) {}
-        }
-
-        return null;
     }
 
     private void updatePotsRealtime() {
@@ -476,8 +495,16 @@ public class GreenhouseScreen extends UiScreen {
         public void act(float delta) {
             super.act(delta);
             stateTime += delta;
-            // اصلاح شده: فقط بر اساس زمان حذف می‌شود تا ناگهان غیب نشود
-            if (stateTime >= 1.90f) {
+            if (pamPlayer != null) {
+                try {
+                    ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation", "Animation", "main", "idle");
+                    if (clip != null && stateTime >= 1.90f) {
+                        remove();
+                    }
+                } catch (Throwable t) {
+                    remove();
+                }
+            } else {
                 remove();
             }
         }
@@ -486,7 +513,7 @@ public class GreenhouseScreen extends UiScreen {
         public void draw(Batch batch, float parentAlpha) {
             if (pamPlayer == null) return;
             try {
-                ClipRef clip = getPamClipSafe(WATERING_PAM_PATH, "animation");
+                ClipRef clip = getSafeClip(WATERING_PAM_PATH, "animation", "Animation", "main", "idle");
                 if (clip == null) return;
 
                 float px = getX();
@@ -537,7 +564,7 @@ public class GreenhouseScreen extends UiScreen {
                 return;
             }
             try {
-                ClipRef clip = getPamClipSafe(animationPath, "idle");
+                ClipRef clip = getSafeClip(animationPath, "idle", "Idle", "IDLE", "animation", "main", "action3");
                 if (clip == null) return;
 
                 float scale = (targetSize / Math.max(canvasWidth, canvasHeight)) * 2.35f;
@@ -708,7 +735,8 @@ public class GreenhouseScreen extends UiScreen {
                     actionTimer = 1.77f;
                 } else if ("action2".equals(chosen)) {
                     actionTimer = 2.20f;
-                } else {
+                }
+                else {
                     actionTimer = 1.2f;
                 }
             }
@@ -767,8 +795,8 @@ public class GreenhouseScreen extends UiScreen {
             if (pamPlayer == null) return;
 
             try {
-                // دریافت کلیپ با فال‌بک امن تا زنبور هرگز غیب نشود
-                ClipRef clip = getPamClipSafe(BEE_PAM_PATH, currentClipName);
+                // استفاده از getSafeClip با فال‌بک طلایی action3 برای زنبور
+                ClipRef clip = getSafeClip(BEE_PAM_PATH, currentClipName, "action3", "idle", "turn", "Action3");
                 if (clip == null) return;
 
                 float px = getX();
