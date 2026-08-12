@@ -57,9 +57,15 @@ public class DarkAge extends Season {
                 if (cell == null || !(cell.getObstacle() instanceof Grave) || cell.hasPlant()) continue;
 
                 if (RANDOM.nextDouble() < NECROMANCY_CHANCE) {
-                    Zombie risen = ZombieFactory.create("ZombieDefault", row, col);
-                    risen.setPosition(new Position(col, row));
-                    session.spawnZombie(risen);
+                    try {
+                        Zombie risen = ZombieFactory.create("ZombieDefault", row, col);
+                        risen.setPosition(new Position(col, row));
+                        session.spawnZombie(risen);
+                    } catch (Exception e) {
+                        // Don't let a single failed grave-spawn abort the rest of the wave
+                        // start sequence (or crash the whole match).
+                        com.badlogic.gdx.Gdx.app.error("DarkAge", "necromancy() failed to raise a zombie", e);
+                    }
                 }
             }
         }

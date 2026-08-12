@@ -19,50 +19,63 @@ import model.match.main.levels.special_levels.BossLevel;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.match.main.levels.special_levels.IntroductionLevel;
 import model.match.main.levels.special_levels.LockedPlantsLevel;
+import model.match.main.season.travellog.egypt.Egypt;
 import model.utils.GameSession;
 import pvz.libpvz.pam.ClipRef;
 import pvz.libpvz.pam.PamPlayer;
 import pvz.libpvz.textures.TextureBank;
 import view.general_screens.GameScreen;
 
-/** Egypt-specific gameplay shell. The actual simulation remains in GameScreen. */
 public class EgyptGameScreen extends GameScreen {
 
-    private static final String PANEL_BACKGROUND = "assets/images/backg/wood board.png";
+    private static final String PANEL_BACKGROUND = "images/chapters/egypt/egypt_gameplay/map.png";
 
     private Table egyptSidePanel;
     private TextureBank textureBank;
     private PamPlayer pamPlayer;
+    private boolean sidePanelBuilt = false;
 
     @Override
     public void show() {
         super.show();
         initPam();
+        sidePanelBuilt = false;
         buildEgyptSidePanel();
     }
 
     private void initPam() {
-        try {
-            FileHandle root = Gdx.files.internal("assets/pvz-assets");
-            textureBank = new TextureBank("atlases", root);
-            pamPlayer = new PamPlayer(textureBank, root);
-        } catch (Throwable ignored) {
-            textureBank = null;
-            pamPlayer = null;
+        if (textureBank == null) {
+            try {
+                FileHandle root = Gdx.files.internal("assets/pvz-assets");
+                textureBank = new TextureBank("atlases", root);
+                pamPlayer = new PamPlayer(textureBank, root);
+                Gdx.app.log("PAM_INIT", "PAM System and TextureBank initialized successfully!");
+            } catch (Throwable t) {
+                textureBank = null;
+                pamPlayer = null;
+                Gdx.app.error("PAM_INIT", "Failed to initialize PAM System", t);
+            }
         }
     }
 
     private void buildEgyptSidePanel() {
-        if (egyptSidePanel != null) egyptSidePanel.remove();
+        GameSession session = GameSession.peekInstance();
+        Level level = session == null ? null : session.getLevel();
+        if (level == null) {
+            return;
+        }
 
-        Level level = GameSession.peekInstance() == null ? null : GameSession.peekInstance().getLevel();
-        if (level == null) return;
+        if (egyptSidePanel != null) {
+            egyptSidePanel.remove();
+            egyptSidePanel = null;
+        }
 
         egyptSidePanel = new Table();
         egyptSidePanel.setTouchable(Touchable.childrenOnly);
         try {
             egyptSidePanel.setBackground(new TextureRegionDrawable(loadTextureSafe(PANEL_BACKGROUND)));
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
+            Gdx.app.error("EgyptGameScreen", "Failed to load side panel background: " + PANEL_BACKGROUND, t);
             egyptSidePanel.setBackground(skin.getDrawable("card-background"));
         }
         egyptSidePanel.pad(12f);
@@ -104,6 +117,7 @@ public class EgyptGameScreen extends GameScreen {
 
         rootStack.add(egyptSidePanel);
         positionSidePanel();
+        sidePanelBuilt = true;
     }
 
     private String featureFor(Level level) {
@@ -111,6 +125,7 @@ public class EgyptGameScreen extends GameScreen {
         if (level instanceof ConveyorBeltLevel) return "CONVEYOR BELT\nPlants arrive automatically";
         if (level instanceof LockedPlantsLevel) return "LOCKED PLANTS\nSome plants are unavailable";
         if (level instanceof BossLevel) return "RA'S WRATH\nBOSS BATTLE";
+        if (level.getSeason() instanceof Egypt) return "SANDSTORM!\nZombies can rush in on the final wave";
         return "ANCIENT EGYPT\nSURVIVE THE WAVES";
     }
 
@@ -133,8 +148,17 @@ public class EgyptGameScreen extends GameScreen {
     @Override
     public void render(float delta) {
         if (textureBank != null) {
-            try { textureBank.update(); } catch (Throwable ignored) {}
+            try {
+                textureBank.update();
+            } catch (Throwable t) {
+                Gdx.app.error("EgyptGameScreen", "textureBank.update() failed", t);
+            }
         }
+
+        if (!sidePanelBuilt) {
+            buildEgyptSidePanel();
+        }
+
         super.render(delta);
     }
 
@@ -142,6 +166,7 @@ public class EgyptGameScreen extends GameScreen {
     public void dispose() {
         if (egyptSidePanel != null) egyptSidePanel.remove();
         egyptSidePanel = null;
+        sidePanelBuilt = false;
         textureBank = null;
         pamPlayer = null;
         super.dispose();
@@ -164,6 +189,8 @@ public class EgyptGameScreen extends GameScreen {
             animationPath = ZombieAnimationRegistry.pathFor(alias);
             if (pamPlayer != null && animationPath != null) {
                 add(new Actor() {
+                    private boolean loggedMissingClip = false;
+
                     @Override public void act(float delta) {
                         super.act(delta);
                         stateTime += delta;
@@ -172,9 +199,16 @@ public class EgyptGameScreen extends GameScreen {
                     @Override public void draw(Batch batch, float parentAlpha) {
                         try {
                             String clipName = AnimationFactory.resolveClipNameForPath(animationPath, "idle");
-                            if (clipName == null) return;
+                            if (clipName == null) clipName = "idle";
                             ClipRef clip = pamPlayer.getClip(animationPath, clipName);
-                            if (clip == null) return;
+                            if (clip == null) {
+                                if (!loggedMissingClip) {
+                                    loggedMissingClip = true;
+                                    Gdx.app.error("EgyptZombieActor", "No clip found for alias='" + alias
+                                            + "', path='" + animationPath + "', clipName='" + clipName + "'.");
+                                }
+                                return;
+                            }
 
                             Matrix4 original = batch.getTransformMatrix().cpy();
                             float px = getX() + 46f;
@@ -186,7 +220,9 @@ public class EgyptGameScreen extends GameScreen {
                             batch.setTransformMatrix(transformed);
                             pamPlayer.draw(batch, clip, stateTime, getX() + 8f, getY() + 4f, true);
                             batch.setTransformMatrix(original);
-                        } catch (Throwable ignored) {}
+                        } catch (Throwable t) {
+                            Gdx.app.error("EgyptZombieActor", "Failed to draw animation for alias " + alias, t);
+                        }
                     }
                 });
             } else {

@@ -49,6 +49,7 @@ public final class GameAssetManager {
         loadAtlas(AssetPaths.ZOMBIES_ATLAS);
         loadAtlas(AssetPaths.ITEMS_ATLAS);
         loadAtlas(AssetPaths.TILES_ATLAS);
+        loadAtlas(AssetPaths.UI_ATLAS);
         loadFont(AssetPaths.DEFAULT_FONT);
         coreAssetsQueued = true;
         initializeSkin();
@@ -109,6 +110,9 @@ public final class GameAssetManager {
     }
 
     public TextureAtlas getAtlas(String atlasPath) {
+        if (atlasPath == null || !assetManager.isLoaded(atlasPath, TextureAtlas.class)) {
+            return null;
+        }
         return assetManager.get(atlasPath, TextureAtlas.class);
     }
 

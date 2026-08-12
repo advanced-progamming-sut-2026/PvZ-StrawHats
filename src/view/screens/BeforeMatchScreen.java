@@ -166,7 +166,6 @@ public class BeforeMatchScreen extends UiScreen {
         content.add(rightPanel).width(565f).top().left();
         outer.add(content).top().left().padTop(4).row();
 
-        // Bottom Button (موقعیتی در گوشه پایین سمت راست)
         Table bottom = new Table();
         TextButton start = new TextButton("Let's Rock!", skin);
         start.addListener(new ClickListener() {
