@@ -96,9 +96,20 @@ public class GreenhouseScreen extends UiScreen {
 
         if (beeActor == null) {
             beeActor = new BeeActor();
+        } else if (beeActor.getStage() != null && beeActor.getStage() != stage) {
+            beeActor.remove();
         }
 
         build();
+
+        if (effectStack != null && beeActor != null && beeActor.getParent() != effectStack) {
+            beeActor.remove();
+            effectStack.addActor(beeActor);
+        }
+
+        if (beeActor != null) {
+            beeActor.toFront();
+        }
     }
 
     @Override
@@ -194,13 +205,7 @@ public class GreenhouseScreen extends UiScreen {
             rootTable.validate();
         }
 
-        if (stage != null && beeActor != null) {
-            if (beeActor.getStage() != stage) {
-                beeActor.remove();
-                stage.addActor(beeActor);
-            }
-            beeActor.toFront();
-        }
+
     }
 
     private Table buildPotGrid(Greenhouse greenhouse) {
@@ -337,13 +342,25 @@ public class GreenhouseScreen extends UiScreen {
         if (rootTable != null) {
             rootTable.validate();
         }
-        Table targetCell = potCellMap.get(pot);
-        if (targetCell != null && stage != null) {
-            targetCell.validate();
 
-            Vector2 pos = targetCell.localToStageCoordinates(new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f));
-            WateringEffectActor effect = new WateringEffectActor(pos.x + WATERING_OFFSET_X, pos.y + WATERING_OFFSET_Y);
-            stage.addActor(effect);
+        Table targetCell = potCellMap.get(pot);
+        if (targetCell != null && stage != null && effectStack != null) {
+            targetCell.validate();
+            effectStack.validate();
+
+            // Convert the pot-cell position directly into the effect layer.
+            // This preserves the exact visual relationship with the pot even
+            // though the effect is no longer a direct child of Stage.
+            Vector2 effectPos = targetCell.localToActorCoordinates(
+                    effectStack,
+                    new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f)
+            );
+
+            effectPos.x += WATERING_OFFSET_X;
+            effectPos.y += WATERING_OFFSET_Y;
+
+            WateringEffectActor effect = new WateringEffectActor(effectPos.x, effectPos.y);
+            effectStack.addActor(effect);
             effect.toFront();
         }
     }
@@ -595,6 +612,8 @@ public class GreenhouseScreen extends UiScreen {
         private float plantActionTimer = 0f;
         private float actionTimer = 0f;
         private float wanderActionInterval = 3.5f;
+        private static final float BEE_PLANT_WORK_TIME = 3.0f;
+        private static final float BEE_WORK_COOLDOWN = 4.0f;
         private float turnTimer = 0f;
 
         private String currentClipName = "idle";
@@ -652,7 +671,7 @@ public class GreenhouseScreen extends UiScreen {
                         state = stateAfterTurn;
                         if (state == State.AT_PLANT) {
                             changeClip("action3");
-                            plantActionTimer = 1.0f;
+                            plantActionTimer = BEE_PLANT_WORK_TIME;
                         } else {
                             changeClip("idle");
                         }
@@ -664,7 +683,7 @@ public class GreenhouseScreen extends UiScreen {
                     vy = 0f;
                     plantActionTimer -= delta;
                     if (plantActionTimer <= 0) {
-                        cooldownTimer = 10f;
+                        cooldownTimer = BEE_WORK_COOLDOWN;
                         pickRandomTarget();
                     }
                 }
@@ -686,7 +705,7 @@ public class GreenhouseScreen extends UiScreen {
                         if (state == State.MOVING_TO_PLANT) {
                             state = State.AT_PLANT;
                             changeClip("action3");
-                            plantActionTimer = 1.0f;
+                            plantActionTimer = BEE_PLANT_WORK_TIME;
                         } else {
                             pickRandomTarget();
                         }

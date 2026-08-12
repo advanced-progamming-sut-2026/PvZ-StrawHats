@@ -8,13 +8,6 @@ import model.match.main.levels.Level;
 import model.utils.GameSession;
 import view.general_screens.GameScreen;
 
-/**
- * Dedicated Ancient Egypt gameplay screen.
- *
- * GameScreen owns the simulation, board and special-level rendering. This class
- * supplies the Egypt-specific presentation layer and is selected by ScreenManager
- * only for Egypt matches.
- */
 public class EgyptGameScreen extends GameScreen {
 
     private Table egyptBanner;
@@ -31,7 +24,7 @@ public class EgyptGameScreen extends GameScreen {
                 ? null : GameSession.peekInstance().getLevel();
 
         String title = level == null ? "ANCIENT EGYPT" : level.getName();
-        Label label = new Label("☥  ANCIENT EGYPT  •  " + title + "  ☥", skin, "main");
+        Label label = new Label("~ ANCIENT EGYPT ~  " + title, skin, "main");
         label.setAlignment(com.badlogic.gdx.utils.Align.center);
 
         egyptBanner.add(label).padLeft(16).padRight(16).padTop(5).padBottom(5);

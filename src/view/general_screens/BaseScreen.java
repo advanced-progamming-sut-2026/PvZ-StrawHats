@@ -34,6 +34,7 @@ public abstract class BaseScreen implements Screen {
     protected Table rootTable;
     protected Stack rootStack;
     protected Stack modalStack;
+    protected Stack effectStack;
     public Stack toastStack;
     protected Image backgroundImage;
     protected Image globalBrightnessOverlay;
@@ -53,6 +54,7 @@ public abstract class BaseScreen implements Screen {
         rootTable.pad(25f);
 
         modalStack = new Stack();
+        effectStack = new Stack();
         toastStack = new Stack();
         rootStack = new Stack();
         rootStack.setFillParent(true);
@@ -62,6 +64,7 @@ public abstract class BaseScreen implements Screen {
         }
 
         rootStack.add(rootTable);
+        rootStack.add(effectStack);
         rootStack.add(modalStack);
         rootStack.add(toastStack);
 
@@ -143,6 +146,10 @@ public abstract class BaseScreen implements Screen {
 
     public Stack getToastStack() {
         return toastStack;
+    }
+
+    public Stack getEffectStack() {
+        return effectStack;
     }
 
     @Override

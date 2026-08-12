@@ -540,17 +540,30 @@ public class GameScreen extends UiScreen {
                 Cell cell = session.getEnvironment().getCell(r, c);
                 if (cell == null || cell.getObstacle() == null) continue;
                 if (!"Grave".equalsIgnoreCase(cell.getObstacle().getName())) continue;
-
-                float x = c * TILE_SIZE + TILE_SIZE * 0.25f;
-                float y = cellBottomY(r) + TILE_SIZE * 0.15f;
-                batch.setColor(0.30f, 0.29f, 0.27f, 1f);
-                batch.draw(whitePixel, x, y, TILE_SIZE * 0.50f, TILE_SIZE * 0.65f);
-                batch.setColor(0.15f, 0.15f, 0.14f, 1f);
-                batch.draw(whitePixel, x + TILE_SIZE * 0.16f, y + TILE_SIZE * 0.20f,
-                        TILE_SIZE * 0.18f, TILE_SIZE * 0.05f);
-                batch.setColor(Color.WHITE);
+                drawGrave(r, c);
             }
         }
+    }
+
+    private void drawGrave(int row, int col) {
+        float x = col * TILE_SIZE + TILE_SIZE * 0.22f;
+        float y = cellBottomY(row) + TILE_SIZE * 0.08f;
+        float w = TILE_SIZE * 0.56f;
+        float h = TILE_SIZE * 0.72f;
+
+        TextureRegion region = GameAssetManager.get().getUiRegion("grave");
+        if (region != null) {
+            batch.draw(region, x, y, w, h);
+            return;
+        }
+
+        batch.setColor(0.62f, 0.60f, 0.55f, 1f);
+        batch.draw(whitePixel, x, y, w, h * 0.78f);
+        batch.draw(whitePixel, x + w * 0.20f, y + h * 0.78f, w * 0.60f, h * 0.22f);
+        batch.setColor(0.30f, 0.29f, 0.27f, 1f);
+        batch.draw(whitePixel, x + w * 0.14f, y + h * 0.20f, w * 0.72f, h * 0.05f);
+        batch.draw(whitePixel, x + w * 0.42f, y + h * 0.08f, w * 0.16f, h * 0.30f);
+        batch.setColor(Color.WHITE);
     }
 
     private void drawCellBorder(int row, int col, Color color, float thickness) {
