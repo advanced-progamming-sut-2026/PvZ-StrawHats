@@ -77,6 +77,60 @@ public class GreenhouseScreen extends UiScreen {
 
     private BeeActor beeActor;
 
+    /**
+     * متد کمکی جهت لود ایمن کلیپ‌ها در ویندوز و مک همراه با فال‌بک‌های چندمرحله‌ای
+     */
+    private static ClipRef getSafeClip(PamPlayer player, String rawPath, String preferredClip) {
+        if (player == null || rawPath == null) return null;
+        String normalizedPath = rawPath.replace('\\', '/');
+
+        // ۱. تلاش برای یافتن نام کلیپ از طریق AnimationFactory
+        try {
+            String resolvedName = AnimationFactory.resolveClipNameForPath(normalizedPath, preferredClip);
+            if (resolvedName != null) {
+                ClipRef clip = player.getClip(normalizedPath, resolvedName);
+                if (clip != null) return clip;
+            }
+        } catch (Throwable ignored) {}
+
+        // ۲. تلاش با اسم مستقیم درخواست‌شده
+        if (preferredClip != null) {
+            try {
+                ClipRef clip = player.getClip(normalizedPath, preferredClip);
+                if (clip != null) return clip;
+            } catch (Throwable ignored) {}
+        }
+
+        // ۳. فال‌بک اول: کلیپ idle
+        try {
+            ClipRef clipIdle = player.getClip(normalizedPath, "idle");
+            if (clipIdle != null) return clipIdle;
+        } catch (Throwable ignored) {}
+
+        // ۴. فال‌بک دوم: کلیپ عمومی animation
+        try {
+            ClipRef clipAnim = player.getClip(normalizedPath, "animation");
+            if (clipAnim != null) return clipAnim;
+        } catch (Throwable ignored) {}
+
+        return null;
+    }
+
+    private FileHandle getRootHandle() {
+        FileHandle handle = Gdx.files.internal("assets/pvz-assets");
+        if (!handle.exists()) {
+            handle = Gdx.files.internal("pvz-assets");
+        }
+        return handle;
+    }
+
+    private boolean existsSafe(String path) {
+        if (path == null || path.isEmpty()) return false;
+        if (Gdx.files.internal(path).exists()) return true;
+        if (path.startsWith("assets/") && Gdx.files.internal(path.substring(7)).exists()) return true;
+        return false;
+    }
+
     @Override
     public void show() {
         setBackground(GREENHOUSE_BACKGROUND);
@@ -84,7 +138,7 @@ public class GreenhouseScreen extends UiScreen {
 
         if (textureBank == null) {
             try {
-                FileHandle rootHandle = Gdx.files.internal("assets/pvz-assets");
+                FileHandle rootHandle = getRootHandle();
                 textureBank = new TextureBank("atlases", rootHandle);
                 pamPlayer = new PamPlayer(textureBank, rootHandle);
 
@@ -206,7 +260,7 @@ public class GreenhouseScreen extends UiScreen {
             case READY -> POT_READY_ICON;
         };
 
-        if (!iconPath.isEmpty() && Gdx.files.internal(iconPath).exists()) {
+        if (!iconPath.isEmpty() && existsSafe(iconPath)) {
             stack.add(new Image(loadTextureSafe(iconPath)));
         } else {
             stack.add(new Label(fallbackGlyph(status, plant), skin, "title"));
@@ -221,7 +275,7 @@ public class GreenhouseScreen extends UiScreen {
             }
         }
 
-        if (status == PotStatus.LOCKED && !LOCK_ICON.isEmpty() && Gdx.files.internal(LOCK_ICON).exists()) {
+        if (status == PotStatus.LOCKED && !LOCK_ICON.isEmpty() && existsSafe(LOCK_ICON)) {
             Table lockBadge = new Table();
             lockBadge.add(new Image(loadTextureSafe(LOCK_ICON))).size(44, 64);
             stack.add(lockBadge);
@@ -229,7 +283,7 @@ public class GreenhouseScreen extends UiScreen {
 
         if (status == PotStatus.READY) {
             Actor readyGlow;
-            if (!SPARKLE_ICON.isEmpty() && Gdx.files.internal(SPARKLE_ICON).exists()) {
+            if (!SPARKLE_ICON.isEmpty() && existsSafe(SPARKLE_ICON)) {
                 readyGlow = new Image(loadTextureSafe(SPARKLE_ICON));
             } else {
                 Label ready = new Label("READY", skin, "title");
@@ -443,10 +497,10 @@ public class GreenhouseScreen extends UiScreen {
             stateTime += delta;
             if (pamPlayer != null) {
                 try {
-                    String clipName = AnimationFactory.resolveClipNameForPath(WATERING_PAM_PATH, "animation");
-                    if (clipName == null) clipName = "animation";
-                    ClipRef clip = pamPlayer.getClip(WATERING_PAM_PATH, clipName);
+                    ClipRef clip = getSafeClip(pamPlayer, WATERING_PAM_PATH, "animation");
                     if (clip != null && stateTime >= 1.90f) {
+                        remove();
+                    } else if (clip == null && stateTime >= 1.90f) {
                         remove();
                     }
                 } catch (Throwable t) {
@@ -461,9 +515,7 @@ public class GreenhouseScreen extends UiScreen {
         public void draw(Batch batch, float parentAlpha) {
             if (pamPlayer == null) return;
             try {
-                String clipName = AnimationFactory.resolveClipNameForPath(WATERING_PAM_PATH, "animation");
-                if (clipName == null) clipName = "animation";
-                ClipRef clip = pamPlayer.getClip(WATERING_PAM_PATH, clipName);
+                ClipRef clip = getSafeClip(pamPlayer, WATERING_PAM_PATH, "animation");
                 if (clip == null) return;
 
                 float px = getX();
@@ -514,10 +566,7 @@ public class GreenhouseScreen extends UiScreen {
                 return;
             }
             try {
-                String clipName = AnimationFactory.resolveClipNameForPath(animationPath, "idle");
-                if (clipName == null) return;
-
-                ClipRef clip = pamPlayer.getClip(animationPath, clipName);
+                ClipRef clip = getSafeClip(pamPlayer, animationPath, "idle");
                 if (clip == null) return;
 
                 float scale = (targetSize / Math.max(canvasWidth, canvasHeight)) * 2.35f;
@@ -679,7 +728,7 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         private void triggerRandomWanderAction() {
-            if (state == State.WANDERING && !"turn".equals(currentClipName)) {
+            if (state == State.WANDERING) {
                 String[] actions = {"action2", "idle2", "actionCritical"};
                 String chosen = actions[(int) (Math.random() * actions.length)];
                 changeClip(chosen);
@@ -708,7 +757,7 @@ public class GreenhouseScreen extends UiScreen {
                 nextFacingLeft = targetIsLeft;
                 state = State.TURNING;
                 stateAfterTurn = nextState;
-                changeClip("turn");
+                changeClip("idle");
                 turnTimer = 0.45f;
             } else {
                 state = nextState;
@@ -748,10 +797,7 @@ public class GreenhouseScreen extends UiScreen {
             if (pamPlayer == null) return;
 
             try {
-                String clipName = AnimationFactory.resolveClipNameForPath(BEE_PAM_PATH, currentClipName);
-                if (clipName == null) clipName = currentClipName;
-
-                ClipRef clip = pamPlayer.getClip(BEE_PAM_PATH, clipName);
+                ClipRef clip = getSafeClip(pamPlayer, BEE_PAM_PATH, currentClipName);
                 if (clip == null) return;
 
                 float px = getX();
