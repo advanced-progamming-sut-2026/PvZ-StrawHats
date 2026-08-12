@@ -125,11 +125,12 @@ public class GreenhouseScreen extends UiScreen {
     }
 
     /**
-     * متد ایمن برای دریافت کلیپ انیمیشن که در صورت عدم وجود کلیپ درخواستی،
-     * به کلیپ‌های پیش‌فرض PAM متوسل می‌شود تا اکتر غیب نشود.
+     * متد ایمن جهت لود کلیپ انیمیشن برای جلوگیری از غیب شدن زنبور و آب‌پاش
      */
     private ClipRef getPamClipSafe(String path, String preferredClip) {
         if (pamPlayer == null || path == null) return null;
+
+        // ۱. تلاش با نام کلیپ حل‌شده از AnimationFactory
         try {
             String resolved = AnimationFactory.resolveClipNameForPath(path, preferredClip);
             if (resolved != null) {
@@ -138,14 +139,19 @@ public class GreenhouseScreen extends UiScreen {
             }
         } catch (Throwable ignored) {}
 
-        try {
-            ClipRef clip = pamPlayer.getClip(path, preferredClip);
-            if (clip != null) return clip;
-        } catch (Throwable ignored) {}
-
-        for (String fallback : new String[]{"animation", "idle", "main", "anim_idle", "Action"}) {
+        // ۲. تلاش مستقیم با نام کلیپ درخواست شده
+        if (preferredClip != null) {
             try {
-                ClipRef clip = pamPlayer.getClip(path, fallback);
+                ClipRef clip = pamPlayer.getClip(path, preferredClip);
+                if (clip != null) return clip;
+            } catch (Throwable ignored) {}
+        }
+
+        // ۳. فال‌بک‌های عمومی جهت جلوگیری از نامرئی شدن اکتر
+        String[] fallbacks = new String[]{"idle", "animation", "main", "anim_idle", "Action"};
+        for (String fb : fallbacks) {
+            try {
+                ClipRef clip = pamPlayer.getClip(path, fb);
                 if (clip != null) return clip;
             } catch (Throwable ignored) {}
         }
@@ -470,7 +476,7 @@ public class GreenhouseScreen extends UiScreen {
         public void act(float delta) {
             super.act(delta);
             stateTime += delta;
-            // پاکسازی ساده بر اساس زمان بدون شرط حذف ناگهانی در صورت خطای خطی
+            // اصلاح شده: فقط بر اساس زمان حذف می‌شود تا ناگهان غیب نشود
             if (stateTime >= 1.90f) {
                 remove();
             }
@@ -583,8 +589,8 @@ public class GreenhouseScreen extends UiScreen {
         private State stateAfterTurn = State.WANDERING;
 
         public BeeActor() {
-            float sw = getStage() != null ? getStage().getWidth() : 1280f;
-            float sh = getStage() != null ? getStage().getHeight() : 720f;
+            float sw = Gdx.graphics.getWidth();
+            float sh = Gdx.graphics.getHeight();
             setPosition(sw / 2f, sh / 2f);
             pickRandomTarget();
         }
@@ -602,8 +608,8 @@ public class GreenhouseScreen extends UiScreen {
             globalTime += delta;
             clipTime += delta;
 
-            float sw = getStage() != null ? getStage().getWidth() : 1280f;
-            float sh = getStage() != null ? getStage().getHeight() : 720f;
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
 
             if (cooldownTimer > 0) {
                 cooldownTimer -= delta;
@@ -709,8 +715,8 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         private void setMovementTarget(float tx, float ty, State nextState) {
-            float sw = getStage() != null ? getStage().getWidth() : 1280f;
-            float sh = getStage() != null ? getStage().getHeight() : 720f;
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
 
             this.targetX = Math.max(40f, Math.min(sw - 40f, tx));
             this.targetY = Math.max(60f, Math.min(sh - 60f, ty));
@@ -732,8 +738,8 @@ public class GreenhouseScreen extends UiScreen {
         }
 
         private void pickRandomTarget() {
-            float sw = getStage() != null ? getStage().getWidth() : 1280f;
-            float sh = getStage() != null ? getStage().getHeight() : 720f;
+            float sw = getStage() != null ? getStage().getWidth() : Gdx.graphics.getWidth();
+            float sh = getStage() != null ? getStage().getHeight() : Gdx.graphics.getHeight();
 
             float rx = 60f + (float) Math.random() * (sw - 120f);
             float ry = 90f + (float) Math.random() * (sh - 180f);
@@ -761,6 +767,7 @@ public class GreenhouseScreen extends UiScreen {
             if (pamPlayer == null) return;
 
             try {
+                // دریافت کلیپ با فال‌بک امن تا زنبور هرگز غیب نشود
                 ClipRef clip = getPamClipSafe(BEE_PAM_PATH, currentClipName);
                 if (clip == null) return;
 
