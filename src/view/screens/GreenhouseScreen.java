@@ -342,25 +342,13 @@ public class GreenhouseScreen extends UiScreen {
         if (rootTable != null) {
             rootTable.validate();
         }
-
         Table targetCell = potCellMap.get(pot);
-        if (targetCell != null && stage != null && effectStack != null) {
+        if (targetCell != null && stage != null) {
             targetCell.validate();
-            effectStack.validate();
 
-            // Convert the pot-cell position directly into the effect layer.
-            // This preserves the exact visual relationship with the pot even
-            // though the effect is no longer a direct child of Stage.
-            Vector2 effectPos = targetCell.localToActorCoordinates(
-                    effectStack,
-                    new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f)
-            );
-
-            effectPos.x += WATERING_OFFSET_X;
-            effectPos.y += WATERING_OFFSET_Y;
-
-            WateringEffectActor effect = new WateringEffectActor(effectPos.x, effectPos.y);
-            effectStack.addActor(effect);
+            Vector2 pos = targetCell.localToStageCoordinates(new Vector2(targetCell.getWidth() / 2f, targetCell.getHeight() / 2f));
+            WateringEffectActor effect = new WateringEffectActor(pos.x + WATERING_OFFSET_X, pos.y + WATERING_OFFSET_Y);
+            stage.addActor(effect);
             effect.toFront();
         }
     }
