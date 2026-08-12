@@ -116,7 +116,6 @@ public class BeforeMatchScreen extends UiScreen {
         outer.setBackground(new TextureRegionDrawable(loadTextureSafe(BOARD)));
         outer.pad(12);
 
-        // Header
         Table header = new Table();
         TextButton back = new TextButton("Back", skin);
         back.addListener(new ClickListener() {
@@ -127,7 +126,6 @@ public class BeforeMatchScreen extends UiScreen {
         header.add(back).left().width(100).height(40);
         header.add(new Label(level.getName(), skin, "title")).expandX().center();
 
-        // HUD سکه و الماس بالای صفحه
         User user = User.currentUser;
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
         int diamonds = (user != null && user.userState != null) ? user.userState.diamonds : 0;
@@ -195,6 +193,7 @@ public class BeforeMatchScreen extends UiScreen {
         box.setBackground(skin.getDrawable("card-background"));
         box.pad(8).top().left();
 
+
         List<PlantJsonParser.PlantConfig> allPlants = collectionManager.getAllPlants();
         PlantJsonParser.PlantConfig config = null;
         if (previewPlantName != null) {
@@ -219,7 +218,6 @@ public class BeforeMatchScreen extends UiScreen {
         boolean unlocked = state != null && state.isPlantUnlocked(config.id);
         int level = state != null ? Math.max(1, state.getPlantLevel(config.id)) : 1;
 
-        // کادر انیمیشن گیاه
         Stack animBox = new Stack();
         animBox.add(new Image(getRoundedAnimBgDrawable()));
         animBox.add(new Image(roundedBorderDrawable(Color.WHITE, 2f, 12f)));
@@ -235,9 +233,8 @@ public class BeforeMatchScreen extends UiScreen {
         animLayer.add(animActor).size(120, 120);
         animBox.add(animLayer);
 
-        box.add(animBox).size(125, 125).padRight(12).top();
+        box.add(animBox).size(200, 200).padRight(12).top();
 
-        // مشخصات گیاه
         Table infoTable = new Table();
         infoTable.top().left();
 
@@ -262,9 +259,8 @@ public class BeforeMatchScreen extends UiScreen {
 
         box.add(infoTable).expandX().fillX().top().padRight(12);
 
-        // دکمه‌های عملکرد (Upgrade & Boost)
         Table actionsTable = new Table();
-        actionsTable.top().right();
+        actionsTable.bottom().row().padTop(30).padLeft(-190);
 
         if (unlocked && state != null) {
             int coinCost = level * 500;
@@ -284,7 +280,7 @@ public class BeforeMatchScreen extends UiScreen {
                     }
                 });
             }
-            actionsTable.add(upgBtn).width(160).height(44).padBottom(6).row();
+            actionsTable.add(upgBtn).width(155).height(44).padTop(100);
         }
 
         int diamonds = state != null ? state.diamonds : 0;
@@ -303,9 +299,9 @@ public class BeforeMatchScreen extends UiScreen {
                 }
             }
         });
-        actionsTable.add(boostBtn).width(160).height(44);
+        actionsTable.add(boostBtn).width(155).height(44).right().padLeft(10).padTop(100);
 
-        box.add(actionsTable).top().right();
+        box.add(actionsTable).left();
 
         return box;
     }
@@ -363,7 +359,7 @@ public class BeforeMatchScreen extends UiScreen {
 
         Table viewport = new Table();
         viewport.top().left();
-        viewport.add(scrollPane).width(565f).expandY().fillY().top().left();
+        viewport.add(scrollPane).width(650f).expandY().fillY().top().left().padLeft(70);
         return viewport;
     }
 
@@ -410,7 +406,7 @@ public class BeforeMatchScreen extends UiScreen {
 
         Table gridContainer = new Table();
         gridContainer.top().left();
-        gridContainer.add(scrollPane).width(565f).expandY().fillY().top().left();
+        gridContainer.add(scrollPane).width(600f).expandY().fillY().top().left();
         return gridContainer;
     }
 
@@ -427,8 +423,8 @@ public class BeforeMatchScreen extends UiScreen {
             }
         } catch (Throwable ignored) {}
 
-        float cardW = 102f;
-        float cardH = cardW * (sampleH / sampleW); // نسبت مستطیلی دقیق کارت استاندارد
+        float cardW = 120f;
+        float cardH = cardW * (sampleH / sampleW);
 
         try {
             SeedPacketCard card = cardFactory.buildCardForDisplayName(name);
@@ -465,9 +461,9 @@ public class BeforeMatchScreen extends UiScreen {
 
         if (showLockIcon) {
             Image lockImage = new Image(loadTextureSafe(LOCK_ICON));
-            lockImage.setScaling(Scaling.fit);
+            lockImage.setScaling(Scaling.stretch);
             Container<Image> lockContainer = new Container<>(lockImage);
-            lockContainer.size(36f, 36f);
+            lockContainer.size(15f, 15f);
             lockContainer.center();
             cardStack.add(lockContainer);
         }
@@ -495,10 +491,6 @@ public class BeforeMatchScreen extends UiScreen {
         panel.setBackground(skin.getDrawable("card-background"));
         panel.pad(8).top();
 
-        Label title = new Label("LOADOUT", skin, "title");
-        title.setFontScale(0.8f);
-        panel.add(title).center().padBottom(6).row();
-
         float sampleW = 100f;
         float sampleH = 138f;
         try {
@@ -509,15 +501,13 @@ public class BeforeMatchScreen extends UiScreen {
             }
         } catch (Throwable ignored) {}
 
-        // سایز کارت‌های لود‌اوت به ارتفاع ۶۸ پیکسل افزایش یافت (بزرگ‌تر و واضح‌تر)
-        float targetH = 68f;
+        float targetH = 90f;
         float scale = targetH / sampleH;
         float targetW = sampleW * scale;
 
         Table slots = new Table();
         slots.top();
 
-        // ۷ اسلات اصلی
         for (int i = 0; i < 7; i++) {
             String name = i < BeforeMenu.selectedPlants.size()
                     ? BeforeMenu.selectedPlants.get(i) : "Empty";
@@ -538,7 +528,6 @@ public class BeforeMatchScreen extends UiScreen {
             }
         }
 
-        // اسلات ۸ام (Rent Plant)
         if (BeforeMenu.selectedPlants.size() == 8) {
             String rentedPlantName = BeforeMenu.selectedPlants.get(7);
             Actor rentedCardActor = createScaledLoadoutCard(rentedPlantName, scale, targetW, targetH, new ClickListener() {
