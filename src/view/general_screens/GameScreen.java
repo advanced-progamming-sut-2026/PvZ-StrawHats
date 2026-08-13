@@ -13,10 +13,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.util.ArrayList;
@@ -37,6 +41,10 @@ import model.collections.zombie.Zombie;
 import model.game_exceptions.GameException;
 import model.match_mechanisms.vector.Position;
 import model.pitches.Cell;
+import model.user_data.User;
+import model.user_data.UserState;
+import service.card_factory.SeedPacketCard;
+import service.card_factory.SeedPacketCardFactory;
 import model.match.main.levels.special_levels.BossLevel;
 import model.match.main.levels.special_levels.ConveyorBeltLevel;
 import model.match.main.levels.special_levels.DeadLineLevel;
@@ -54,19 +62,22 @@ import model.utils.GameSettings;
 import service.GameClock;
 import service.resource_manager.AudioManager;
 
-/**
- * The live match screen: 5x9 lawn, real-time zombie waves, planting/shovel/plant-food, HUD,
- * pause and win/loss modals. All gameplay mutation goes back through the same Menu commands the
- * terminal build used (see MeanwhileMenu), so validation/cost/cooldown logic isn't duplicated
- * here - this screen only ticks the simulation and turns clicks into command strings.
- *
- * Art: every plant/zombie/item is drawn from GameAssetManager's atlases when a region exists;
- * anything not supplied yet falls back to a tinted, labeled rectangle so the board is still fully readable.
- */
-
 public class GameScreen extends UiScreen {
 
     private static final float TILE_SIZE = 96f;
+
+    private static final String SUN_ICON = "images/chapters/egypt/egypt_gameplay/sun.png";
+    private static final String PLANT_FOOD_ICON = "images/chapters/egypt/egypt_gameplay/plantfood.png";
+    private static final String COIN_ICON = "images/ui/buttons_coin_buy_normal.png";
+
+    private static final String BOARD_BG_EGYPT = "images/chapters/egypt/egypt_gameplay/map.png";
+    private static final String BOARD_BG_DEFAULT_DAY = "images/chapters/egypt/egypt_gameplay/map.png";
+    private static final String BOARD_BG_DEFAULT_NIGHT = "images/chapters/egypt/egypt_gameplay/map.png";
+    private static final String BOARD_BG_BEACH = "images/chapters/egypt/egypt_gameplay/map.png";
+    private static final String BOARD_BG_FROSTBITE = "images/chapters/egypt/egypt_gameplay/map.png";
+    private static final String BOARD_BG_DARK_AGES = "images/chapters/egypt/egypt_gameplay/map.png";
+
+    private static final float SIDEBAR_CARD_WIDTH = 105f;
 
     private enum Tool { NONE, SHOVEL, FEED }
 
@@ -86,26 +97,34 @@ public class GameScreen extends UiScreen {
     private TextureRegion whitePixel;
     private BitmapFont font;
     private boolean ownsFont;
-    private Texture egyptBackgroundTexture;
+    private Texture boardBackgroundTexture;
     private Label specialInfoLabel;
 
-    private Label sunLabel;
-    private Label plantFoodLabel;
+    private final SeedPacketCardFactory seedCardFactory = new SeedPacketCardFactory();
+
+    private Label sunAmountLabel;
+    private Label plantFoodAmountLabel;
+    private Label coinAmountLabel;
     private WaveProgressBar waveBar;
     private TextButton pauseButton;
     private TextButton shovelButton;
     private TextButton feedButton;
     private TextButton startWavesButton;
-    private Table loadoutTable;
+    private Table plantCardList;
     private final List<LoadoutEntry> loadoutEntries = new ArrayList<>();
 
-    private record LoadoutEntry(String plantName, int plantId, int cost, TextButton button) {
+    private record LoadoutEntry(String plantName, int plantId, int cost, Stack cardStack,
+                                Label costLabel, Label cooldownLabel,
+                                Image dimOverlay, Image selectionBorder) {
+    }
+
+    private record CurrencyWidget(Table widget, Label label) {
     }
 
     @Override
     public void initParticles() {
         particles = new ParticleCreator(
-                new String[]{},  // TODO: define a default particle
+                new String[]{},
                 18, 4, 9, 0.3f, false, 0f, 0f, boardWidth, boardHeight);
         rootStack.addActorAt(1, particles.createActor());
     }
@@ -127,13 +146,10 @@ public class GameScreen extends UiScreen {
         font = new BitmapFont();
         ownsFont = true;
 
-        if (isEgyptLevel()) {
-            String path = "assets/images/backg/egyptbg.png";
-            if (!Gdx.files.internal(path).exists()) path = "images/backg/egyptbg.png";
-            if (Gdx.files.internal(path).exists()) {
-                egyptBackgroundTexture = new Texture(Gdx.files.internal(path));
-                egyptBackgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            }
+        String backgroundPath = resolveExistingAssetPath(resolveBoardBackgroundPath());
+        if (Gdx.files.internal(backgroundPath).exists()) {
+            boardBackgroundTexture = new Texture(Gdx.files.internal(backgroundPath));
+            boardBackgroundTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         }
 
         createHud();
@@ -146,11 +162,24 @@ public class GameScreen extends UiScreen {
         }
     }
 
-    // ---------------------------------------------------------------- HUD
+    private static String resolveExistingAssetPath(String path) {
+        if (path == null || Gdx.files.internal(path).exists() || !path.startsWith("assets/")) {
+            return path;
+        }
+        String withoutPrefix = path.substring("assets/".length());
+        return Gdx.files.internal(withoutPrefix).exists() ? withoutPrefix : path;
+    }
+
+
 
     private void createHud() {
-        sunLabel = new Label("", skin);
-        plantFoodLabel = new Label("", skin);
+        CurrencyWidget sunWidget = buildCurrencyWidget(SUN_ICON);
+        CurrencyWidget plantFoodWidget = buildCurrencyWidget(PLANT_FOOD_ICON);
+        CurrencyWidget coinWidget = buildCurrencyWidget(COIN_ICON);
+        sunAmountLabel = sunWidget.label();
+        plantFoodAmountLabel = plantFoodWidget.label();
+        coinAmountLabel = coinWidget.label();
+
         waveBar = new WaveProgressBar();
         specialInfoLabel = new Label("", skin, "main");
         specialInfoLabel.setAlignment(1);
@@ -187,44 +216,131 @@ public class GameScreen extends UiScreen {
             }
         });
 
+        Table currencyRow = new Table();
+        currencyRow.add(sunWidget.widget()).pad(4);
+        currencyRow.add(plantFoodWidget.widget()).pad(4);
+        currencyRow.add(coinWidget.widget()).pad(4);
+
         Table topBar = new Table();
-        topBar.add(sunLabel).pad(8);
-        topBar.add(plantFoodLabel).pad(8);
-        topBar.add(waveBar).width(320).height(18).pad(8).expandX();
-        topBar.add(specialInfoLabel).width(300).pad(8);
+        topBar.add(currencyRow).pad(4);
+        topBar.add(waveBar).width(260).height(18).pad(8).expandX();
+        topBar.add(specialInfoLabel).width(260).pad(8);
         topBar.add(startWavesButton).pad(8);
         topBar.add(pauseButton).pad(8);
 
-        loadoutTable = new Table();
-        buildLoadoutBar();
-
-        Table bottomBar = new Table();
-        bottomBar.add(loadoutTable).pad(6);
-        bottomBar.add(shovelButton).size(110, 60).pad(6);
-        bottomBar.add(feedButton).size(110, 60).pad(6);
+        Table plantPanel = buildPlantCardPanel();
 
         rootTable.top();
-        rootTable.add(topBar).expandX().fillX().top().row();
-        rootTable.add().expand().row();
-        rootTable.add(bottomBar).expandX().fillX().bottom();
+        rootTable.add(topBar).colspan(2).expandX().fillX().top().row();
+        rootTable.add(plantPanel).top().left().padLeft(10).padTop(8).expandY().fillY();
+        rootTable.add().expand().fill();
+        rootTable.row();
     }
 
-    private void buildLoadoutBar() {
-        loadoutTable.clear();
+    private CurrencyWidget buildCurrencyWidget(String iconPath) {
+        Stack stack = new Stack();
+        Image icon = new Image(loadTextureSafe(resolveExistingAssetPath(iconPath)));
+        Label label = new Label("0", skin, "title");
+
+        Table labelTable = new Table();
+        labelTable.add(label).center().expand();
+
+        stack.add(icon);
+        stack.add(labelTable);
+
+        Table widget = new Table();
+        widget.add(stack).size(112, 46);
+        return new CurrencyWidget(widget, label);
+    }
+
+    private Table buildPlantCardPanel() {
+        Table panel = new Table();
+        panel.setBackground(skin.getDrawable("card-background"));
+        panel.pad(10).top();
+
+        plantCardList = new Table();
+        plantCardList.top();
+        rebuildPlantCards();
+
+        ScrollPane scrollPane = scrollable(plantCardList);
+        panel.add(scrollPane).width(SIDEBAR_CARD_WIDTH + 24).expand().fill().row();
+
+        panel.add(shovelButton).size(SIDEBAR_CARD_WIDTH + 24, 56).padTop(10).row();
+        panel.add(feedButton).size(SIDEBAR_CARD_WIDTH + 24, 56).padTop(6);
+
+        return panel;
+    }
+
+    private void rebuildPlantCards() {
+        plantCardList.clear();
         loadoutEntries.clear();
+
         for (String plantName : BeforeMenu.selectedPlants) {
             PlantJsonParser.PlantConfig config = findPlantConfig(plantName);
             if (config == null) continue;
 
-            TextButton button = new TextButton(plantName, skin);
-            button.addListener(new ClickListener() {
+            Stack cardStack = new Stack();
+            float cardW = 150f, cardH = 190f;
+            try {
+                SeedPacketCard card = seedCardFactory.buildCardForDisplayName(plantName);
+                if (card != null) {
+                    cardW = card.getWidth();
+                    cardH = card.getHeight();
+                    cardStack.add(card);
+                }
+            } catch (Throwable ignored) {
+            }
+
+            if (cardStack.getChildren().isEmpty()) {
+                Table fallback = new Table();
+                fallback.setBackground(skin.getDrawable("card-background"));
+                Label label = new Label(plantName, skin, "main");
+                label.setAlignment(Align.center);
+                label.setWrap(true);
+                fallback.add(label).center();
+                cardStack.add(fallback);
+            }
+
+            float slotW = SIDEBAR_CARD_WIDTH;
+            float slotH = cardH * (slotW / cardW);
+            cardStack.setSize(slotW, slotH);
+
+            Image dimOverlay = new Image(skin.getDrawable("modal-background"));
+            dimOverlay.setColor(0f, 0f, 0f, 0.6f);
+            dimOverlay.setVisible(false);
+            cardStack.add(dimOverlay);
+
+            Image selectionBorder = new Image(skin.getDrawable("card-background"));
+            selectionBorder.setColor(1f, 0.85f, 0.2f, 0.35f);
+            selectionBorder.setVisible(false);
+            cardStack.add(selectionBorder);
+
+            Label cooldownLabel = new Label("", skin, "title");
+            Table cooldownWrap = new Table();
+            cooldownWrap.add(cooldownLabel).expand().center();
+            cardStack.add(cooldownWrap);
+
+            Label costLabel = new Label(String.valueOf(config.cost), skin, "main");
+            Table costRow = new Table();
+            costRow.bottom();
+            costRow.add(costLabel).padBottom(4);
+            cardStack.add(costRow);
+
+            cardStack.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
+
+
+
+                    event.stop();
+                    if (dimOverlay.isVisible()) return;
                     armPlant(plantName);
                 }
             });
-            loadoutTable.add(button).size(110, 70).pad(4);
-            loadoutEntries.add(new LoadoutEntry(plantName, config.id, config.cost, button));
+
+            plantCardList.add(cardStack).size(slotW, slotH).pad(6).row();
+            loadoutEntries.add(new LoadoutEntry(plantName, config.id, config.cost,
+                    cardStack, costLabel, cooldownLabel, dimOverlay, selectionBorder));
         }
     }
 
@@ -236,8 +352,11 @@ public class GameScreen extends UiScreen {
     }
 
     private void refreshHud() {
-        sunLabel.setText("Sun: " + session.getSunCount());
-        plantFoodLabel.setText("Plant food: " + session.getPlantFoodCount());
+        sunAmountLabel.setText(String.valueOf(session.getSunCount()));
+        plantFoodAmountLabel.setText(String.valueOf(session.getPlantFoodCount()));
+        UserState userState = User.currentUser != null ? User.currentUser.userState : null;
+        coinAmountLabel.setText(String.valueOf(userState != null ? userState.coins : 0));
+
         int totalWaves = Math.max(1, session.getTotalWaveCount());
         waveBar.setProgress((float) session.getWavesSpawnedCount() / totalWaves, session.getTotalWaveCount());
         startWavesButton.setVisible(!session.isWavesStarted());
@@ -245,10 +364,10 @@ public class GameScreen extends UiScreen {
         for (LoadoutEntry entry : loadoutEntries) {
             boolean ready = session.isPlantReady(entry.plantId());
             boolean affordable = session.getSunCount() >= entry.cost();
-            String cooldownText = ready ? "" : String.format("%n%.1fs", session.getPlantCooldown(entry.plantId()));
-            entry.button().setText(entry.plantName() + " (" + entry.cost() + ")" + cooldownText);
-            entry.button().setDisabled(!ready || !affordable);
-            entry.button().setChecked(entry.plantName().equals(armedPlantName));
+            entry.cooldownLabel().setText(ready ? "" : String.format("%.1fs", session.getPlantCooldown(entry.plantId())));
+            entry.dimOverlay().setVisible(!ready || !affordable);
+            entry.selectionBorder().setVisible(entry.plantName().equals(armedPlantName));
+            entry.costLabel().setColor(affordable ? Color.WHITE : new Color(0.9f, 0.2f, 0.2f, 1f));
         }
         shovelButton.setChecked(armedTool == Tool.SHOVEL);
         feedButton.setChecked(armedTool == Tool.FEED);
@@ -274,7 +393,6 @@ public class GameScreen extends UiScreen {
 
 
 
-    /** Receives clicks that are not consumed by the HUD. */
     private void addBoardClickCatcher() {
         rootStack.addListener(new ClickListener() {
             @Override
@@ -325,12 +443,6 @@ public class GameScreen extends UiScreen {
         }
     }
 
-    /**
-     * Sends a command to whatever Menu is currently active and reports failures as a toast.
-     * Returns true on success, so callers can chain a follow-up action.
-     *
-     * @return
-     */
     public boolean runCommand(String command) {
         try {
             App.currentMenu.handleCommand(command);
@@ -338,23 +450,40 @@ public class GameScreen extends UiScreen {
         } catch (GameException e) {
             Toast.show(stage, e.getMessage());
             return false;
+        } catch (Exception e) {
+            
+            
+            Gdx.app.error("GameScreen", "Uncaught exception running command: " + command, e);
+            Toast.show(stage, "Something went wrong (" +
+                    (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()) + ").");
+            return false;
         }
     }
 
-    // ------------------------------------------------------------ Update
+
 
     @Override
     public void render(float delta) {
         if (!paused && !matchFinished) {
             tickAccumulator += delta * GameSettings.get().getGameSpeed();
-            while (tickAccumulator >= GameClock.SECONDS_PER_TICK) {
-                session.tick();
-                tickAccumulator -= GameClock.SECONDS_PER_TICK;
-                checkMatchEnd();
-                if (matchFinished) {
-                    tickAccumulator = 0;
-                    break;
+            try {
+                while (tickAccumulator >= GameClock.SECONDS_PER_TICK) {
+                    session.tick();
+                    tickAccumulator -= GameClock.SECONDS_PER_TICK;
+                    checkMatchEnd();
+                    if (matchFinished) {
+                        tickAccumulator = 0;
+                        break;
+                    }
                 }
+            } catch (Exception e) {
+
+                Gdx.app.error("GameScreen", "Uncaught exception during session.tick()", e);
+                Toast.show(stage, "Something went wrong during the match ("
+                        + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
+                        + "). The match has been paused - please save & exit.");
+                paused = true;
+                tickAccumulator = 0;
             }
             updateHoverAndCollection();
         }
@@ -367,7 +496,7 @@ public class GameScreen extends UiScreen {
         drawBoard();
         AudioManager.get().update(delta);
 
-        super.render(delta); // stage.act + stage.draw: HUD, modals, toasts
+        super.render(delta);
     }
 
     private void refreshSpecialHud() {
@@ -416,7 +545,7 @@ public class GameScreen extends UiScreen {
         }
     }
 
-    // ------------------------------------------------------------ Render
+
 
     private void drawBoard() {
         boardCamera.update();
@@ -437,15 +566,14 @@ public class GameScreen extends UiScreen {
     }
 
     private void drawBackground() {
-        boolean night = session.getLevel() != null && session.getLevel().getSeason() != null
-                && session.getLevel().getSeason().isNight();
-
-        if (egyptBackgroundTexture != null) {
+        if (boardBackgroundTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(egyptBackgroundTexture, 0, 0, boardWidth, boardHeight);
+            batch.draw(boardBackgroundTexture, 0, 0, boardWidth, boardHeight);
             return;
         }
 
+        boolean night = session.getLevel() != null && session.getLevel().getSeason() != null
+                && session.getLevel().getSeason().isNight();
         Color base = night ? new Color(0.12f, 0.16f, 0.24f, 1f) : new Color(0.36f, 0.56f, 0.27f, 1f);
         batch.setColor(base);
         batch.draw(whitePixel, 0, 0, boardWidth, boardHeight);
@@ -457,6 +585,21 @@ public class GameScreen extends UiScreen {
                 && session.getLevel() != null
                 && session.getLevel().getSeason() != null
                 && "Egypt".equalsIgnoreCase(session.getLevel().getSeason().getName());
+    }
+
+    private String resolveBoardBackgroundPath() {
+        boolean night = session.getLevel() != null && session.getLevel().getSeason() != null
+                && session.getLevel().getSeason().isNight();
+        String seasonName = session.getLevel() != null && session.getLevel().getSeason() != null
+                ? session.getLevel().getSeason().getName() : null;
+
+        if (seasonName != null) {
+            if (seasonName.equalsIgnoreCase("Egypt")) return BOARD_BG_EGYPT;
+            if (seasonName.equalsIgnoreCase("Big Wave Beach")) return BOARD_BG_BEACH;
+            if (seasonName.equalsIgnoreCase("Frostbite Caves")) return BOARD_BG_FROSTBITE;
+            if (seasonName.equalsIgnoreCase("Dark Ages")) return BOARD_BG_DARK_AGES;
+        }
+        return night ? BOARD_BG_DEFAULT_NIGHT : BOARD_BG_DEFAULT_DAY;
     }
 
     private void drawSeasonEffects() {
@@ -716,11 +859,12 @@ public class GameScreen extends UiScreen {
     public void dispose() {
         super.dispose();
         if (whitePixel != null) whitePixel.getTexture().dispose();
-        if (egyptBackgroundTexture != null) egyptBackgroundTexture.dispose();
+        if (boardBackgroundTexture != null) boardBackgroundTexture.dispose();
         if (ownsFont && font != null) font.dispose();
+        seedCardFactory.dispose();
     }
 
-    // -------------------------------------------------------- End-of-match
+
 
     private void retryMatch() {
         MatchMenu matchMenu = new MatchMenu();
@@ -736,10 +880,10 @@ public class GameScreen extends UiScreen {
             matchFinished = false;
             paused = false;
             tickAccumulator = 0;
-            buildLoadoutBar();
+            rebuildPlantCards();
         } else {
-            // The stage requires picking a loadout again (BeforeMenu); no graphical loadout
-            // screen exists yet, so we can't drop the player straight back into a match here.
+
+
             Toast.show(stage, "Pick your plants to retry - the loadout screen isn't wired up yet.");
         }
     }
@@ -778,7 +922,7 @@ public class GameScreen extends UiScreen {
                 public void clicked(InputEvent event, float x, float y) {
                     runCommand("menu exit");
                     hide();
-                    // TODO: once a graphical GameMenu screen exists, ScreenManager.setScreen(...) there.
+
                 }
             });
             add(exit).width(220).height(50).pad(6);
@@ -815,14 +959,14 @@ public class GameScreen extends UiScreen {
                         runCommand("menu exit");
                     }
                     hide();
-                    // TODO: once a graphical GameMenu screen exists, ScreenManager.setScreen(...) there.
+
                 }
             });
             add(exit).width(220).height(50).pad(6);
         }
     }
 
-    // ---------------------------------------------------------------- Wave bar
+
 
 
     private class WaveProgressBar extends Actor {
