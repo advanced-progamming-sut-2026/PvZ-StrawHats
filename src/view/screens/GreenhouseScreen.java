@@ -192,7 +192,7 @@ public class GreenhouseScreen extends UiScreen {
     private void build() {
         rootTable.clear();
 
-        rootTable.add(buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
+        rootTable.add( buildTopBar()).fillX().padTop(5).padLeft(15).padRight(15).row();
         Label label = new Label("Greenhouse", skin, "title");
         label.setFontScale(1.8f);
         rootTable.add(label).padTop(SPACE_MD).padBottom(-160).row();

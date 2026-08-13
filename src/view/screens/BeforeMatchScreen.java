@@ -11,8 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -52,6 +52,7 @@ public class BeforeMatchScreen extends UiScreen {
 
     private static final String BACKGROUND = "assets/images/backg/mainmenu_background.png";
     private static final String BOARD = "assets/images/backg/wood board.png";
+    private static final String BACK_ICON = "assets/images/ui/buttons_hud_back_normal.png";
     private static final String LOCK_ICON = "assets/images/ui/collection/lock_small_gold.png";
     private static final String COIN_ICON = "assets/images/ui/buttons_coin_buy_normal.png";
     private static final String GEM_ICON = "assets/images/ui/buttons_premium_normal.png";
@@ -60,6 +61,8 @@ public class BeforeMatchScreen extends UiScreen {
     private static final Color GREEN = new Color(0.30f, 0.75f, 0.25f, 1f);
     private static final Color GRAY = new Color(0.45f, 0.45f, 0.45f, 1f);
     private static final Color PURPLE = new Color(0.60f, 0.30f, 0.85f, 1f);
+
+    private static final int PLANT_GRID_COLUMNS = 6;
 
     private final SeedPacketCardFactory cardFactory = new SeedPacketCardFactory();
     private final CollectionManager collectionManager = new CollectionManager();
@@ -77,6 +80,7 @@ public class BeforeMatchScreen extends UiScreen {
 
     @Override
     public void show() {
+        setBackground(BACKGROUND);
         if (textureBank == null) {
             try {
                 FileHandle rootHandle = Gdx.files.internal("assets/pvz-assets");
@@ -104,7 +108,7 @@ public class BeforeMatchScreen extends UiScreen {
 
     private void build() {
         rootTable.clear();
-        rootTable.setBackground(new TextureRegionDrawable(loadTextureSafe(BACKGROUND)));
+        cards.clear();
 
         Level level = GameSession.peekInstance() == null ? null : GameSession.peekInstance().getLevel();
         if (level == null) {
@@ -112,69 +116,107 @@ public class BeforeMatchScreen extends UiScreen {
             return;
         }
 
-        Table outer = new Table();
-        outer.setBackground(new TextureRegionDrawable(loadTextureSafe(BOARD)));
-        outer.pad(12);
+        Table topBar = buildTopBar(level);
+        Table middle = buildMiddleSection(level);
+        Table bottom = buildBottomBar();
 
-        Table header = new Table();
-        TextButton back = new TextButton("Back", skin);
-        back.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                runCommand("menu exit");
-            }
-        });
-        header.add(back).left().width(100).height(40);
-        header.add(new Label(level.getName(), skin, "title")).expandX().center();
+        // Same three-row shape as every other screen (e.g. EgyptStagesScreen): a fillX
+        // header, a middle row that actually receives the leftover vertical space via
+        // expand(), and a fillX footer - added straight to rootTable (already fixed at
+        // SCREEN_WIDTH x SCREEN_HEIGHT via setFillParent(true) in BaseScreen), not nested
+        // inside a self-padded wrapper table that has to guess its own height budget.
+        rootTable.add(topBar).fillX().padTop(5).padLeft(15).padRight(15).row();
+        rootTable.add(middle).expand().center().padTop(SPACE_SM).row();
+        rootTable.add(bottom).fillX().padBottom(SPACE_SM);
+
+        // Same as EgyptStagesScreen: the middle row's ScrollPane content can otherwise
+        // paint over these two in the actor draw order even though the Table cells
+        // themselves are correctly bounded - push them to the front explicitly.
+        topBar.toFront();
+        bottom.toFront();
+    }
+
+    private Table buildTopBar(Level level) {
+        Table topBar = new Table();
+
+        ImageButton back = createIconButton(BACK_ICON, 44, 44, () -> runCommand("menu exit"));
+
+        Table topLeft = new Table();
+        topLeft.add(back).padRight(SPACE_MD);
+        Label nameLabel = new Label(level.getName(), skin, "title");
+        nameLabel.setFontScale(0.9f);
+        topLeft.add(nameLabel);
 
         User user = User.currentUser;
         int coins = (user != null && user.userState != null) ? user.userState.coins : 0;
         int diamonds = (user != null && user.userState != null) ? user.userState.diamonds : 0;
 
         Table topRight = new Table();
-        topRight.right();
-        topRight.add(createResourceWidget(COIN_ICON, String.valueOf(coins))).padRight(10);
+        topRight.add(createResourceWidget(COIN_ICON, String.valueOf(coins))).padRight(SPACE_SM);
         topRight.add(createResourceWidget(GEM_ICON, String.valueOf(diamonds)));
 
-        header.add(topRight).right();
-        outer.add(header).fillX().row();
+        topBar.add(topLeft).left().expandX();
+        topBar.add(topRight).right();
+        return topBar;
+    }
 
-        // Description
+    private Table buildMiddleSection(Level level) {
+        Table board = new Table();
+        board.setBackground(new TextureRegionDrawable(loadTextureSafe(BOARD)));
+        board.pad(SPACE_MD);
+        board.top();
+
         String mode = level.getGameMode() == null ? "Adventure" : level.getGameMode();
         Label description = new Label(mode + " - Select up to 7 plants (+1 rented). Forced plants are added automatically.",
                 skin, "main");
         description.setAlignment(Align.center);
-        description.setFontScale(0.85f);
+        description.setFontScale(0.8f);
         description.setWrap(true);
-        outer.add(description).width(800).padTop(2).padBottom(4).row();
+        board.add(description).colspan(2).fillX().padBottom(SPACE_XS).row();
 
         if (level instanceof ConveyorBeltLevel) {
-            outer.add(buildConveyorNotice()).fillX().padBottom(6).row();
+            board.add(buildConveyorNotice()).colspan(2).fillX().padBottom(SPACE_XS).row();
         }
 
-        // Content Area (Loadout on LEFT, Details + Grid on RIGHT)
-        Table content = new Table();
-        content.top().left();
-        content.add(buildLoadoutPanel(level)).top().left().padRight(20);
+        // Both columns get expandY().fillY() so they share whatever height 'board' is
+        // actually given by its own cell in build() (bounded via rootTable's expand()
+        // row), instead of each guessing its own preferred height independently -
+        // that mismatch (grid taller than its slot) was what pushed the header and
+        // Start button off-screen before.
+        board.add(buildLoadoutPanel(level)).expandY().fillY().top().left().padRight(SPACE_MD);
+        board.add(buildRightPanel(level)).expand().fill().top().left();
 
+        Table sized = new Table();
+        sized.add(board).width(1200f).height(600f);
+        return sized;
+    }
+
+    private Table buildRightPanel(Level level) {
         Table rightPanel = new Table();
         rightPanel.top().left();
-        rightPanel.add(buildPreviewPanel()).width(565f).padBottom(8).row();
-        rightPanel.add(buildPlantGrid(level)).width(565f).expandY().fillY();
+        rightPanel.add(buildPreviewPanel()).fillX().padBottom(SPACE_SM).row();
+        rightPanel.add(buildPlantGrid(level)).expand().fill();
+        return rightPanel;
+    }
 
-        content.add(rightPanel).width(565f).top().left();
-        outer.add(content).top().left().padTop(4).row();
-
+    private Table buildBottomBar() {
         Table bottom = new Table();
-        TextButton start = new TextButton("Let's Rock!", skin);
-        start.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                runCommand("start game");
+        TextButton start = primaryButton("Let's Rock!", () -> runCommand("start game"));
+        bottom.add(start).right().expandX().width(200).height(48);
+        return bottom;
+    }
+
+    private ImageButton createIconButton(String path, float width, float height, Runnable action) {
+        TextureRegionDrawable drawable = new TextureRegionDrawable(loadTextureSafe(path));
+        ImageButton button = new ImageButton(drawable);
+        button.getImageCell().size(width, height);
+        button.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                action.run();
             }
         });
-        bottom.add(start).right().expandX().width(200).height(45);
-        outer.add(bottom).fillX().padTop(6);
-
-        rootTable.add(outer).expand().fill().pad(10);
+        return button;
     }
 
     private Table buildConveyorNotice() {
@@ -260,7 +302,7 @@ public class BeforeMatchScreen extends UiScreen {
         box.add(infoTable).expandX().fillX().top().padRight(12);
 
         Table actionsTable = new Table();
-        actionsTable.bottom().row().padTop(30).padLeft(-190);
+        actionsTable.bottom();
 
         if (unlocked && state != null) {
             int coinCost = level * 500;
@@ -280,7 +322,7 @@ public class BeforeMatchScreen extends UiScreen {
                     }
                 });
             }
-            actionsTable.add(upgBtn).width(155).height(44).padTop(100);
+            actionsTable.add(upgBtn).width(155).height(44);
         }
 
         int diamonds = state != null ? state.diamonds : 0;
@@ -299,7 +341,7 @@ public class BeforeMatchScreen extends UiScreen {
                 }
             }
         });
-        actionsTable.add(boostBtn).width(155).height(44).right().padLeft(10).padTop(100);
+        actionsTable.add(boostBtn).width(155).height(44).right().padLeft(10);
 
         box.add(actionsTable).left();
 
@@ -338,28 +380,23 @@ public class BeforeMatchScreen extends UiScreen {
 
     private Actor buildLockedPlantsGrid(List<String> names, LockedPlantsLevel lockedLevel) {
         Table grid = new Table();
-        grid.top().left();
+        grid.top();
 
-        int index = 0;
-        for (String name : names) {
+        Table currentRow = null;
+        for (int i = 0; i < names.size(); i++) {
+            if (i % PLANT_GRID_COLUMNS == 0) {
+                currentRow = new Table();
+                grid.add(currentRow).center().padBottom(SPACE_SM).row();
+            }
+            String name = names.get(i);
             boolean locked = isPlantLockedInLevel(lockedLevel, name);
             Actor card = buildCard(name, locked, locked);
-            grid.add(card).pad(3f);
-            index++;
-            if (index % 5 == 0) {
-                grid.row();
-            }
+            currentRow.add(card).padLeft(SPACE_XS).padRight(SPACE_XS);
         }
-
-        ScrollPane.ScrollPaneStyle scrollStyle = new ScrollPane.ScrollPaneStyle();
-        ScrollPane scrollPane = new ScrollPane(grid, scrollStyle);
-        scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false);
-        scrollPane.setCancelTouchFocus(false);
 
         Table viewport = new Table();
         viewport.top().left();
-        viewport.add(scrollPane).width(650f).expandY().fillY().top().left().padLeft(70);
+        viewport.add(scrollable(grid)).expand().fill().top().left();
         return viewport;
     }
 
@@ -385,62 +422,43 @@ public class BeforeMatchScreen extends UiScreen {
     private Actor buildGridContainer(List<String> names, java.util.function.Predicate<String> darkened,
                                      java.util.function.Predicate<String> showLockIcon) {
         Table grid = new Table();
-        grid.top().left();
+        grid.top();
 
-        int index = 0;
-        for (String name : names) {
+        Table currentRow = null;
+        for (int i = 0; i < names.size(); i++) {
+            if (i % PLANT_GRID_COLUMNS == 0) {
+                currentRow = new Table();
+                grid.add(currentRow).center().padBottom(SPACE_SM).row();
+            }
+            String name = names.get(i);
             boolean isDarkened = darkened.test(name);
             Actor card = buildCard(name, isDarkened, showLockIcon.test(name));
-            grid.add(card).pad(3f);
-            index++;
-            if (index % 5 == 0) {
-                grid.row();
-            }
+            currentRow.add(card).padLeft(SPACE_XS).padRight(SPACE_XS);
         }
-
-        ScrollPane.ScrollPaneStyle scrollStyle = new ScrollPane.ScrollPaneStyle();
-        ScrollPane scrollPane = new ScrollPane(grid, scrollStyle);
-        scrollPane.setFadeScrollBars(false);
-        scrollPane.setScrollingDisabled(true, false);
-        scrollPane.setCancelTouchFocus(false);
 
         Table gridContainer = new Table();
         gridContainer.top().left();
-        gridContainer.add(scrollPane).width(600f).expandY().fillY().top().left();
+        gridContainer.add(scrollable(grid)).expand().fill().top().left();
         return gridContainer;
     }
 
     private Actor buildCard(String name, boolean darkened, boolean showLockIcon) {
         Stack cardStack = new Stack();
 
-        float sampleW = 100f;
-        float sampleH = 138f;
-        try {
-            SeedPacketCard sampleCard = cardFactory.buildCardForDisplayName("Peashooter");
-            if (sampleCard != null && sampleCard.getWidth() > 0 && sampleCard.getHeight() > 0) {
-                sampleW = sampleCard.getWidth();
-                sampleH = sampleCard.getHeight();
-            }
-        } catch (Throwable ignored) {}
-
-        float cardW = 120f;
-        float cardH = cardW * (sampleH / sampleW);
+        float cardW = 108f;
+        float cardH = cardW * 1.38f;
 
         try {
             SeedPacketCard card = cardFactory.buildCardForDisplayName(name);
             if (card != null) {
-                float scale = cardW / sampleW;
-                card.setTransform(true);
-                card.setOrigin(0, 0);
-                card.setScale(scale);
-
-                Container<SeedPacketCard> cardContainer = new Container<>(card);
-                cardContainer.size(cardW, cardH);
-                cardContainer.top().left();
-                cardStack.add(cardContainer);
+                cardW = card.getWidth();
+                cardH = card.getHeight();
+                cardStack.add(card);
             }
         } catch (Throwable ignored) {
         }
+
+        cardStack.setSize(cardW, cardH);
 
         if (cardStack.getChildren().isEmpty()) {
             Table fallback = new Table();
@@ -463,7 +481,7 @@ public class BeforeMatchScreen extends UiScreen {
             Image lockImage = new Image(loadTextureSafe(LOCK_ICON));
             lockImage.setScaling(Scaling.stretch);
             Container<Image> lockContainer = new Container<>(lockImage);
-            lockContainer.size(15f, 15f);
+            lockContainer.size(22f, 22f);
             lockContainer.center();
             cardStack.add(lockContainer);
         }
@@ -501,7 +519,11 @@ public class BeforeMatchScreen extends UiScreen {
             }
         } catch (Throwable ignored) {}
 
-        float targetH = 90f;
+        // Sized to comfortably fit all 8 slots (7 loadout + 1 rent) without needing to
+        // scroll on the board's current 600px height budget - was 76f before, which
+        // needed 684px total (8 slots + panel padding + counter label) and silently
+        // overflowed the board's actual ~500px available height for this column.
+        float targetH = 58f;
         float scale = targetH / sampleH;
         float targetW = sampleW * scale;
 
@@ -550,13 +572,13 @@ public class BeforeMatchScreen extends UiScreen {
             slots.add(rentSlot).size(targetW, targetH).padTop(4f).padBottom(2f).row();
         }
 
-        panel.add(slots).top().row();
+        panel.add(scrollable(slots)).expand().fill().row();
 
         int currentSelected = Math.min(BeforeMenu.selectedPlants.size(), 7);
         Label info = new Label(currentSelected + "/7", skin, "main");
         info.setAlignment(Align.center);
         info.setFontScale(0.8f);
-        panel.add(info).padTop(6).row();
+        panel.add(info).padTop(6);
 
         return panel;
     }
@@ -713,9 +735,7 @@ public class BeforeMatchScreen extends UiScreen {
 
         popupOverlay.add(overlayStack).expand().fill();
 
-        if (rootTable.getStage() != null) {
-            rootTable.getStage().addActor(popupOverlay);
-        }
+        getModalStack().add(popupOverlay);
         activePopup = popupOverlay;
     }
 
@@ -754,9 +774,7 @@ public class BeforeMatchScreen extends UiScreen {
         overlayStack.add(windowContainer);
 
         popupOverlay.add(overlayStack).expand().fill();
-        if (rootTable.getStage() != null) {
-            rootTable.getStage().addActor(popupOverlay);
-        }
+        getModalStack().add(popupOverlay);
     }
 
     private int getUserCoins() {
