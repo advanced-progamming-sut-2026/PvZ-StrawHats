@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -107,8 +108,7 @@ public class EgyptGameScreen extends GameScreen {
             }
         }
 
-        com.badlogic.gdx.scenes.scene2d.ui.ScrollPane scroll =
-                new com.badlogic.gdx.scenes.scene2d.ui.ScrollPane(pool, skin);
+        ScrollPane scroll = new ScrollPane(pool);
         scroll.setScrollingDisabled(true, false);
         scroll.setFadeScrollBars(false);
         scroll.setOverscroll(false, false);
