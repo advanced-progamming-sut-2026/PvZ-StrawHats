@@ -301,33 +301,44 @@ public class GameSession {
         GeneralPrinter.print("Wave difficulty: " + wave.getWaveCost() + ".");
 
         if (level != null && level.getSeason() != null) {
-            level.getSeason().onWaveStart(this, nextWaveIndex);
+            try {
+                level.getSeason().onWaveStart(this, nextWaveIndex);
+            } catch (Exception e) {
+                com.badlogic.gdx.Gdx.app.error("GameSession", "Season.onWaveStart() failed for wave " + waveNumber, e);
+            }
         }
 
         currentWaveZombies = new ArrayList<>();
         int totalHp = 0;
 
+        boolean isSandstormWave = wave.isFinalWave() && level != null && level.getSeason() instanceof Egypt;
+        int sandstormOffset = isSandstormWave ? SandStorm.sandstorm() : 0;
+        if (isSandstormWave) {
+            GeneralPrinter.print("Sandstorm!");
+        }
+
         for (Zombie template : wave.getWaveZombies()) {
-            int lane = ITEM_RANDOM.nextInt(getRows());
-            int spawnColumn = getCols() - 1;
-            Zombie zombie = ZombieFactory.create(template.getAlias(), lane, spawnColumn);
-            if (wave.isFinalWave() && level != null && level.getSeason() instanceof Egypt) {
-                spawnColumn = Math.max(0, spawnColumn - SandStorm.sandstorm());
+            try {
+                int lane = ITEM_RANDOM.nextInt(getRows());
+                int spawnColumn = Math.max(0, getCols() - 1 - sandstormOffset);
+                Zombie zombie = ZombieFactory.create(template.getAlias(), lane, spawnColumn);
+
+                Position speed = zombie.getSpeed();
+                if (speed != null) {
+                    zombie.setSpeed(new Position(-Math.abs(speed.x()), 0));
+                }
+
+                int cost = ZombieFactory.getZombieCost(zombie.getAlias());
+                GeneralPrinter.print("Zombie " + zombie.getName() + " spawned at wave " + waveNumber
+                        + " in lane " + (lane + 1) + " which cost " + cost + ".");
+
+                spawnZombie(zombie);
+                currentWaveZombies.add(zombie);
+                totalHp += zombie.getHp();
+            } catch (Exception e) {
+                com.badlogic.gdx.Gdx.app.error("GameSession",
+                        "Failed to spawn zombie \"" + template.getAlias() + "\" for wave " + waveNumber, e);
             }
-            zombie.setPosition(new Position(spawnColumn, lane));
-
-            Position speed = zombie.getSpeed();
-            if (speed != null) {
-                zombie.setSpeed(new Position(-Math.abs(speed.x()), 0));
-            }
-
-            int cost = ZombieFactory.getZombieCost(zombie.getAlias());
-            GeneralPrinter.print("Zombie " + zombie.getName() + " spawned at wave " + waveNumber
-                    + " in lane " + (lane + 1) + " which cost " + cost + ".");
-
-            spawnZombie(zombie);
-            currentWaveZombies.add(zombie);
-            totalHp += zombie.getHp();
         }
 
         currentWaveStartingHp = totalHp;
