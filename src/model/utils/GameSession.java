@@ -648,8 +648,14 @@ public class GameSession {
 
         Plant plant = cell.getPlant();
         Plant bottom = plant.getBottom();
+
         plant.setAlive(false);
-        cell.setPlant(bottom != null && bottom.isAlive() ? bottom : null);
+        plant.setBottom(null);
+        if (bottom != null && bottom.isAlive()) {
+            cell.setPlant(bottom);
+        } else {
+            cell.setPlant(null);
+        }
         plants.remove(plant);
         return true;
     }

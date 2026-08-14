@@ -365,7 +365,14 @@ public class GameScreen extends UiScreen {
         String command;
 
         if (activeTool == Tool.SHOVEL) {
-            command = "dig plant -l (" + commandX + ", " + commandY + ")";
+            boolean removed = session.removePlantAt(row, col);
+            if (!removed) {
+                Toast.show(stage, "There is no plant to remove here.");
+                return;
+            }
+            activeTool = Tool.NONE;
+            selectedPlant = null;
+            return;
         } else if (activeTool == Tool.FOOD) {
             command = "feed plant -l (" + commandX + ", " + commandY + ")";
         } else if (session.getLevel() instanceof ConveyorBeltLevel conveyor) {
