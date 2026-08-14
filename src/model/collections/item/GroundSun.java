@@ -67,11 +67,14 @@ public class GroundSun extends GroundItem {
         }
     }
 
-    private static final double FALL_SECONDS = 5.0;
+    private static final double FALL_SPEED_PX_PER_SECOND = 45.0;
+    private static final double FALL_START_OFFSET_PX = 35.0;
+    private static final double FALL_SPRITE_OFFSET_TILES = 0.75;
     private static final double GROUND_LIFETIME_SECONDS = 20.0;
 
-    private final SunDropType dropType;
+    private SunDropType dropType;
     private final int sunValue;
+    private double fallDurationSeconds;
     private double fallSecondsRemaining;
 
     public GroundSun(Position position, int sunValue) {
@@ -82,10 +85,19 @@ public class GroundSun extends GroundItem {
     }
 
     private GroundSun(Position position, SunDropType dropType) {
-        super(ItemType.SUN, position, FALL_SECONDS + GROUND_LIFETIME_SECONDS, 0.6);
+        super(ItemType.SUN, position, GROUND_LIFETIME_SECONDS + getFallDurationSeconds(position), 0.6);
         this.dropType = dropType;
         this.sunValue = dropType.getValue();
-        this.fallSecondsRemaining = FALL_SECONDS;
+        this.fallDurationSeconds = getFallDurationSeconds(position);
+        this.fallSecondsRemaining = fallDurationSeconds;
+    }
+
+    private static double getFallDurationSeconds(Position position) {
+        double targetRow = Math.max(0.0, position == null ? 0.0 : position.y());
+        double distancePx = targetRow * 96.0
+                + FALL_SPRITE_OFFSET_TILES * 96.0
+                + FALL_START_OFFSET_PX;
+        return Math.max(0.1, distancePx / FALL_SPEED_PX_PER_SECOND);
     }
 
     public static GroundSun fallFromSky(Position position) {
@@ -99,6 +111,9 @@ public class GroundSun extends GroundItem {
         if (wasFalling) {
             fallSecondsRemaining = GameClock.countDown(fallSecondsRemaining, GameClock.SECONDS_PER_TICK);
             if (!isFalling() && isAlive()) {
+                if (dropType == SunDropType.RADIOACTIVE) {
+                    dropType = SunDropType.REGULAR;
+                }
                 Position position = getPosition();
                 if (position != null) {
                     GeneralPrinter.print("Sun reached the ground at position ("
@@ -113,9 +128,9 @@ public class GroundSun extends GroundItem {
     }
 
     public float getFallProgress() {
-        if (FALL_SECONDS <= 0.0) return 1f;
+        if (fallDurationSeconds <= 0.0) return 1f;
         return (float) Math.max(0.0, Math.min(1.0,
-                (FALL_SECONDS - fallSecondsRemaining) / FALL_SECONDS));
+                (fallDurationSeconds - fallSecondsRemaining) / fallDurationSeconds));
     }
 
     @Override

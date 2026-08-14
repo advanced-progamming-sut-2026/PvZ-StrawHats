@@ -20,9 +20,9 @@ public final class Toast extends Table {
 
     private static final float DEFAULT_DURATION = 2.5f;
     private static final float SLIDE_TIME = 0.4f;
-    private static final float MARGIN_RIGHT = 24f;
-    private static final float Y_OFFSET = 24f;
+    private static final float TOP_MARGIN = 24f;
     private static final float TOAST_WIDTH = 450f;
+    private static final float TOAST_MAX_HEIGHT = 115f;
 
     private static final Map<Stage, Toast> activeByStage = new WeakHashMap<>();
 
@@ -41,8 +41,7 @@ public final class Toast extends Table {
         TextureRegionDrawable bg = backgroundDrawable();
         if (bg != null) {
             setBackground(bg);
-            float bgHeight = bg.getRegion().getRegionHeight();
-            pad(bgHeight * 0.22f, 32f, bgHeight * 0.18f, 32f);
+            pad(8f, 32f, 8f, 32f);
             add(label).width(TOAST_WIDTH - 64f).center();
         } else {
             pad(18, 36, 18, 36);
@@ -50,10 +49,16 @@ public final class Toast extends Table {
         }
 
         pack();
+        if (getHeight() > TOAST_MAX_HEIGHT) {
+            setHeight(TOAST_MAX_HEIGHT);
+            clearChildren();
+            add(label).width(TOAST_WIDTH - 64f).center();
+        }
+        setWidth(TOAST_WIDTH);
 
-        float startX = stage.getWidth() - getWidth() - MARGIN_RIGHT;
-        float startY = -getHeight();
-        float targetY = Y_OFFSET;
+        float startX = (stage.getWidth() - getWidth()) * 0.5f;
+        float startY = stage.getHeight();
+        float targetY = stage.getHeight() - getHeight() - TOP_MARGIN;
 
         setPosition(startX, startY);
 
