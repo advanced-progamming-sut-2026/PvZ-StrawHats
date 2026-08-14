@@ -46,6 +46,7 @@ public class GroundSun extends GroundItem {
     }
 
     private static final double FALL_SECONDS = 5.0;
+    private static final double GROUND_LIFETIME_SECONDS = 20.0;
 
     private final SunDropType dropType;
     private final int sunValue;
@@ -59,7 +60,7 @@ public class GroundSun extends GroundItem {
     }
 
     private GroundSun(Position position, SunDropType dropType) {
-        super(ItemType.SUN, position, 20, 0.6);
+        super(ItemType.SUN, position, FALL_SECONDS + GROUND_LIFETIME_SECONDS, 0.6);
         this.dropType = dropType;
         this.sunValue = dropType.getValue();
         this.fallSecondsRemaining = FALL_SECONDS;
@@ -86,16 +87,23 @@ public class GroundSun extends GroundItem {
     }
 
     public boolean isFalling() {
-        return !GameClock.isZero(fallSecondsRemaining);
+        return fallSecondsRemaining > 0.0 && isAlive();
+    }
+
+    public float getFallProgress() {
+        if (FALL_SECONDS <= 0.0) return 1f;
+        return (float) Math.max(0.0, Math.min(1.0,
+                (FALL_SECONDS - fallSecondsRemaining) / FALL_SECONDS));
     }
 
     @Override
     public void applyRewards(GameSession session, UserState state) {
         if (dropType == SunDropType.RADIOACTIVE && isFalling()) {
             explodeRadioactive(session);
-        } else {
-            session.addSun(sunValue);
+            return;
         }
+
+        session.addSun(sunValue);
     }
 
     private void explodeRadioactive(GameSession session) {

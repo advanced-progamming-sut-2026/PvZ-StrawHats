@@ -84,6 +84,7 @@ public class GameScreen extends UiScreen {
     private static final float BOARD_INSET_RIGHT_FRAC = (1024f - 993f) / 1024f;
     private static final float BOARD_INSET_TOP_FRAC = 192f / 768f;
     private static final float BOARD_INSET_BOTTOM_FRAC = (768f - 686f) / 768f;
+    private static final float FALLING_SUN_CLICK_HEIGHT = 80f;
 
     protected GameSession session;
     protected MatchHud hud;
@@ -210,10 +211,13 @@ public class GameScreen extends UiScreen {
     private void createBoardInput() {
         boardInput = new Actor();
         boardInput.setTouchable(Touchable.enabled);
-        boardInput.setBounds(BOARD_X, BOARD_Y, boardWidth(), boardHeight());
+        boardInput.setBounds(BOARD_X, BOARD_Y, boardWidth(), boardHeight() + FALLING_SUN_CLICK_HEIGHT);
         boardInput.addListener(new ClickListener() {
             @Override public void clicked(InputEvent event, float x, float y) {
-                handleBoardClick(x, y);
+                Vector2 click = new Vector2(event.getStageX(), event.getStageY());
+                if (!collectUnderMouse(click)) {
+                    handleBoardClick(click.x, click.y);
+                }
             }
         });
         rootStack.addActorBefore(hud, boardInput);
@@ -253,7 +257,7 @@ public class GameScreen extends UiScreen {
         }
 
         if (boardInput != null) {
-            boardInput.setBounds(BOARD_X, BOARD_Y, boardWidth(), boardHeight());
+            boardInput.setBounds(BOARD_X, BOARD_Y, boardWidth(), boardHeight() + FALLING_SUN_CLICK_HEIGHT);
         }
     }
 
@@ -271,7 +275,6 @@ public class GameScreen extends UiScreen {
                 checkMatchEnd();
                 if (matchFinished) break;
             }
-            collectUnderMouse();
         }
 
         refreshHud(delta);
@@ -367,13 +370,53 @@ public class GameScreen extends UiScreen {
         }
     }
 
-    private void collectUnderMouse() {
-        Vector2 world = mouseWorld();
-        if (world == null) return;
+    private boolean collectUnderMouse(Vector2 click) {
+        if (paused || matchFinished || click == null) return false;
+
+        Vector2 world = click;
         int col = (int) ((world.x - BOARD_X) / boardTileWidth);
-        int row = session.getRows() - 1 - (int) ((world.y - BOARD_Y) / boardTileHeight);
-        if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return;
-        session.collectItemsNear(new Position(col, row));
+
+        for (model.collections.Item raw : session.getItems()) {
+            if (!(raw instanceof GroundItem item) || !item.isAlive() || item.isCollected()
+                    || item.getPosition() == null) continue;
+
+            Position p = item.getPosition();
+            int itemCol = (int) p.x();
+            float itemX = BOARD_X + (float) p.x() * boardTileWidth + boardTileWidth * 0.28f;
+            float itemY = cellY((int) p.y()) + boardTileHeight * 0.25f;
+
+            if (item instanceof GroundSun sun && sun.isFalling()) {
+                float progress = sun.getFallProgress();
+                itemY = BOARD_Y + boardHeight() + 35f
+                        + (itemY - (BOARD_Y + boardHeight() + 35f)) * progress;
+
+                float age = itemAnimTimes.getOrDefault(item, 0f);
+                itemY += (float) Math.sin(age * 3.0f) * 3f;
+
+                float size = boardTileWidth * 0.45f;
+                float drawX = itemX + (boardTileWidth * 0.45f - size) * 0.5f;
+                float drawY = itemY + (boardTileHeight * 0.45f - size) * 0.5f;
+                float radius = Math.max(size, boardTileHeight * 0.45f) * 0.5f;
+                float centerX = drawX + size * 0.5f;
+                float centerY = drawY + size * 0.5f;
+
+                if (Math.abs(world.x - centerX) <= radius
+                        && Math.abs(world.y - centerY) <= radius) {
+                    session.collectItemsNear(new Position(itemCol, (int) p.y()));
+                    return true;
+                }
+            } else {
+                int row = session.getRows() - 1 - (int) ((world.y - BOARD_Y) / boardTileHeight);
+                if (row >= 0 && row < session.getRows()
+                        && Math.abs(p.x() - col) <= item.getCollectRadius()
+                        && Math.abs(p.y() - row) <= item.getCollectRadius()) {
+                    session.collectItemsNear(new Position(col, row));
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private Vector2 mouseWorld() {
@@ -544,8 +587,8 @@ public class GameScreen extends UiScreen {
             float x = BOARD_X + (float) p.x() * boardTileWidth + boardTileWidth * 0.28f;
             float y = cellY((int) p.y()) + boardTileHeight * 0.25f;
 
-            if (item instanceof GroundSun sun && sun.isFalling()) {
-                float progress = Math.min(1f, age / 5f);
+            if (item instanceof GroundSun sun) {
+                float progress = sun.getFallProgress();
                 y = BOARD_Y + bh + 35f + (y - (BOARD_Y + bh + 35f)) * progress;
             }
             float pulse = 1f;

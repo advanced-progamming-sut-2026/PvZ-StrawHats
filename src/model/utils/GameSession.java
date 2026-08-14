@@ -448,6 +448,8 @@ public class GameSession {
             if (item instanceof GroundItem groundItem
                     && groundItem.isAlive()
                     && !groundItem.isCollected()
+                    // All ground items, including every type of sky sun,
+                    // are collectible by an explicit player click.
                     && groundItem.isNear(target)) {
                 groundItem.collect(this, state);
                 collectedItems.add(groundItem);
