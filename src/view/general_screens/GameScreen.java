@@ -65,7 +65,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Real-time match renderer/input layer.  The model remains authoritative:
+ * Real-time match renderer/input layer. The model remains authoritative:
  * planting, digging, feeding, collecting and wave scheduling are delegated to
  * MeanwhileMenu/GameSession exactly as the command gameplay does.
  */
@@ -76,12 +76,10 @@ public class GameScreen extends UiScreen {
     protected static float BOARD_Y = 170f;
 
     private static final String EGYPT_MAP = "assets/images/chapters/egypt/egypt_gameplay/map.png";
-
     private static final String SUN_ITEM_ICON = "assets/images/chapters/egypt/egypt_gameplay/sun.png";
-    // The playable 9x5 grid painted into the board art is inset from the
-    // full image edges (measured on the 1024x768 source: rect [260,192]-[993,686]).
-    // Kept as fractions of the source image so any background art with the
-    // same layout scales correctly regardless of its native resolution.
+
+    private static final String GRAVE_ITEM_ICON = "assets/images/chapters/egypt/egypt_gameplay/grave.png";
+
     private static final float BOARD_INSET_LEFT_FRAC = 260f / 1024f;
     private static final float BOARD_INSET_RIGHT_FRAC = (1024f - 993f) / 1024f;
     private static final float BOARD_INSET_TOP_FRAC = 192f / 768f;
@@ -91,8 +89,13 @@ public class GameScreen extends UiScreen {
     protected MatchHud hud;
     protected Texture boardTexture;
     protected TextureRegion whitePixel;
+
     private Texture sunItemTexture;
     private TextureRegion sunItemRegion;
+
+    private Texture graveTexture;
+    private TextureRegion graveRegion;
+
     protected TextureBank textureBank;
     protected PamPlayer pamPlayer;
 
@@ -127,6 +130,7 @@ public class GameScreen extends UiScreen {
         initPam();
         initBoardTexture();
         initSunItemTexture();
+        initGraveTexture();
         createHud();
         createBoardInput();
         initParticles();
@@ -164,6 +168,18 @@ public class GameScreen extends UiScreen {
         } else {
             sunItemTexture = null;
             sunItemRegion = null;
+        }
+    }
+
+    private void initGraveTexture() {
+        String path = resolveExistingAssetPath(GRAVE_ITEM_ICON);
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            graveTexture = new Texture(Gdx.files.internal(path));
+            graveTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            graveRegion = new TextureRegion(graveTexture);
+        } else {
+            graveTexture = null;
+            graveRegion = null;
         }
     }
 
@@ -206,13 +222,6 @@ public class GameScreen extends UiScreen {
     private float boardWidth() { return (session == null ? 9 : session.getCols()) * boardTileWidth; }
     private float boardHeight() { return (session == null ? 5 : session.getRows()) * boardTileHeight; }
 
-    /**
-     * Fits the board background into the stage viewport like FitViewport
-     * (full size, aspect ratio preserved, letterboxed if needed), then
-     * derives the on-screen grid rect from the fraction of the image that
-     * the art actually dedicates to the playable board. Recomputed every
-     * frame so it always tracks the current viewport size.
-     */
     private void updateBoardLayout() {
         float viewW = stage.getViewport().getWorldWidth();
         float viewH = stage.getViewport().getWorldHeight();
@@ -267,9 +276,6 @@ public class GameScreen extends UiScreen {
 
         refreshHud(delta);
         drawBoard(delta);
-        // UiScreen.render() clears the framebuffer before drawing the Stage.
-        // The board has already been rendered above, so advancing/drawing the Stage
-        // directly keeps the board, Egypt background and HUD visible together.
         stage.act(delta);
         stage.draw();
     }
@@ -510,9 +516,20 @@ public class GameScreen extends UiScreen {
                 Cell cell = session.getEnvironment().getCell(r, c);
                 if (cell == null || cell.getObstacle() == null) continue;
                 if (!"Grave".equalsIgnoreCase(cell.getObstacle().getName())) continue;
+
                 TextureRegion grave = GameAssetManager.get().getUiRegion("grave");
-                if (grave != null) batch.draw(grave, BOARD_X + c * boardTileWidth + 18, cellY(r) + 8, 60, 78);
-                else drawFallback(BOARD_X + c * boardTileWidth + 18, cellY(r) + 8, 60, 78, new Color(0.55f, 0.52f, 0.48f, 1f));
+                if (grave == null) {
+                    grave = graveRegion;
+                }
+
+                float drawX = BOARD_X + c * boardTileWidth + (boardTileWidth - 60f) / 2f;
+                float drawY = cellY(r) + (boardTileHeight - 78f) / 2f;
+
+                if (grave != null) {
+                    batch.draw(grave, drawX, drawY, 60, 78);
+                } else {
+                    drawFallback(drawX, drawY, 60, 78, new Color(0.55f, 0.52f, 0.48f, 1f));
+                }
             }
         }
     }
@@ -713,6 +730,7 @@ public class GameScreen extends UiScreen {
         if (whitePixel != null) whitePixel.getTexture().dispose();
         if (boardTexture != null) boardTexture.dispose();
         if (sunItemTexture != null) sunItemTexture.dispose();
+        if (graveTexture != null) graveTexture.dispose();
         super.dispose();
     }
 
