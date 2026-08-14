@@ -578,10 +578,14 @@ public class GameScreen extends UiScreen {
             Position p = plant.getPosition();
             float x = BOARD_X + (float) p.x() * boardTileWidth;
             float y = cellY((int) p.y());
+
+            float plantOffsetX = x + 30f;
+            float plantOffsetY = y + 40f;
+
             String path = AnimationFactory.pathForDisplayName(plant.getName());
-            if (!drawPam(path, "idle", t, x - 8f, y + 2f, 0.55f, false)) {
+            if (!drawPam(path, "idle", t, plantOffsetX , plantOffsetY, 0.55f, false)) {
                 TextureRegion region = GameAssetManager.get().getPlantRegion(plant.getName());
-                drawEntity(region, x, y, boardTileWidth, boardTileHeight, new Color(0.2f, 0.65f, 0.22f, 1f), initials(plant.getName()));
+                drawEntity(region, plantOffsetX, plantOffsetY, boardTileWidth, boardTileHeight, new Color(0.2f, 0.65f, 0.22f, 1f), initials(plant.getName()));
             }
         }
         plantAnimTimes.keySet().removeIf(p -> !session.getPlants().contains(p));
@@ -597,15 +601,17 @@ public class GameScreen extends UiScreen {
             Position p = zombie.getPosition();
             float x = BOARD_X + (float) p.x() * boardTileWidth;
             float y = cellY((int) p.y());
+            float zombieOffsetY = y + 40f;
+
             String preferred = switch (zombie.getZombieState()) {
                 case EATING -> "eat";
                 case DEAD -> "die";
                 default -> "walk";
             };
             String path = ZombieAnimationRegistry.pathFor(zombie.getAlias());
-            if (!drawPam(path, preferred, t, x - 10f, y + 2f, 0.52f, zombie.isFacingRight())) {
+            if (!drawPam(path, preferred, t, x - 10f, zombieOffsetY, 0.52f, zombie.isFacingRight())) {
                 TextureRegion region = GameAssetManager.get().getZombieRegion(zombie.getAlias());
-                drawEntity(region, x, y, boardTileWidth, boardTileHeight, new Color(0.55f, 0.5f, 0.45f, 1f), initials(zombie.getAlias()));
+                drawEntity(region, x, zombieOffsetY, boardTileWidth, boardTileHeight, new Color(0.55f, 0.5f, 0.45f, 1f), initials(zombie.getAlias()));
             }
         }
         zombieAnimTimes.keySet().removeIf(z -> !session.getZombies().contains(z));
@@ -618,11 +624,16 @@ public class GameScreen extends UiScreen {
             if (clipName == null) return false;
             ClipRef clip = pamPlayer.getClip(path, clipName);
             if (clip == null) return false;
+
             batch.flush();
             com.badlogic.gdx.math.Matrix4 old = batch.getTransformMatrix().cpy();
+
             batch.getTransformMatrix().translate(x, y, 0f).scale(scale, scale, 1f);
             batch.setTransformMatrix(batch.getTransformMatrix());
+
             pamPlayer.draw(batch, clip, time, 0f, 0f, flip);
+
+            batch.flush();
             batch.setTransformMatrix(old);
             return true;
         } catch (Throwable ignored) {
