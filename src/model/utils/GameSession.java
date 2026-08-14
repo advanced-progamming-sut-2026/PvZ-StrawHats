@@ -123,19 +123,26 @@ public class GameSession {
             }
         }
 
-        for (Plant plant : plants) {
+        // حل باگ فریز بازی (ConcurrentModificationException):
+        // تبدیل For-Each به حلقه‌های معکوس ایمن
+        for (int i = plants.size() - 1; i >= 0; i--) {
+            Plant plant = plants.get(i);
             if (plant.isAlive()) plant.tick(deltaTimeSeconds, this);
         }
-        for (Zombie zombie : zombies) {
-            zombie.tick(deltaTimeSeconds, this);
+        for (int i = zombies.size() - 1; i >= 0; i--) {
+            Zombie zombie = zombies.get(i);
+            if (zombie.isAlive()) zombie.tick(deltaTimeSeconds, this);
         }
-        for (Projectile projectile : projectiles) {
+        for (int i = projectiles.size() - 1; i >= 0; i--) {
+            Projectile projectile = projectiles.get(i);
             if (projectile.isAlive()) projectile.tick();
         }
-        for (ZombieProjectile zombieProjectile : zombieProjectiles) {
+        for (int i = zombieProjectiles.size() - 1; i >= 0; i--) {
+            ZombieProjectile zombieProjectile = zombieProjectiles.get(i);
             if (zombieProjectile.isAlive()) zombieProjectile.tick();
         }
-        for (Item item : items) {
+        for (int i = items.size() - 1; i >= 0; i--) {
+            Item item = items.get(i);
             if (item.isAlive()) item.tick();
         }
 
@@ -149,12 +156,13 @@ public class GameSession {
                 int row = ITEM_RANDOM.nextInt(environment.getRows());
                 GroundSun sun = GroundSun.fallFromSky(new Position(col, row));
                 items.add(sun);
-                GeneralPrinter.print("New " + sun.getDropType().name().toLowerCase()
+                view.GeneralPrinter.print("New " + sun.getDropType().name().toLowerCase()
                         + " sun is dropping at position (" + (col + 1) + ", " + (row + 1) + ").");
             }
         }
 
-        for (Zombie zombie : zombies) {
+        for (int i = zombies.size() - 1; i >= 0; i--) {
+            Zombie zombie = zombies.get(i);
             if (!zombie.isAlive() && zombie.isPlantFoodPending()) {
                 items.add(new GroundPlantFood(zombie.getPosition()));
                 zombie.clearPlantFoodPending();
@@ -189,7 +197,7 @@ public class GameSession {
         if (levelWon && !gameOver) {
             if (!gameWon) {
                 gameWon = true;
-                QuestManager.notifyLevelWon(this);
+                controller.QuestManager.notifyLevelWon(this);
             }
         }
     }
