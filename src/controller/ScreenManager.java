@@ -100,6 +100,19 @@ public final class ScreenManager {
                     && "Egypt".equalsIgnoreCase(level.getSeason().getName())) {
                 return new EgyptGameScreen();
             }
+            if (level != null && level.getSeason() != null
+                    && "Frostbite Caves".equalsIgnoreCase(level.getSeason().getName())) {
+                return new FrostbiteCavesGameScreen();
+            }
+            if (level != null && level.getSeason() != null
+                    && "Big Wave Beach".equalsIgnoreCase(level.getSeason().getName())) {
+                return new BigWaveBeachGameScreen();
+            }
+            if (level != null && level.getSeason() != null
+                    && "Dark Ages".equalsIgnoreCase(level.getSeason().getName())) {
+                return new DarkAgesGameScreen();
+            }
+
             return new GameScreen();
         }
         if (menu instanceof AfterMenu) {
