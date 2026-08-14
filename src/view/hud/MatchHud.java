@@ -265,6 +265,8 @@ public final class MatchHud extends Table implements Disposable {
 
     private SlotView createPlantSlot(GameSession session, String plantName) {
         Stack stack = new Stack();
+        stack.setTouchable(Touchable.enabled);
+
         SeedPacketCard card = null;
         try { card = cardFactory.buildCardForDisplayName(plantName); } catch (Throwable ignored) {}
         if (card != null) {
@@ -307,39 +309,36 @@ public final class MatchHud extends Table implements Disposable {
         cd.add(cooldownLabel).center().expand();
         stack.add(cd);
 
-        Actor hitArea = new Actor();
-        hitArea.setSize(CARD_W, CARD_H);
-        hitArea.setTouchable(Touchable.enabled);
-        hitArea.addListener(new com.badlogic.gdx.scenes.scene2d.InputListener() {
+        final int slotId = id;
+        final int slotCost = cost;
+        stack.addListener(new InputListener() {
             private boolean dragging;
-            private int activePointer = -1;
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                if (button != com.badlogic.gdx.Input.Buttons.LEFT) return false;
-                if (plantSelection == null) return false;
-                activePointer = pointer;
-                dragging = false;
+                boolean ready = slotId < 0 || session.isPlantReady(slotId);
+                boolean affordable = session.getSunCount() >= slotCost;
+                if (!ready || !affordable || plantSelection == null) return false;
+                dragging = true;
                 plantSelection.accept(plantName);
                 return true;
             }
 
             @Override
             public void touchDragged(InputEvent event, float x, float y, int pointer) {
-                if (pointer == activePointer) dragging = true;
+                // Selection stays armed while the pointer travels from the card to the lawn.
             }
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if (button != com.badlogic.gdx.Input.Buttons.LEFT || pointer != activePointer) return;
-                if (dragging && plantDragRelease != null) {
-                    plantDragRelease.accept(new Vector2(event.getStageX(), event.getStageY()));
-                }
-                activePointer = -1;
+                if (!dragging) return;
                 dragging = false;
+                if (plantDragRelease != null) {
+                    Vector2 stagePos = new Vector2(event.getStageX(), event.getStageY());
+                    plantDragRelease.accept(stagePos);
+                }
             }
         });
-        stack.add(hitArea);
         return new SlotView(plantName, id, cost, stack, unavailable, selected, costLabel, cooldownLabel);
     }
 

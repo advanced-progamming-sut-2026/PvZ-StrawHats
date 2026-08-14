@@ -141,6 +141,7 @@ public class GameScreen extends UiScreen {
     private String selectedPlant;
     private Tool activeTool = Tool.NONE;
     private Actor boardInput;
+    private float dragPreviewTime;
 
     private enum Tool { NONE, SHOVEL, FOOD }
 
@@ -298,8 +299,8 @@ public class GameScreen extends UiScreen {
 
     private void refreshHud(float delta) {
         if (hud == null || session == null) return;
-        if (selectedPlant != null && !(session.getLevel() instanceof ConveyorBeltLevel)
-                && BeforeMenu.selectedPlants.stream().noneMatch(name -> name.equalsIgnoreCase(selectedPlant))) {
+        if (selectedPlant != null && !BeforeMenu.selectedPlants.contains(selectedPlant)
+                && !(session.getLevel() instanceof ConveyorBeltLevel)) {
             selectedPlant = null;
         }
         hud.setSelectedPlant(selectedPlant);
@@ -338,7 +339,7 @@ public class GameScreen extends UiScreen {
             activeTool = Tool.NONE;
             return;
         }
-        selectedPlant = selectedPlant != null && selectedPlant.equalsIgnoreCase(plantName) ? null : plantName;
+        selectedPlant = plantName;
         activeTool = Tool.NONE;
     }
 
@@ -490,8 +491,34 @@ public class GameScreen extends UiScreen {
         drawProjectiles(bw, bh);
         drawMowers(bw, bh);
         drawHover(bw, bh);
+        drawDragPreview(delta);
 
         batch.end();
+    }
+
+    /**
+     * Ghost preview of the armed/dragged plant: follows the cursor with its idle
+     * animation from the moment a loadout card is picked up until it is planted
+     * or deselected.
+     */
+    private void drawDragPreview(float delta) {
+        if (activeTool != Tool.NONE || selectedPlant == null) return;
+        Vector2 mouse = mouseWorld();
+        if (mouse == null) return;
+
+        dragPreviewTime += delta;
+        float size = boardTileWidth * 0.8f;
+        float drawX = mouse.x - size * 0.5f;
+        float drawY = mouse.y - size * 0.5f;
+
+        batch.setColor(1f, 1f, 1f, 0.85f);
+        String path = AnimationFactory.pathForDisplayName(selectedPlant);
+        boolean drawn = drawPam(path, "idle", dragPreviewTime, drawX + size * 0.15f, drawY, 0.5f, false);
+        batch.setColor(Color.WHITE);
+        if (!drawn) {
+            TextureRegion region = GameAssetManager.get().getPlantRegion(selectedPlant);
+            drawEntity(region, drawX, drawY, size, size, new Color(0.2f, 0.65f, 0.22f, 0.85f), initials(selectedPlant));
+        }
     }
 
     private void drawBackground(float bw, float bh) {
