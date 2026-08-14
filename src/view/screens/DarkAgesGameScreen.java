@@ -1,6 +1,8 @@
 package view.screens;
 
 import model.utils.GameSession;
+import service.resource_manager.AudioEnum;
+import service.resource_manager.AudioManager;
 import view.general_screens.GameScreen;
 
 public class DarkAgesGameScreen extends GameScreen {
@@ -11,6 +13,7 @@ public class DarkAgesGameScreen extends GameScreen {
     @Override
     public void show() {
         super.show();
+        AudioManager.get().playMusic(AudioEnum.DARK_AGES_MUSIC, true);
         GameSession session = GameSession.peekInstance();
         if (session != null && session.getLevel() != null) {
             // The four current Egypt stages are represented by the normal

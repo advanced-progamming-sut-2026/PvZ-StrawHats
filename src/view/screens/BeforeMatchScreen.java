@@ -35,6 +35,7 @@ import model.user_data.UserState;
 import model.utils.GameSession;
 import service.card_factory.SeedPacketCard;
 import service.card_factory.SeedPacketCardFactory;
+import service.resource_manager.AudioManager;
 import view.general_screens.UiScreen;
 
 import pvz.libpvz.pam.PamPlayer;
@@ -80,6 +81,7 @@ public class BeforeMatchScreen extends UiScreen {
 
     @Override
     public void show() {
+        AudioManager.get().stopMusic();
         setBackground(BACKGROUND);
         if (textureBank == null) {
             try {
