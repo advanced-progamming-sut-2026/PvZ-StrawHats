@@ -274,6 +274,7 @@ public class GameSession {
             if (!zombie.isAlive() || zombie.getPosition() == null) continue;
             int col = (int) Math.round(zombie.getPosition().x());
             int row = (int) Math.round(zombie.getPosition().y());
+            if (row < 0 || row >= environment.getRows() || col < 0 || col >= environment.getCols()) continue;
             Cell cell = environment.getCell(row, col);
             if (cell != null) cell.addZombie(zombie);
         }
@@ -340,8 +341,9 @@ public class GameSession {
         for (Zombie template : wave.getWaveZombies()) {
             try {
                 int lane = ITEM_RANDOM.nextInt(getRows());
-                int spawnColumn = Math.max(0, getCols() - 1 - sandstormOffset);
-                Zombie zombie = ZombieFactory.create(template.getAlias(), lane, spawnColumn);
+                double spawnX = getCols() + 0.75 - sandstormOffset;
+                Zombie zombie = ZombieFactory.create(template.getAlias(), lane, Math.max(0, getCols() - 1));
+                zombie.setPosition(new Position(spawnX, lane));
 
                 Position speed = zombie.getSpeed();
                 if (speed != null) {

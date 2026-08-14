@@ -24,6 +24,7 @@ import controller.menus.match.MatchMenu;
 import controller.menus.match.MeanwhileMenu;
 import model.App;
 import model.collections.animations.AnimationFactory;
+import model.collections.animations.AnimationJsonParser;
 import model.collections.animations.ZombieAnimationRegistry;
 import model.collections.item.GroundItem;
 import model.collections.item.GroundSun;
@@ -103,6 +104,36 @@ public class GameScreen extends UiScreen {
     private final Map<Zombie, Float> zombieAnimTimes = new IdentityHashMap<>();
     private final Map<GroundItem, Float> itemAnimTimes = new IdentityHashMap<>();
     private final Map<String, Float> clipTimes = new java.util.HashMap<>();
+    private static final Map<String, String[]> SEASON_LAWN_MOWER_PAM_PATHS = new java.util.HashMap<>();
+    static {
+        String[] egypt = {
+                "768/INITIAL/MOWERS/MOWER_EGYPT/MOWER_EGYPT.PAM",
+                "768/FULL/MOWERS/MOWER_EGYPT/MOWER_EGYPT.PAM"
+        };
+        String[] cave = {
+                "768/FULL/MOWERS/MOWER_ICEAGE/MOWER_ICEAGE.PAM",
+                "768/INITIAL/MOWERS/MOWER_ICEAGE/MOWER_ICEAGE.PAM"
+        };
+        String[] beach = {
+                "768/FULL/MOWERS/MOWER_BEACH/MOWER_BEACH.PAM",
+                "768/INITIAL/MOWERS/MOWER_BEACH/MOWER_BEACH.PAM"
+        };
+        String[] dark = {
+                "768/FULL/MOWERS/MOWER_DARK/MOWER_DARK.PAM",
+                "768/INITIAL/MOWERS/MOWER_DARK/MOWER_DARK.PAM"
+        };
+
+        SEASON_LAWN_MOWER_PAM_PATHS.put("egypt", egypt);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("cave", cave);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("frostbite caves", cave);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("frostbite_caves", cave);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("beach", beach);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("big wave beach", beach);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("big_wave_beach", beach);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("darkage", dark);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("dark ages", dark);
+        SEASON_LAWN_MOWER_PAM_PATHS.put("dark_ages", dark);
+    };
 
     private double tickAccumulator;
     private boolean paused;
@@ -648,7 +679,18 @@ public class GameScreen extends UiScreen {
                 default -> "walk";
             };
             String path = ZombieAnimationRegistry.pathFor(zombie.getAlias());
-            if (!drawPam(path, preferred, t, x - 10f, zombieOffsetY, 0.52f, zombie.isFacingRight())) {
+            float animationTime = t;
+            if ("walk".equals(preferred) && path != null) {
+                AnimationJsonParser.AnimationConfig config = ZombieAnimationRegistry.resolve(zombie.getAlias());
+                if (config != null) {
+                    String clipName = AnimationFactory.resolveClipName(config, "walk");
+                    Double duration = clipName == null || config.clips == null ? null : config.clips.get(clipName);
+                    if (duration != null && duration > 0.0) {
+                        animationTime = (float) (t % duration);
+                    }
+                }
+            }
+            if (!drawPam(path, preferred, animationTime, x - 10f, zombieOffsetY, 0.52f, zombie.isFacingRight())) {
                 TextureRegion region = GameAssetManager.get().getZombieRegion(zombie.getAlias());
                 drawEntity(region, x, zombieOffsetY, boardTileWidth, boardTileHeight, new Color(0.55f, 0.5f, 0.45f, 1f), initials(zombie.getAlias()));
             }
@@ -694,13 +736,67 @@ public class GameScreen extends UiScreen {
     }
 
     private void drawMowers(float bw, float bh) {
+        final float time = getRenderTime();
+        String seasonKey = getLawnMowerSeasonKey();
+        String[] mowerPaths = SEASON_LAWN_MOWER_PAM_PATHS.get(seasonKey);
+
         for (int r = 0; r < session.getRows(); r++) {
             if (session.isLawnMowerUsed(r)) continue;
-            TextureRegion mower = GameAssetManager.get().getUiRegion("lawn_mower");
-            float y = cellY(r) + 10f;
-            if (mower != null) batch.draw(mower, BOARD_X - 50f, y, 55f, 70f);
-            else drawFallback(BOARD_X - 50f, y, 55f, 55f, new Color(0.7f, 0.1f, 0.1f, 1f));
+
+            float baseX = BOARD_X - 46f;
+            float baseY = cellY(r) + 8f;
+            float bob = (float) Math.sin(time * 2.0f + r * 0.35f) * 1.8f;
+            float wheelTurn = time * 0.65f;
+
+            boolean pamDrawn = false;
+            if (pamPlayer != null && mowerPaths != null) {
+                for (String pamPath : mowerPaths) {
+                    if (drawPam(pamPath, "idle", time, baseX + 27f, baseY + 10f + bob, 0.42f, false)) {
+                        pamDrawn = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!pamDrawn) {
+                drawProceduralLawnMower(baseX, baseY + bob, wheelTurn);
+            }
         }
+    }
+
+    private String getLawnMowerSeasonKey() {
+        if (session == null || session.getLevel() == null || session.getLevel().getSeason() == null) return "";
+        String name = session.getLevel().getSeason().getName();
+        if (name == null) return "";
+        return name.trim().toLowerCase().replace('-', ' ');
+    }
+
+    private float getRenderTime() {
+        return (Gdx.graphics != null ? Gdx.graphics.getDeltaTime() : 0f) +
+                (com.badlogic.gdx.utils.TimeUtils.millis() % 100000L) / 1000f;
+    }
+
+    private void drawProceduralLawnMower(float x, float y, float wheelTime) {
+        batch.setColor(Color.valueOf("5E9B3F"));
+        batch.draw(whitePixel, x + 8f, y + 20f, 43f, 27f);
+
+        batch.setColor(Color.valueOf("D6D0B4"));
+        batch.draw(whitePixel, x + 14f, y + 47f, 31f, 9f);
+
+        batch.setColor(Color.valueOf("4B4B43"));
+        batch.draw(whitePixel, x + 2f, y + 11f, 10f, 22f);
+
+        float wheelPulse = 1f + 0.05f * (float) Math.sin(wheelTime * 6f);
+        batch.setColor(Color.valueOf("20221E"));
+        batch.draw(whitePixel, x + 11f, y + 9f, 11f * wheelPulse, 7f);
+        batch.draw(whitePixel, x + 38f, y + 9f, 11f * wheelPulse, 7f);
+
+        batch.setColor(Color.valueOf("C47B2C"));
+        batch.draw(whitePixel, x + 25f, y + 26f, 8f, 8f);
+
+        batch.setColor(Color.valueOf("E9E5CE"));
+        batch.draw(whitePixel, x + 48f, y + 34f, 16f, 5f);
+        batch.setColor(Color.WHITE);
     }
 
     private void drawHover(float bw, float bh) {
