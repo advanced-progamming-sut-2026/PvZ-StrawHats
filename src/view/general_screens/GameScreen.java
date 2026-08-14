@@ -77,6 +77,7 @@ public class GameScreen extends UiScreen {
 
     private static final String EGYPT_MAP = "assets/images/chapters/egypt/egypt_gameplay/map.png";
 
+    private static final String SUN_ITEM_ICON = "assets/images/chapters/egypt/egypt_gameplay/sun.png";
     // The playable 9x5 grid painted into the board art is inset from the
     // full image edges (measured on the 1024x768 source: rect [260,192]-[993,686]).
     // Kept as fractions of the source image so any background art with the
@@ -90,6 +91,8 @@ public class GameScreen extends UiScreen {
     protected MatchHud hud;
     protected Texture boardTexture;
     protected TextureRegion whitePixel;
+    private Texture sunItemTexture;
+    private TextureRegion sunItemRegion;
     protected TextureBank textureBank;
     protected PamPlayer pamPlayer;
 
@@ -123,6 +126,7 @@ public class GameScreen extends UiScreen {
         AnimationFactory.autoInit();
         initPam();
         initBoardTexture();
+        initSunItemTexture();
         createHud();
         createBoardInput();
         initParticles();
@@ -151,12 +155,27 @@ public class GameScreen extends UiScreen {
 
     protected String getGameplayBackgroundPath() { return EGYPT_MAP; }
 
+    private void initSunItemTexture() {
+        String path = resolveExistingAssetPath(SUN_ITEM_ICON);
+        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
+            sunItemTexture = new Texture(Gdx.files.internal(path));
+            sunItemTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            sunItemRegion = new TextureRegion(sunItemTexture);
+        } else {
+            sunItemTexture = null;
+            sunItemRegion = null;
+        }
+    }
+
     private String resolveExistingAssetPath(String path) {
         if (path == null) return "";
         if (Gdx.files.internal(path).exists()) return path;
         if (path.startsWith("assets/")) {
             String noPrefix = path.substring("assets/".length());
             if (Gdx.files.internal(noPrefix).exists()) return noPrefix;
+        } else {
+            String withPrefix = "assets/" + path;
+            if (Gdx.files.internal(withPrefix).exists()) return withPrefix;
         }
         return path;
     }
@@ -521,9 +540,15 @@ public class GameScreen extends UiScreen {
             float drawX = x + (boardTileWidth * 0.45f - size) * 0.5f;
             float drawY = y + (boardTileHeight * 0.45f - size) * 0.5f;
             TextureRegion region = GameAssetManager.get().getItemRegion(item.getItemType().name());
-            if (region != null) batch.draw(region, drawX, drawY, size, size);
-            else if (item instanceof GroundSun) drawFallback(drawX, drawY, size, size, itemColor("SUN"));
-            else drawFallback(drawX, drawY, size, size, itemColor(item.getItemType().name()));
+            if (region != null) {
+                batch.draw(region, drawX, drawY, size, size);
+            } else if (item instanceof GroundSun && sunItemRegion != null) {
+                batch.draw(sunItemRegion, drawX, drawY, size, size);
+            } else if (item instanceof GroundSun) {
+                drawFallback(drawX, drawY, size, size, itemColor("SUN"));
+            } else {
+                drawFallback(drawX, drawY, size, size, itemColor(item.getItemType().name()));
+            }
         }
         itemAnimTimes.keySet().removeIf(i -> !session.getItems().contains(i));
     }
@@ -687,6 +712,7 @@ public class GameScreen extends UiScreen {
         }
         if (whitePixel != null) whitePixel.getTexture().dispose();
         if (boardTexture != null) boardTexture.dispose();
+        if (sunItemTexture != null) sunItemTexture.dispose();
         super.dispose();
     }
 
