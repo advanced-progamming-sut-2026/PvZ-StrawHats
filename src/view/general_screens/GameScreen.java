@@ -739,19 +739,31 @@ public class GameScreen extends UiScreen {
         final float time = getRenderTime();
         String seasonKey = getLawnMowerSeasonKey();
         String[] mowerPaths = SEASON_LAWN_MOWER_PAM_PATHS.get(seasonKey);
+        model.pitches.LawnMower[] mowers = session.getLawnMowers();
+
+        float manualXOffset = -35f;
+        float manualYOffset = 35f;
+        float mowerScale = 0.60f;
 
         for (int r = 0; r < session.getRows(); r++) {
-            if (session.isLawnMowerUsed(r)) continue;
+            if (mowers == null || r >= mowers.length) continue;
+            model.pitches.LawnMower mower = mowers[r];
 
-            float baseX = BOARD_X - 46f;
-            float baseY = cellY(r) + 8f;
-            float bob = (float) Math.sin(time * 2.0f + r * 0.35f) * 1.8f;
-            float wheelTurn = time * 0.65f;
+            if (mower == null || mower.getState() == model.pitches.LawnMower.MowerState.DEAD) continue;
+
+            float baseX = BOARD_X + (float) mower.getXPosition() * boardTileWidth + manualXOffset;
+            float baseY = cellY(r) + 8f + manualYOffset;
+
+            String clipName = getMowerClipName(mower, seasonKey);
+
+            float animTime = (mower.getState() == model.pitches.LawnMower.MowerState.IDLE)
+                    ? time
+                    : (float) mower.getStateTimer();
 
             boolean pamDrawn = false;
             if (pamPlayer != null && mowerPaths != null) {
                 for (String pamPath : mowerPaths) {
-                    if (drawPam(pamPath, "idle", time, baseX + 27f, baseY + 10f + bob, 0.42f, false)) {
+                    if (drawPam(pamPath, clipName, animTime, baseX + 27f, baseY + 10f, mowerScale, false)) {
                         pamDrawn = true;
                         break;
                     }
@@ -759,9 +771,34 @@ public class GameScreen extends UiScreen {
             }
 
             if (!pamDrawn) {
+                float bob = (mower.getState() == model.pitches.LawnMower.MowerState.IDLE) ? 0f : (float) Math.sin(time * 15f) * 2f;
+                float wheelTurn = (mower.getState() == model.pitches.LawnMower.MowerState.IDLE) ? 0f : time * 4.0f;
                 drawProceduralLawnMower(baseX, baseY + bob, wheelTurn);
             }
         }
+    }
+
+    private String getMowerClipName(model.pitches.LawnMower mower, String seasonKey) {
+        if (mower.getState() == model.pitches.LawnMower.MowerState.TRANSITION) {
+            return "transition";
+        }
+
+        if (mower.getState() == model.pitches.LawnMower.MowerState.ATTACK) {
+
+            if ("bigwavebeach".equalsIgnoreCase(seasonKey) || "beach".equalsIgnoreCase(seasonKey)) {
+
+                double waterStartX = 7.0;
+
+
+                if (mower.getXPosition() >= waterStartX) {
+                    return "attack2";
+                }
+            }
+
+            return "attack";
+        }
+
+        return "idle";
     }
 
     private String getLawnMowerSeasonKey() {

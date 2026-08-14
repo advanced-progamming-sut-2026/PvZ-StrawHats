@@ -124,8 +124,6 @@ public class GameSession {
             }
         }
 
-        // حل باگ فریز بازی (ConcurrentModificationException):
-        // تبدیل For-Each به حلقه‌های معکوس ایمن
         for (int i = plants.size() - 1; i >= 0; i--) {
             Plant plant = plants.get(i);
             if (plant.isAlive()) plant.tick(deltaTimeSeconds, this);
@@ -145,6 +143,11 @@ public class GameSession {
         for (int i = items.size() - 1; i >= 0; i--) {
             Item item = items.get(i);
             if (item.isAlive()) item.tick();
+        }
+        for (int i = 0; i < lawnMowers.length; i++) {
+            if (lawnMowers[i] != null) {
+                lawnMowers[i].tick(deltaTimeSeconds, this);
+            }
         }
 
         if (wavesStarted) tickWaveScheduler(deltaTimeSeconds);
@@ -391,10 +394,23 @@ public class GameSession {
                 int row = (int) Math.round(zombie.getPosition().y());
                 if (row < 0 || row >= lawnMowers.length) continue;
 
-                boolean survived = lawnMowers[row].killZombiesInRow(zombiesInRow(row));
-                if (!survived) {
-                    onZombieReachedEnd();
-                    return;
+                LawnMower mower = lawnMowers[row];
+                if (mower.getState() == LawnMower.MowerState.DEAD) {
+                    if (zombie.getPosition().x() < -0.8) {
+                        onZombieReachedEnd();
+                        return;
+                    }
+                } else if (mower.getState() == LawnMower.MowerState.IDLE) {
+                    boolean survived = mower.killZombiesInRow(zombiesInRow(row));
+                    if (!survived) {
+                        onZombieReachedEnd();
+                        return;
+                    }
+                } else {
+                    if (zombie.getPosition().x() < -2.0) {
+                        onZombieReachedEnd();
+                        return;
+                    }
                 }
             }
         }
@@ -1002,5 +1018,9 @@ public class GameSession {
 
     public Environment getLawn() {
         return environment;
+    }
+
+    public LawnMower[] getLawnMowers() {
+        return lawnMowers;
     }
 }
