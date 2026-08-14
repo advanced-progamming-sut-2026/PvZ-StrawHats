@@ -174,7 +174,7 @@ public class MeanwhileMenu extends Menu {
         if (config == null || !state.isPlantUnlocked(config.id)) {
             throw new GameException("plant not available.");
         }
-        if (!BeforeMenu.selectedPlants.contains(config.name)) {
+        if (BeforeMenu.selectedPlants.stream().noneMatch(name -> name.equalsIgnoreCase(config.name))) {
             throw new GameException("plant not in this match's loadout.");
         }
 

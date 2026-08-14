@@ -298,8 +298,8 @@ public class GameScreen extends UiScreen {
 
     private void refreshHud(float delta) {
         if (hud == null || session == null) return;
-        if (selectedPlant != null && !BeforeMenu.selectedPlants.contains(selectedPlant)
-                && !(session.getLevel() instanceof ConveyorBeltLevel)) {
+        if (selectedPlant != null && !(session.getLevel() instanceof ConveyorBeltLevel)
+                && BeforeMenu.selectedPlants.stream().noneMatch(name -> name.equalsIgnoreCase(selectedPlant))) {
             selectedPlant = null;
         }
         hud.setSelectedPlant(selectedPlant);
