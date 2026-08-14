@@ -72,10 +72,19 @@ import java.util.Map;
 public class GameScreen extends UiScreen {
     protected static final float TILE_WIDTH = 96f;
     protected static final float TILE_HEIGHT = 96f;
-    protected static final float BOARD_X = 190f;
-    protected static final float BOARD_Y = 170f;
+    protected static float BOARD_X = 190f;
+    protected static float BOARD_Y = 170f;
 
     private static final String EGYPT_MAP = "assets/images/chapters/egypt/egypt_gameplay/map.png";
+
+    // The playable 9x5 grid painted into the board art is inset from the
+    // full image edges (measured on the 1024x768 source: rect [260,192]-[993,686]).
+    // Kept as fractions of the source image so any background art with the
+    // same layout scales correctly regardless of its native resolution.
+    private static final float BOARD_INSET_LEFT_FRAC = 260f / 1024f;
+    private static final float BOARD_INSET_RIGHT_FRAC = (1024f - 993f) / 1024f;
+    private static final float BOARD_INSET_TOP_FRAC = 192f / 768f;
+    private static final float BOARD_INSET_BOTTOM_FRAC = (768f - 686f) / 768f;
 
     protected GameSession session;
     protected MatchHud hud;
@@ -83,6 +92,10 @@ public class GameScreen extends UiScreen {
     protected TextureRegion whitePixel;
     protected TextureBank textureBank;
     protected PamPlayer pamPlayer;
+
+    private float boardTileWidth = TILE_WIDTH;
+    private float boardTileHeight = TILE_HEIGHT;
+    private float bgX, bgY, bgW, bgH;
 
     private final Map<Plant, Float> plantAnimTimes = new IdentityHashMap<>();
     private final Map<Zombie, Float> zombieAnimTimes = new IdentityHashMap<>();
@@ -171,8 +184,50 @@ public class GameScreen extends UiScreen {
         rootStack.addActorBefore(hud, boardInput);
     }
 
-    private float boardWidth() { return session == null ? 9 * TILE_WIDTH : session.getCols() * TILE_WIDTH; }
-    private float boardHeight() { return session == null ? 5 * TILE_HEIGHT : session.getRows() * TILE_HEIGHT; }
+    private float boardWidth() { return (session == null ? 9 : session.getCols()) * boardTileWidth; }
+    private float boardHeight() { return (session == null ? 5 : session.getRows()) * boardTileHeight; }
+
+    /**
+     * Fits the board background into the stage viewport like FitViewport
+     * (full size, aspect ratio preserved, letterboxed if needed), then
+     * derives the on-screen grid rect from the fraction of the image that
+     * the art actually dedicates to the playable board. Recomputed every
+     * frame so it always tracks the current viewport size.
+     */
+    private void updateBoardLayout() {
+        float viewW = stage.getViewport().getWorldWidth();
+        float viewH = stage.getViewport().getWorldHeight();
+
+        if (boardTexture != null) {
+            float texW = boardTexture.getWidth();
+            float texH = boardTexture.getHeight();
+            float fitScale = Math.min(viewW / texW, viewH / texH);
+            bgW = texW * fitScale;
+            bgH = texH * fitScale;
+            bgX = (viewW - bgW) / 2f;
+            bgY = (viewH - bgH) / 2f;
+
+            BOARD_X = bgX + bgW * BOARD_INSET_LEFT_FRAC;
+            BOARD_Y = bgY + bgH * BOARD_INSET_BOTTOM_FRAC;
+            float boardPixelW = bgW * (1f - BOARD_INSET_LEFT_FRAC - BOARD_INSET_RIGHT_FRAC);
+            float boardPixelH = bgH * (1f - BOARD_INSET_TOP_FRAC - BOARD_INSET_BOTTOM_FRAC);
+            int cols = session == null ? 9 : session.getCols();
+            int rows = session == null ? 5 : session.getRows();
+            boardTileWidth = boardPixelW / cols;
+            boardTileHeight = boardPixelH / rows;
+        } else {
+            bgX = BOARD_X;
+            bgY = BOARD_Y;
+            bgW = boardWidth();
+            bgH = boardHeight();
+            boardTileWidth = TILE_WIDTH;
+            boardTileHeight = TILE_HEIGHT;
+        }
+
+        if (boardInput != null) {
+            boardInput.setBounds(BOARD_X, BOARD_Y, boardWidth(), boardHeight());
+        }
+    }
 
     @Override
     public void render(float delta) {
@@ -222,8 +277,8 @@ public class GameScreen extends UiScreen {
             return;
         }
 
-        int col = (int) ((x - BOARD_X) / TILE_WIDTH);
-        int row = session.getRows() - 1 - (int) ((y - BOARD_Y) / TILE_HEIGHT);
+        int col = (int) ((x - BOARD_X) / boardTileWidth);
+        int row = session.getRows() - 1 - (int) ((y - BOARD_Y) / boardTileHeight);
         if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return;
 
         if (selectedPlant == null && session.getLevel() instanceof ConveyorBeltLevel conveyor
@@ -256,8 +311,8 @@ public class GameScreen extends UiScreen {
         if (paused || matchFinished) return;
         if (x < BOARD_X || y < BOARD_Y || x >= BOARD_X + boardWidth() || y >= BOARD_Y + boardHeight()) return;
 
-        int col = (int) ((x - BOARD_X) / TILE_WIDTH);
-        int row = session.getRows() - 1 - (int) ((y - BOARD_Y) / TILE_HEIGHT);
+        int col = (int) ((x - BOARD_X) / boardTileWidth);
+        int row = session.getRows() - 1 - (int) ((y - BOARD_Y) / boardTileHeight);
         if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return;
         plantAtCell(row, col);
     }
@@ -290,8 +345,8 @@ public class GameScreen extends UiScreen {
     private void collectUnderMouse() {
         Vector2 world = mouseWorld();
         if (world == null) return;
-        int col = (int) ((world.x - BOARD_X) / TILE_WIDTH);
-        int row = session.getRows() - 1 - (int) ((world.y - BOARD_Y) / TILE_HEIGHT);
+        int col = (int) ((world.x - BOARD_X) / boardTileWidth);
+        int row = session.getRows() - 1 - (int) ((world.y - BOARD_Y) / boardTileHeight);
         if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return;
         session.collectItemsNear(new Position(col, row));
     }
@@ -342,6 +397,7 @@ public class GameScreen extends UiScreen {
         batch.setProjectionMatrix(stage.getViewport().getCamera().combined);
         batch.begin();
 
+        updateBoardLayout();
         float bw = boardWidth();
         float bh = boardHeight();
         drawBackground(bw, bh);
@@ -360,7 +416,7 @@ public class GameScreen extends UiScreen {
     private void drawBackground(float bw, float bh) {
         if (boardTexture != null) {
             batch.setColor(Color.WHITE);
-            batch.draw(boardTexture, BOARD_X, BOARD_Y, bw, bh);
+            batch.draw(boardTexture, bgX, bgY, bgW, bgH);
         } else {
             batch.setColor(new Color(0.46f, 0.35f, 0.18f, 1f));
             batch.draw(whitePixel, BOARD_X, BOARD_Y, bw, bh);
@@ -375,15 +431,15 @@ public class GameScreen extends UiScreen {
                 if (cell == null) continue;
                 if (cell.getTile() != null && cell.getTile().type().name().equalsIgnoreCase("WATER")) {
                     batch.setColor(0.22f, 0.52f, 0.72f, 0.45f);
-                    batch.draw(whitePixel, BOARD_X + c * TILE_WIDTH, cellY(r), TILE_WIDTH, TILE_HEIGHT);
+                    batch.draw(whitePixel, BOARD_X + c * boardTileWidth, cellY(r), boardTileWidth, boardTileHeight);
                     batch.setColor(Color.WHITE);
                 }
             }
         }
         if (GameSettings.get().isShowGrid()) {
             batch.setColor(1f, 1f, 1f, 0.18f);
-            for (int c = 0; c <= session.getCols(); c++) batch.draw(whitePixel, BOARD_X + c * TILE_WIDTH, BOARD_Y, 1f, bh);
-            for (int r = 0; r <= session.getRows(); r++) batch.draw(whitePixel, BOARD_X, BOARD_Y + r * TILE_HEIGHT, bw, 1f);
+            for (int c = 0; c <= session.getCols(); c++) batch.draw(whitePixel, BOARD_X + c * boardTileWidth, BOARD_Y, 1f, bh);
+            for (int r = 0; r <= session.getRows(); r++) batch.draw(whitePixel, BOARD_X, BOARD_Y + r * boardTileHeight, bw, 1f);
             batch.setColor(Color.WHITE);
         }
     }
@@ -398,7 +454,7 @@ public class GameScreen extends UiScreen {
         if (level instanceof DeadLineLevel deadline && deadline.getDeadLine() != null) {
             int c = (int) deadline.getDeadLine().x();
             batch.setColor(1f, 0.12f, 0.08f, 0.75f);
-            batch.draw(whitePixel, BOARD_X + c * TILE_WIDTH, BOARD_Y, 5f, bh);
+            batch.draw(whitePixel, BOARD_X + c * boardTileWidth, BOARD_Y, 5f, bh);
             batch.setColor(Color.WHITE);
         }
         if (level instanceof IntroductionLevel) {
@@ -436,8 +492,8 @@ public class GameScreen extends UiScreen {
                 if (cell == null || cell.getObstacle() == null) continue;
                 if (!"Grave".equalsIgnoreCase(cell.getObstacle().getName())) continue;
                 TextureRegion grave = GameAssetManager.get().getUiRegion("grave");
-                if (grave != null) batch.draw(grave, BOARD_X + c * TILE_WIDTH + 18, cellY(r) + 8, 60, 78);
-                else drawFallback(BOARD_X + c * TILE_WIDTH + 18, cellY(r) + 8, 60, 78, new Color(0.55f, 0.52f, 0.48f, 1f));
+                if (grave != null) batch.draw(grave, BOARD_X + c * boardTileWidth + 18, cellY(r) + 8, 60, 78);
+                else drawFallback(BOARD_X + c * boardTileWidth + 18, cellY(r) + 8, 60, 78, new Color(0.55f, 0.52f, 0.48f, 1f));
             }
         }
     }
@@ -449,8 +505,8 @@ public class GameScreen extends UiScreen {
             float age = itemAnimTimes.getOrDefault(item, 0f) + delta;
             itemAnimTimes.put(item, age);
             Position p = item.getPosition();
-            float x = BOARD_X + (float) p.x() * TILE_WIDTH + TILE_WIDTH * 0.28f;
-            float y = cellY((int) p.y()) + TILE_HEIGHT * 0.25f;
+            float x = BOARD_X + (float) p.x() * boardTileWidth + boardTileWidth * 0.28f;
+            float y = cellY((int) p.y()) + boardTileHeight * 0.25f;
 
             if (item instanceof GroundSun sun && sun.isFalling()) {
                 float progress = Math.min(1f, age / 5f);
@@ -461,9 +517,9 @@ public class GameScreen extends UiScreen {
                 pulse = 0.92f + 0.08f * (float) Math.sin(age * 5.5f);
                 y += (float) Math.sin(age * 3.0f) * 3f;
             }
-            float size = TILE_WIDTH * 0.45f * pulse;
-            float drawX = x + (TILE_WIDTH * 0.45f - size) * 0.5f;
-            float drawY = y + (TILE_HEIGHT * 0.45f - size) * 0.5f;
+            float size = boardTileWidth * 0.45f * pulse;
+            float drawX = x + (boardTileWidth * 0.45f - size) * 0.5f;
+            float drawY = y + (boardTileHeight * 0.45f - size) * 0.5f;
             TextureRegion region = GameAssetManager.get().getItemRegion(item.getItemType().name());
             if (region != null) batch.draw(region, drawX, drawY, size, size);
             else if (item instanceof GroundSun) drawFallback(drawX, drawY, size, size, itemColor("SUN"));
@@ -478,12 +534,12 @@ public class GameScreen extends UiScreen {
             float t = plantAnimTimes.getOrDefault(plant, 0f) + delta;
             plantAnimTimes.put(plant, t);
             Position p = plant.getPosition();
-            float x = BOARD_X + (float) p.x() * TILE_WIDTH;
+            float x = BOARD_X + (float) p.x() * boardTileWidth;
             float y = cellY((int) p.y());
             String path = AnimationFactory.pathForDisplayName(plant.getName());
             if (!drawPam(path, "idle", t, x - 8f, y + 2f, 0.55f, false)) {
                 TextureRegion region = GameAssetManager.get().getPlantRegion(plant.getName());
-                drawEntity(region, x, y, TILE_WIDTH, TILE_HEIGHT, new Color(0.2f, 0.65f, 0.22f, 1f), initials(plant.getName()));
+                drawEntity(region, x, y, boardTileWidth, boardTileHeight, new Color(0.2f, 0.65f, 0.22f, 1f), initials(plant.getName()));
             }
         }
         plantAnimTimes.keySet().removeIf(p -> !session.getPlants().contains(p));
@@ -497,7 +553,7 @@ public class GameScreen extends UiScreen {
             float t = zombieAnimTimes.getOrDefault(zombie, 0f) + delta;
             zombieAnimTimes.put(zombie, t);
             Position p = zombie.getPosition();
-            float x = BOARD_X + (float) p.x() * TILE_WIDTH;
+            float x = BOARD_X + (float) p.x() * boardTileWidth;
             float y = cellY((int) p.y());
             String preferred = switch (zombie.getZombieState()) {
                 case EATING -> "eat";
@@ -507,7 +563,7 @@ public class GameScreen extends UiScreen {
             String path = ZombieAnimationRegistry.pathFor(zombie.getAlias());
             if (!drawPam(path, preferred, t, x - 10f, y + 2f, 0.52f, zombie.isFacingRight())) {
                 TextureRegion region = GameAssetManager.get().getZombieRegion(zombie.getAlias());
-                drawEntity(region, x, y, TILE_WIDTH, TILE_HEIGHT, new Color(0.55f, 0.5f, 0.45f, 1f), initials(zombie.getAlias()));
+                drawEntity(region, x, y, boardTileWidth, boardTileHeight, new Color(0.55f, 0.5f, 0.45f, 1f), initials(zombie.getAlias()));
             }
         }
         zombieAnimTimes.keySet().removeIf(z -> !session.getZombies().contains(z));
@@ -539,8 +595,8 @@ public class GameScreen extends UiScreen {
 
     private void drawSmallDot(Position p, Color color) {
         if (p == null) return;
-        float x = BOARD_X + (float) p.x() * TILE_WIDTH + TILE_WIDTH * 0.41f;
-        float y = cellY((int) p.y()) + TILE_HEIGHT * 0.42f;
+        float x = BOARD_X + (float) p.x() * boardTileWidth + boardTileWidth * 0.41f;
+        float y = cellY((int) p.y()) + boardTileHeight * 0.42f;
         drawFallback(x, y, 18f, 18f, color);
     }
 
@@ -557,26 +613,26 @@ public class GameScreen extends UiScreen {
     private void drawHover(float bw, float bh) {
         Vector2 mouse = mouseWorld();
         if (mouse == null) return;
-        int col = (int) ((mouse.x - BOARD_X) / TILE_WIDTH);
-        int row = session.getRows() - 1 - (int) ((mouse.y - BOARD_Y) / TILE_HEIGHT);
+        int col = (int) ((mouse.x - BOARD_X) / boardTileWidth);
+        int row = session.getRows() - 1 - (int) ((mouse.y - BOARD_Y) / boardTileHeight);
         if (row < 0 || row >= session.getRows() || col < 0 || col >= session.getCols()) return;
         boolean active = selectedPlant != null || activeTool != Tool.NONE || session.getLevel() instanceof ConveyorBeltLevel;
         batch.setColor(active ? new Color(0.55f, 1f, 0.55f, 0.22f) : new Color(1f, 1f, 1f, 0.12f));
-        batch.draw(whitePixel, BOARD_X + col * TILE_WIDTH, cellY(row), TILE_WIDTH, TILE_HEIGHT);
+        batch.draw(whitePixel, BOARD_X + col * boardTileWidth, cellY(row), boardTileWidth, boardTileHeight);
         batch.setColor(Color.WHITE);
     }
 
-    private float cellY(int row) { return BOARD_Y + (session.getRows() - 1 - row) * TILE_HEIGHT; }
+    private float cellY(int row) { return BOARD_Y + (session.getRows() - 1 - row) * boardTileHeight; }
 
     private void drawCellBorder(int row, int col, Color color, float thickness) {
         if (row < 0 || col < 0 || row >= session.getRows() || col >= session.getCols()) return;
-        float x = BOARD_X + col * TILE_WIDTH;
+        float x = BOARD_X + col * boardTileWidth;
         float y = cellY(row);
         batch.setColor(color);
-        batch.draw(whitePixel, x, y, TILE_WIDTH, thickness);
-        batch.draw(whitePixel, x, y + TILE_HEIGHT - thickness, TILE_WIDTH, thickness);
-        batch.draw(whitePixel, x, y, thickness, TILE_HEIGHT);
-        batch.draw(whitePixel, x + TILE_WIDTH - thickness, y, thickness, TILE_HEIGHT);
+        batch.draw(whitePixel, x, y, boardTileWidth, thickness);
+        batch.draw(whitePixel, x, y + boardTileHeight - thickness, boardTileWidth, thickness);
+        batch.draw(whitePixel, x, y, thickness, boardTileHeight);
+        batch.draw(whitePixel, x + boardTileWidth - thickness, y, thickness, boardTileHeight);
         batch.setColor(Color.WHITE);
     }
 
