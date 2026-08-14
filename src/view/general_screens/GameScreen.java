@@ -76,8 +76,6 @@ public class GameScreen extends UiScreen {
     protected static float BOARD_Y = 170f;
 
     private static final String EGYPT_MAP = "assets/images/chapters/egypt/egypt_gameplay/map.png";
-    private static final String SUN_ITEM_ICON = "assets/images/chapters/egypt/egypt_gameplay/sun.png";
-
     private static final String GRAVE_ITEM_ICON = "assets/images/chapters/egypt/egypt_gameplay/grave.png";
 
     private static final float BOARD_INSET_LEFT_FRAC = 260f / 1024f;
@@ -90,9 +88,6 @@ public class GameScreen extends UiScreen {
     protected MatchHud hud;
     protected Texture boardTexture;
     protected TextureRegion whitePixel;
-
-    private Texture sunItemTexture;
-    private TextureRegion sunItemRegion;
 
     private Texture graveTexture;
     private TextureRegion graveRegion;
@@ -130,7 +125,6 @@ public class GameScreen extends UiScreen {
         AnimationFactory.autoInit();
         initPam();
         initBoardTexture();
-        initSunItemTexture();
         initGraveTexture();
         createHud();
         createBoardInput();
@@ -159,18 +153,6 @@ public class GameScreen extends UiScreen {
     }
 
     protected String getGameplayBackgroundPath() { return EGYPT_MAP; }
-
-    private void initSunItemTexture() {
-        String path = resolveExistingAssetPath(SUN_ITEM_ICON);
-        if (path != null && !path.isEmpty() && Gdx.files.internal(path).exists()) {
-            sunItemTexture = new Texture(Gdx.files.internal(path));
-            sunItemTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            sunItemRegion = new TextureRegion(sunItemTexture);
-        } else {
-            sunItemTexture = null;
-            sunItemRegion = null;
-        }
-    }
 
     private void initGraveTexture() {
         String path = resolveExistingAssetPath(GRAVE_ITEM_ICON);
@@ -577,6 +559,9 @@ public class GameScreen extends UiScreen {
         }
     }
 
+    private static final float SUN_PAM_SCALE_MULTIPLIER = 1.35f;
+    private static final float SUN_PAM_LOOP_SECONDS = 1.0f;
+
     private void drawGroundItems(float delta, float bw, float bh) {
         for (model.collections.Item raw : session.getItems()) {
             if (!(raw instanceof GroundItem item)) continue;
@@ -599,15 +584,26 @@ public class GameScreen extends UiScreen {
             float size = boardTileWidth * 0.45f * pulse;
             float drawX = x + (boardTileWidth * 0.45f - size) * 0.5f;
             float drawY = y + (boardTileHeight * 0.45f - size) * 0.5f;
-            TextureRegion region = GameAssetManager.get().getItemRegion(item.getItemType().name());
-            if (region != null) {
-                batch.draw(region, drawX, drawY, size, size);
-            } else if (item instanceof GroundSun && sunItemRegion != null) {
-                batch.draw(sunItemRegion, drawX, drawY, size, size);
-            } else if (item instanceof GroundSun) {
-                drawFallback(drawX, drawY, size, size, itemColor("SUN"));
+            if (item instanceof GroundSun sun) {
+                String pamPath = GroundSun.getPamAnimationPath(sun.getDropType());
+                String clipName = GroundSun.getPamAnimationClip(sun.getDropType());
+                float loopingPamTime = age % SUN_PAM_LOOP_SECONDS;
+                float pamScale = (size / 100f) * SUN_PAM_SCALE_MULTIPLIER;
+
+                if (!drawPam(pamPath, clipName, loopingPamTime,
+                        drawX + size * 0.5f,
+                        drawY + size * 0.5f,
+                        pamScale,
+                        false)) {
+                    drawFallback(drawX, drawY, size, size, itemColor("SUN"));
+                }
             } else {
-                drawFallback(drawX, drawY, size, size, itemColor(item.getItemType().name()));
+                TextureRegion region = GameAssetManager.get().getItemRegion(item.getItemType().name());
+                if (region != null) {
+                    batch.draw(region, drawX, drawY, size, size);
+                } else {
+                    drawFallback(drawX, drawY, size, size, itemColor(item.getItemType().name()));
+                }
             }
         }
         itemAnimTimes.keySet().removeIf(i -> !session.getItems().contains(i));
@@ -664,7 +660,8 @@ public class GameScreen extends UiScreen {
         if (pamPlayer == null || path == null) return false;
         try {
             String clipName = AnimationFactory.resolveClipNameForPath(path, preferred);
-            if (clipName == null) return false;
+            if (clipName == null) clipName = preferred;
+            if (clipName == null || clipName.isBlank()) return false;
             ClipRef clip = pamPlayer.getClip(path, clipName);
             if (clip == null) return false;
 
@@ -783,7 +780,6 @@ public class GameScreen extends UiScreen {
         }
         if (whitePixel != null) whitePixel.getTexture().dispose();
         if (boardTexture != null) boardTexture.dispose();
-        if (sunItemTexture != null) sunItemTexture.dispose();
         if (graveTexture != null) graveTexture.dispose();
         super.dispose();
     }

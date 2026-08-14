@@ -11,6 +11,28 @@ import view.GeneralPrinter;
 import java.util.Random;
 
 public class GroundSun extends GroundItem {
+    public static final String NORMAL_SUN_PAM_PATH = "768/INITIAL/EFFECTS/SUN/SUN.PAM";
+    public static final String RADIOACTIVE_SUN_PAM_PATH = "768/FULL/EFFECTS/SUN_BOMB/SUN_BOMB.PAM";
+
+    public static String getPamAnimationPath(SunDropType type) {
+        if (type == null) return NORMAL_SUN_PAM_PATH;
+
+        return switch (type) {
+            case REGULAR, SPECIAL -> NORMAL_SUN_PAM_PATH;
+            case RADIOACTIVE -> RADIOACTIVE_SUN_PAM_PATH;
+        };
+    }
+
+    public static String getPamAnimationClip(SunDropType type) {
+        if (type == null) return "YOUR_NORMAL_SUN_CLIP";
+
+        return switch (type) {
+            case REGULAR -> "animation";
+            case SPECIAL -> "blue";
+            case RADIOACTIVE -> "animation2";
+        };
+    }
+
     private static final Random RANDOM = new Random();
 
     public enum SunDropType {
