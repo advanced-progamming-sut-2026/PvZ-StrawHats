@@ -17,6 +17,7 @@ import model.match.main.season.travellog.egypt.SandStorm;
 import model.match_mechanisms.ZombieWave;
 import model.match_mechanisms.vector.Position;
 import model.pitches.*;
+import model.pitches.obstacles.Grave;
 import model.projectile.Projectile;
 import model.projectile.zombie_projectile.ZombieProjectile;
 import model.user_data.User;
@@ -199,6 +200,17 @@ public class GameSession {
                 gameWon = true;
                 controller.QuestManager.notifyLevelWon(this);
             }
+        }
+    }
+    private void destroyGrave(int row, int col, Grave grave) {
+        Cell cell = environment.getCell(row, col);
+        if (cell == null || cell.getObstacle() != grave) return;
+        cell.setObstacle(null);
+        Position position = new Position(col, row);
+        if (grave.getReward() == Grave.Reward.SUN) {
+            items.add(new GroundSun(position, 50));
+        } else if (grave.getReward() == Grave.Reward.PLANT_FOOD) {
+            items.add(new GroundPlantFood(position));
         }
     }
 

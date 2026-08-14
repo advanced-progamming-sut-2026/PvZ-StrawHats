@@ -14,16 +14,12 @@ import java.util.Random;
 
 public class Cave extends Season {
     private static final int ICE_TILE_COUNT = 4;
+    private static final double ICE_WIND_CHANCE_PER_WAVE = 0.50;
     private static final Random RANDOM = new Random();
-
-    public ArrayList<Zombie> frozenZombies = new ArrayList<>();
 
     public Cave() {
         super("Frostbite Caves");
     }
-
-
-    public boolean hasIceTiles() { return true; }
 
     @Override
     public void placeSeasonObstacles(GameSession session) {
@@ -43,6 +39,18 @@ public class Cave extends Season {
                 placed++;
             }
         }
+    }
+
+    @Override
+    public void onWaveStart(GameSession session, int waveIndex) {
+        if (RANDOM.nextDouble() < ICE_WIND_CHANCE_PER_WAVE) {
+            IceWind.blow(session);
+        }
+    }
+
+    @Override
+    public void applyPerTickEffect(GameSession session, double deltaSeconds) {
+        FrostbiteFreezing.meltFromAdjacentFirePlants(session, deltaSeconds);
     }
 
     public static void meltIce(Zombie zombie) {

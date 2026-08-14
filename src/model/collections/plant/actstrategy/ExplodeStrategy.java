@@ -1,46 +1,41 @@
 package model.collections.plant.actstrategy;
 
-import model.collections.plant.AbilityType;
 import model.collections.plant.Plant;
 import model.collections.plant.PlantTag;
 import model.collections.zombie.Zombie;
 import model.match_mechanisms.vector.Position;
-import model.pitches.Cell;
-import model.pitches.obstacles.Grave;
-import model.pitches.obstacles.IceBlock;
 import model.utils.GameSession;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ExplodeStrategy implements ActStrategy {
-    private static final double TRAP_ACTIVATION_RADIUS = 0.55;
+    private static final double TRAP_ACTIVATION_RADIUS = 0.3;
 
     @Override
     public void act(Plant user, GameSession session) {
-        if (user.getIntervalTimer() > 0) return;
+        if (user.getIntervalTimer() > 0 || user.getPosition() == null) return;
 
-        if (handleObstaclePlant(user, session)) {
-            user.setAlive(false);
-            return;
+        ArrayList<Zombie> targets;
+        switch ((int) user.getAbilityValue()) {
+            case 1 -> {
+                if (!isZombieTouch(user, session)) return;
+                targets = touchDetect(user, session);
+            }
+            case 2 -> targets = areaDetect(user, session);
+            case 3 -> targets = lineDetect(user, session);
+            case 4 -> targets = wholePitchDetect(session);
+            default -> targets = new ArrayList<>();
         }
 
-        boolean instant = user.getAbilityType() == AbilityType.INSTANT_EXPLOSIVE;
-        if (!instant && !isZombieTouch(user, session)) return;
-
-        ArrayList<Zombie> targets = switch ((int) user.getAbilityValue()) {
-            case 1 -> touchDetect(user, session);
-            case 2 -> areaDetect(user, session);
-            case 3 -> lineDetect(user, session);
-            case 4 -> wholePitchDetect(session);
-            default -> new ArrayList<>();
-        };
-
-        if (!targets.isEmpty()) userAct(user, targets);
-        damageStructures(user, session);
-        if ((int) user.getAbilityValue() == 4) makeHole(user, session);
+        userAct(user, targets);
+        if (user.getName().equalsIgnoreCase("Grapeshot")) {
+            applyGrapeBounces(user, session, targets);
+        }
+        damageStructures(user,session);
         user.setAlive(false);
     }
-
     private void damageStructures(Plant user, GameSession session) {
         Position center = user.getPosition();
         if (center == null) return;
@@ -59,41 +54,22 @@ public class ExplodeStrategy implements ActStrategy {
         }
     }
 
-    private boolean handleObstaclePlant(Plant user, GameSession session) {
-        Position position = user.getPosition();
-        if (position == null || session.getEnvironment() == null) return false;
-        Cell cell = session.getEnvironment().getCell((int) Math.round(position.y()), (int) Math.round(position.x()));
-        if (cell == null || cell.getObstacle() == null) return false;
-
-        if (user.getName().equalsIgnoreCase("Hot Potato") && cell.getObstacle() instanceof IceBlock iceBlock) {
-            if (iceBlock.takeDamage(Integer.MAX_VALUE)) cell.setObstacle(null);
-            return true;
-        }
-        if (user.getName().equalsIgnoreCase("Grave Buster") && cell.getObstacle() instanceof Grave) {
-            cell.setObstacle(null);
-            return true;
-        }
-        return false;
-    }
-
     private boolean isZombieTouch(Plant user, GameSession session) {
-        Position userPos = user.getPosition();
         for (Zombie zombie : session.getZombies()) {
-            if (isHostileTarget(zombie) && zombie.getPosition().distanceTo(userPos) <= TRAP_ACTIVATION_RADIUS) return true;
+            if (zombie != null && zombie.isAlive() && zombie.getPosition() != null
+                    && zombie.getPosition().distanceTo(user.getPosition()) < TRAP_ACTIVATION_RADIUS) return true;
         }
         return false;
     }
 
     private ArrayList<Zombie> touchDetect(Plant user, GameSession session) {
         ArrayList<Zombie> targets = new ArrayList<>();
-        Position userPos = user.getPosition();
         Zombie firstTouch = null;
         double shortest = Double.MAX_VALUE;
-
         for (Zombie zombie : session.getZombies()) {
-            if (!isHostileTarget(zombie)) continue;
-            double distance = zombie.getPosition().distanceTo(userPos);
-            if (distance <= TRAP_ACTIVATION_RADIUS && distance < shortest) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
+            double distance = zombie.getPosition().distanceTo(user.getPosition());
+            if (distance < shortest) {
                 shortest = distance;
                 firstTouch = zombie;
             }
@@ -104,11 +80,11 @@ public class ExplodeStrategy implements ActStrategy {
 
     private ArrayList<Zombie> areaDetect(Plant user, GameSession session) {
         ArrayList<Zombie> targets = new ArrayList<>();
-        Position userPos = user.getPosition();
+        Position center = user.getPosition();
         for (Zombie zombie : session.getZombies()) {
-            if (!isHostileTarget(zombie)) continue;
-            Position zomPos = zombie.getPosition();
-            if (Math.abs(zomPos.y() - userPos.y()) <= 1 && Math.abs(zomPos.x() - userPos.x()) <= 1) {
+            if (zombie == null || !zombie.isAlive() || zombie.getPosition() == null) continue;
+            Position pos = zombie.getPosition();
+            if (Math.abs(pos.y() - center.y()) <= 1 && Math.abs(pos.x() - center.x()) <= 1) {
                 targets.add(zombie);
             }
         }
@@ -117,41 +93,41 @@ public class ExplodeStrategy implements ActStrategy {
 
     private ArrayList<Zombie> lineDetect(Plant user, GameSession session) {
         ArrayList<Zombie> targets = new ArrayList<>();
-        Position userPos = user.getPosition();
         for (Zombie zombie : session.getZombies()) {
-            if (isHostileTarget(zombie) && Math.abs(userPos.y() - zombie.getPosition().y()) < 0.5) {
-                targets.add(zombie);
-            }
+            if (zombie != null && zombie.isAlive() && zombie.getPosition() != null
+                    && Math.abs(user.getPosition().y() - zombie.getPosition().y()) < 0.5) targets.add(zombie);
         }
         return targets;
     }
 
     private ArrayList<Zombie> wholePitchDetect(GameSession session) {
-        ArrayList<Zombie> targets = new ArrayList<>();
-        for (Zombie zombie : session.getZombies()) if (isHostileTarget(zombie)) targets.add(zombie);
-        return targets;
-    }
-
-    private void makeHole(Plant user, GameSession session) {
-        Position position = user.getPosition();
-        if (position == null || session.getEnvironment() == null) return;
-        Cell cell = session.getEnvironment().getCell((int) Math.round(position.y()), (int) Math.round(position.x()));
-        if (cell != null && user.getName().equalsIgnoreCase("Doom-shroom")) {
-            cell.setObstacle(new model.pitches.obstacles.Crater());
-        }
+        return new ArrayList<>(session.getZombies());
     }
 
     private void userAct(Plant user, ArrayList<Zombie> targets) {
-        int damage = user.getTags().contains(PlantTag.FIRE) ? user.getDamage() * 2 : user.getDamage();
+        int damage = user.getDamage();
         for (Zombie zombie : targets) {
-            if (user.getTags().contains(PlantTag.ICE)) zombie.applyStatus(Zombie.Status.FREEZE, 5.0);
-            else if (user.getTags().contains(PlantTag.FIRE)) zombie.applyStatus(Zombie.Status.FIRED, 3.0);
-            if (user.getTags().contains(PlantTag.POISON)) zombie.takeDamage(damage, true);
-            else zombie.takeDamage(damage, user);
+            if (zombie == null || !zombie.isAlive()) continue;
+            if (user.getTags().contains(PlantTag.ICE)) zombie.setStatus(Zombie.Status.FREEZE);
+            else if (user.getTags().contains(PlantTag.FIRE)) zombie.setStatus(Zombie.Status.FIRED);
+            zombie.takeDamage(damage, user);
         }
     }
 
-    private boolean isHostileTarget(Zombie zombie) {
-        return zombie != null && zombie.isAlive() && !zombie.isHypnotized() && zombie.getPosition() != null;
+    private void applyGrapeBounces(Plant user, GameSession session, ArrayList<Zombie> primaryTargets) {
+        Position center = user.getPosition();
+        int range = user.getRawUpgrades().contains("GRAPE_BOUNCE_EXT") ? 6 : 4;
+        int bounceDamage = Math.max(1, user.getDamage() / 4);
+        Set<Zombie> primary = new HashSet<>(primaryTargets);
+        for (Zombie zombie : session.getZombies()) {
+            if (zombie == null || !zombie.isAlive() || primary.contains(zombie) || zombie.getPosition() == null) continue;
+            double dx = zombie.getPosition().x() - center.x();
+            double dy = zombie.getPosition().y() - center.y();
+            boolean onGrapePath = Math.abs(dy) < 0.5 || Math.abs(dx) < 0.5
+                    || Math.abs(Math.abs(dx) - Math.abs(dy)) < 0.5;
+            if (onGrapePath && Math.max(Math.abs(dx), Math.abs(dy)) <= range) {
+                zombie.takeDamage(bounceDamage, user);
+            }
+        }
     }
 }
